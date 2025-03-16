@@ -1,15 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from './config';
 
-// Get URL from various sources (window globals, env vars, or config file)
+// Define the window interface with Supabase config
+declare global {
+  interface Window {
+    SUPABASE_CONFIG?: {
+      url: string;
+      key: string;
+    };
+  }
+}
+
+// Get URL from various sources (window config object, env vars, or config file)
 const supabaseUrl = 
-  (typeof window !== 'undefined' && window.SUPABASE_URL) ||
+  (typeof window !== 'undefined' && window.SUPABASE_CONFIG?.url) ||
   import.meta.env.VITE_SUPABASE_URL || 
   config.supabase.url;
 
-// Get key from various sources (window globals, env vars, or config file)
+// Get key from various sources (window config object, env vars, or config file)
 const supabaseAnonKey = 
-  (typeof window !== 'undefined' && window.SUPABASE_ANON_KEY) ||
+  (typeof window !== 'undefined' && window.SUPABASE_CONFIG?.key) ||
   import.meta.env.VITE_SUPABASE_ANON_KEY || 
   config.supabase.anonKey;
 
