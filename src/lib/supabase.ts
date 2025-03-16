@@ -1,11 +1,23 @@
 import { createClient } from '@supabase/supabase-js';
 import { config } from './config';
 
-// Create Supabase client using the config file
-export const supabase = createClient(config.supabase.url, config.supabase.anonKey);
+// Get URL from various sources (window globals, env vars, or config file)
+const supabaseUrl = 
+  (typeof window !== 'undefined' && window.SUPABASE_URL) ||
+  import.meta.env.VITE_SUPABASE_URL || 
+  config.supabase.url;
+
+// Get key from various sources (window globals, env vars, or config file)
+const supabaseAnonKey = 
+  (typeof window !== 'undefined' && window.SUPABASE_ANON_KEY) ||
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 
+  config.supabase.anonKey;
+
+// Create Supabase client
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Log for debugging
-console.log('Supabase client initialized with URL:', config.supabase.url);
+console.log('Supabase client initialized with URL:', supabaseUrl);
 
 // Auth helpers
 export const signIn = async (email: string, password: string) => {
