@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabase';
@@ -23,8 +22,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // Create a provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // In dev mode, start with a user already logged in
-  const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER as User : null);
-  const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION as Session : null);
+  const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER : null);
+  const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION : null);
   const [isLoading, setIsLoading] = useState(!USE_DEV_MODE);
 
   useEffect(() => {
@@ -80,8 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // In dev mode, auto sign in - no need to check credentials
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Auto signing in');
-      setUser(DEV_USER as User);
-      setSession(DEV_SESSION as Session);
+      setUser(DEV_USER);
+      setSession(DEV_SESSION);
       return { error: null };
     }
     
@@ -98,8 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // In dev mode, auto sign up
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Auto signing up');
-      setUser(DEV_USER as User);
-      setSession(DEV_SESSION as Session);
+      setUser(DEV_USER);
+      setSession(DEV_SESSION);
       return { error: null };
     }
     
