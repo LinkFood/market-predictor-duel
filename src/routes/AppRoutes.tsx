@@ -20,6 +20,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isInitialized } = useAuth();
   const location = useLocation();
 
+  useEffect(() => {
+    if (isInitialized && !user) {
+      console.log("Protected route accessed without authentication");
+    }
+  }, [isInitialized, user]);
+
   if (!isInitialized) {
     return <LoadingScreen message="Checking authentication..." />;
   }
@@ -35,6 +41,12 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 // Public only route (redirects to dashboard if logged in)
 const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isInitialized } = useAuth();
+  
+  useEffect(() => {
+    if (isInitialized && user) {
+      console.log("Public-only route accessed while authenticated");
+    }
+  }, [isInitialized, user]);
   
   if (!isInitialized) {
     return <LoadingScreen message="Checking authentication..." />;

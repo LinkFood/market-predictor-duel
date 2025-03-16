@@ -1,6 +1,6 @@
 
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,26 +11,36 @@ import { TrendingUp, Beaker } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-type LoginFormData = {
-  email: string;
-  password: string;
-  remember: boolean;
-};
+// Define validation schema
+const loginSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  remember: z.boolean().optional()
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [devLoginLoading, setDevLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get redirect path from location state
+  const from = location.state?.from?.pathname || '/dashboard';
   
   const { 
     register, 
     handleSubmit, 
     formState: { errors } 
   } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
@@ -58,8 +68,8 @@ const Login: React.FC = () => {
         description: "Welcome back to StockDuel!",
       });
       
-      // If successful, navigate to the app
-      navigate('/app');
+      // Navigate back to the page they tried to visit or to dashboard
+      navigate(from, { replace: true });
     } catch (err) {
       console.error("Unexpected error during login:", err);
       setError('An unexpected error occurred');
@@ -80,8 +90,8 @@ const Login: React.FC = () => {
         description: "Successfully logged in with development account",
       });
       
-      // Navigate to the app dashboard
-      navigate('/app');
+      // Navigate to the intended page or dashboard
+      navigate(from, { replace: true });
     } catch (error) {
       console.error("Dev login error:", error);
       toast({
@@ -120,13 +130,7 @@ const Login: React.FC = () => {
                 id="email" 
                 type="email" 
                 placeholder="name@example.com" 
-                {...register('email', { 
-                  required: 'Email is required',
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email address'
-                  }
-                })}
+                {...register('email')}
                 className={errors.email ? 'border-red-500' : ''}
               />
               {errors.email && (
@@ -146,13 +150,7 @@ const Login: React.FC = () => {
               <Input 
                 id="password" 
                 type="password"
-                {...register('password', { 
-                  required: 'Password is required',
-                  minLength: {
-                    value: 6,
-                    message: 'Password must be at least 6 characters'
-                  }
-                })}
+                {...register('password')}
                 className={errors.password ? 'border-red-500' : ''}
               />
               {errors.password && (

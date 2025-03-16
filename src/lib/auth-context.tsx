@@ -6,7 +6,7 @@ import { DEV_USER, DEV_SESSION } from './dev-mode';
 import LoadingScreen from '@/components/LoadingScreen';
 import { toast } from '@/hooks/use-toast';
 
-// Enable dev mode to skip real authentication
+// Enable dev mode to skip real authentication for development
 const USE_DEV_MODE = true;
 
 // Define the context type
@@ -16,7 +16,7 @@ type AuthContextType = {
   isLoading: boolean;
   isInitialized: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 };
 
@@ -160,7 +160,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Sign up function
-  const signUp = async (email: string, password: string) => {
+  const signUp = async (email: string, password: string, username: string) => {
     // In dev mode, auto sign up
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Auto signing up');
@@ -171,7 +171,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({ 
+        email, 
+        password,
+        options: {
+          data: {
+            username
+          }
+        }
+      });
       
       if (error) {
         toast({

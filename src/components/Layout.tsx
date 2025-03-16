@@ -11,6 +11,11 @@ const Layout: React.FC = () => {
   const { user, isInitialized } = useAuth();
   const navigate = useNavigate();
   
+  // Log authentication state for debugging
+  useEffect(() => {
+    console.log("Layout mounted, auth state:", { isInitialized, isLoggedIn: !!user });
+  }, [isInitialized, user]);
+  
   // Redirect if not authenticated on protected routes
   useEffect(() => {
     if (isInitialized && !user) {
@@ -25,7 +30,7 @@ const Layout: React.FC = () => {
       
       if (isProtectedRoute) {
         console.log('Unauthenticated user on protected route, redirecting');
-        navigate('/login', { replace: true });
+        navigate('/login', { replace: true, state: { from: currentPath } });
       }
     }
   }, [user, isInitialized, navigate]);
