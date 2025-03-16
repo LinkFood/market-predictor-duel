@@ -2,17 +2,21 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUp, ArrowDown, Clock, CheckCircle, XCircle } from "lucide-react";
-import { Prediction } from "@/types";
+import { 
+  Clock, CheckCircle, XCircle, Trophy, AlertCircle, 
+  TrendingUp, TrendingDown, ArrowRight, DollarSign
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Prediction } from "@/lib/prediction-service";
 
 interface PredictionCardProps {
   prediction: Prediction;
+  compact?: boolean;
 }
 
-const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
+const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = false }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -28,15 +32,19 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
         return "1 Day";
       case "1w":
         return "1 Week";
+      case "2w":
+        return "2 Weeks";
       case "1m":
         return "1 Month";
+      case "3m":
+        return "3 Months";
       default:
         return timeframe;
     }
   };
 
   const getStatusBadge = () => {
-    if (!prediction.resolved) {
+    if (prediction.status === "pending") {
       return (
         <Badge variant="outline" className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
@@ -45,100 +53,136 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction }) => {
       );
     }
     
-    if (prediction.status === "correct") {
+    if (prediction.outcome === "user_win") {
       return (
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
-          <CheckCircle className="h-3 w-3" />
-          <span>Correct</span>
+          <Trophy className="h-3 w-3" />
+          <span>You Won!</span>
+        </Badge>
+      );
+    } else if (prediction.outcome === "ai_win") {
+      return (
+        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
+          <AlertCircle className="h-3 w-3" />
+          <span>AI Won</span>
+        </Badge>
+      );
+    } else {
+      return (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+          <ArrowRight className="h-3 w-3" />
+          <span>Tie</span>
         </Badge>
       );
     }
-    
-    return (
-      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200 flex items-center gap-1">
-        <XCircle className="h-3 w-3" />
-        <span>Incorrect</span>
-      </Badge>
-    );
+  };
+
+  // Function to display prediction value
+  const renderPredictionValue = (value: string, type: 'price' | 'trend') => {
+    if (type === 'price') {
+      return (
+        <div className="flex items-center gap-1">
+          <DollarSign className="h-4 w-4" />
+          <span>{value}</span>
+        </div>
+      );
+    } else {
+      // It's a trend prediction
+      if (value === 'uptrend') {
+        return (
+          <div className="flex items-center gap-1 text-green-600">
+            <TrendingUp className="h-4 w-4" />
+            <span>Uptrend</span>
+          </div>
+        );
+      } else {
+        return (
+          <div className="flex items-center gap-1 text-red-600">
+            <TrendingDown className="h-4 w-4" />
+            <span>Downtrend</span>
+          </div>
+        );
+      }
+    }
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-2">
+    <Card className={cn("h-full", compact ? "overflow-hidden" : "")}>
+      <CardHeader className={compact ? "p-3 pb-2" : "pb-2"}>
         <div className="flex justify-between items-start">
           <div>
-            <CardTitle className="text-lg">{prediction.targetName}</CardTitle>
+            <CardTitle className={cn("line-clamp-1", compact ? "text-base" : "text-lg")}>
+              {prediction.stockName}
+            </CardTitle>
             <CardDescription>
-              {prediction.targetType.charAt(0).toUpperCase() + prediction.targetType.slice(1)} • {getTimeframeText(prediction.timeframe)}
+              {prediction.ticker} • {getTimeframeText(prediction.timeframe)}
             </CardDescription>
           </div>
           {getStatusBadge()}
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className={compact ? "p-3 pt-0" : ""}>
         <div className="grid grid-cols-2 gap-4 py-2">
-          <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">Your Prediction</div>
-            <div className={cn(
-              "flex items-center gap-2 font-semibold",
-              prediction.userPrediction === "bullish" ? "bullish" : "bearish"
-            )}>
-              {prediction.userPrediction === "bullish" ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )}
-              {prediction.userPrediction === "bullish" ? "Bullish" : "Bearish"}
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">Your Prediction</div>
+            <div className="font-medium">
+              {renderPredictionValue(prediction.userPrediction, prediction.predictionType)}
             </div>
           </div>
-          <div className="space-y-2">
-            <div className="text-sm text-muted-foreground">AI Prediction</div>
-            <div className={cn(
-              "flex items-center gap-2 font-semibold",
-              prediction.aiPrediction === "bullish" ? "bullish" : "bearish"
-            )}>
-              {prediction.aiPrediction === "bullish" ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )}
-              {prediction.aiPrediction === "bullish" ? "Bullish" : "Bearish"}
+          <div className="space-y-1">
+            <div className="text-xs text-muted-foreground">AI Prediction</div>
+            <div className="font-medium">
+              {renderPredictionValue(prediction.aiPrediction, prediction.predictionType)}
             </div>
           </div>
         </div>
-        <div className="mt-2 text-sm">
-          <span className="text-muted-foreground">Created: </span>
-          {formatDate(prediction.createdAt)}
+        
+        {/* Date information */}
+        <div className="mt-2 text-xs text-muted-foreground space-y-1">
+          <div>Created: {formatDate(prediction.createdAt)}</div>
+          {prediction.status === "completed" && prediction.resolvedAt && (
+            <div>Resolved: {formatDate(prediction.resolvedAt)}</div>
+          )}
         </div>
-        <div className="text-sm">
-          <span className="text-muted-foreground">Resolves: </span>
-          {formatDate(prediction.resolvesAt)}
-        </div>
-        {prediction.resolved && prediction.actualResult && (
+        
+        {/* Result information (for completed predictions) */}
+        {prediction.status === "completed" && prediction.endPrice && (
           <div className="mt-2 pt-2 border-t">
-            <div className="text-sm text-muted-foreground mb-1">Result:</div>
-            <div className={cn(
-              "flex items-center gap-2 font-semibold",
-              prediction.actualResult === "bullish" ? "bullish" : "bearish"
-            )}>
-              {prediction.actualResult === "bullish" ? (
-                <ArrowUp className="h-4 w-4" />
-              ) : (
-                <ArrowDown className="h-4 w-4" />
-              )}
-              {prediction.actualResult === "bullish" ? "Bullish" : "Bearish"} 
-              {prediction.percentChange !== undefined && (
-                <span>({prediction.percentChange >= 0 ? "+" : ""}{prediction.percentChange.toFixed(2)}%)</span>
-              )}
+            <div className="text-xs text-muted-foreground mb-1">Final Price:</div>
+            <div className="font-medium flex items-center gap-1">
+              <DollarSign className="h-4 w-4" />
+              {prediction.endPrice.toFixed(2)}
+              <span className={cn(
+                "text-xs",
+                prediction.startPrice < prediction.endPrice ? "text-green-600" : "text-red-600"
+              )}>
+                ({prediction.startPrice < prediction.endPrice ? "+" : ""}
+                {((prediction.endPrice - prediction.startPrice) / prediction.startPrice * 100).toFixed(2)}%)
+              </span>
             </div>
+            
+            {prediction.points !== undefined && (
+              <div className="mt-1 text-xs">
+                <span className="text-muted-foreground">Points earned: </span>
+                <span className="font-medium text-indigo-600">+{prediction.points}</span>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
-      <CardFooter>
-        <Button variant="outline" className="w-full" asChild>
-          <Link to={`/predictions/${prediction.id}`}>View Details</Link>
-        </Button>
-      </CardFooter>
+      
+      {!compact && (
+        <CardFooter className={compact ? "p-3 pt-0" : ""}>
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            asChild
+            size={compact ? "sm" : "default"}
+          >
+            <Link to={`/app/predictions/${prediction.id}`}>View Details</Link>
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 };
