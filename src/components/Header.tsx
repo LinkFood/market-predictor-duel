@@ -1,56 +1,51 @@
 
-import React from "react";
-import { Bell, User, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/lib/auth-context";
-import { useSidebar } from "./ui/sidebar-provider";
+import { useAuth } from '@/lib/auth-context';
+import { Button } from '@/components/ui/button';
+import { LogOut, Menu } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useSidebar } from './ui/sidebar-provider';
 
-const Header: React.FC = () => {
+const Header = () => {
   const { user, signOut } = useAuth();
-  const { open, setOpen } = useSidebar();
   const navigate = useNavigate();
-  
+  const { open, setOpen } = useSidebar();
+
   const handleSignOut = async () => {
     await signOut();
-    navigate("/");
+    navigate('/login');
   };
-  
+
   return (
-    <header className="border-b p-4 bg-white">
+    <header className="border-b bg-white p-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <Button 
             variant="ghost" 
-            size="icon" 
-            className="md:hidden"
+            size="icon"
             onClick={() => setOpen(!open)}
+            className="mr-2"
           >
             <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle sidebar</span>
           </Button>
-          <h2 className="text-lg font-semibold">StockDuel</h2>
+          <h2 className="text-lg font-semibold md:hidden">StockDuel</h2>
         </div>
+        
         <div className="flex items-center gap-4">
           {user ? (
             <>
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
+              <span className="hidden md:inline text-sm text-gray-600">
+                {user.email}
+              </span>
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Sign Out
               </Button>
-              <Link to="/profile">
-                <div className="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white">
-                  <User className="h-5 w-5" />
-                </div>
-              </Link>
             </>
           ) : (
-            <div className="flex gap-2">
-              <Button variant="outline" asChild>
-                <Link to="/login">Log In</Link>
-              </Button>
-              <Button asChild>
-                <Link to="/register">Sign Up</Link>
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={() => navigate('/login')}>
+              Sign In
+            </Button>
           )}
         </div>
       </div>

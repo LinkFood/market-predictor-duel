@@ -10,7 +10,15 @@ import {
   Home 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Sidebar as SidebarContainer, SidebarContent } from "@/components/ui/sidebar";
+import { 
+  Sidebar as ShadcnSidebar, 
+  SidebarContent,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
+} from "@/components/ui/sidebar";
+import { useSidebar } from "./ui/sidebar-provider";
 
 const menuItems = [
   { 
@@ -42,37 +50,34 @@ const menuItems = [
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
+  const { open } = useSidebar();
 
   return (
-    <SidebarContainer>
-      <div className="flex flex-col h-full">
-        <div className="p-4 border-b">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-6 w-6 text-market-blue" />
-            <h1 className="text-xl font-bold text-market-blue">StockDuel</h1>
-          </div>
+    <ShadcnSidebar>
+      <SidebarHeader>
+        <div className="flex items-center gap-2 p-2">
+          <BarChart3 className="h-6 w-6 text-indigo-600" />
+          <h1 className="text-xl font-bold text-indigo-600">StockDuel</h1>
         </div>
-        <SidebarContent>
-          <nav className="space-y-1 p-2">
-            {menuItems.map((item) => (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
-                  location.pathname === item.path
-                    ? "bg-market-blue text-white"
-                    : "hover:bg-gray-100"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.label}</span>
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarMenu>
+          {menuItems.map((item) => (
+            <SidebarMenuItem key={item.path}>
+              <Link to={item.path}>
+                <SidebarMenuButton 
+                  isActive={location.pathname === item.path}
+                  tooltip={!open ? item.label : undefined}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span>{item.label}</span>
+                </SidebarMenuButton>
               </Link>
-            ))}
-          </nav>
-        </SidebarContent>
-      </div>
-    </SidebarContainer>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+      </SidebarContent>
+    </ShadcnSidebar>
   );
 };
 

@@ -17,6 +17,7 @@ const handleStartupError = (error: Error) => {
         <p style="margin-bottom: 1.5rem;">We encountered an error while starting the application:</p>
         <div style="background: #f3f4f6; padding: 1rem; border-radius: 0.375rem; text-align: left; overflow-wrap: break-word;">
           <p><strong>${error.name}:</strong> ${error.message}</p>
+          ${error.stack ? `<pre style="margin-top: 1rem; overflow-x: auto; font-size: 0.75rem;">${error.stack}</pre>` : ''}
         </div>
         <div style="margin-top: 1.5rem;">
           <button onclick="window.location.reload()" style="background: #4f46e5; color: white; border: none; padding: 0.5rem 1rem; border-radius: 0.375rem; cursor: pointer;">
@@ -31,8 +32,8 @@ const handleStartupError = (error: Error) => {
 try {
   // Set Supabase configuration from environment variables
   window.SUPABASE_CONFIG = {
-    url: import.meta.env.VITE_SUPABASE_URL || window.SUPABASE_CONFIG?.url,
-    key: import.meta.env.VITE_SUPABASE_ANON_KEY || window.SUPABASE_CONFIG?.key
+    url: import.meta.env.VITE_SUPABASE_URL || window.SUPABASE_CONFIG?.url || "https://iphpwxputfwxsiwdmqmk.supabase.co",
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY || window.SUPABASE_CONFIG?.key || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaHB3eHB1dGZ3eHNpd2RtcW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTc1OTgsImV4cCI6MjA1NzY3MzU5OH0.f3UDw6w8FGXz-SpQKlcsGFzyxCOICaUANeBJ2lCYFlE"
   };
 
   // Log configuration for debugging

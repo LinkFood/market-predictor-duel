@@ -1,18 +1,8 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import Leaderboard from "./pages/Leaderboard";
-import MakePrediction from "./pages/MakePrediction";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import PredictionDetail from "./pages/PredictionDetail";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
-import Index from "./pages/Index";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./lib/auth-context";
 import { MarketDataProvider } from "./lib/market/MarketDataProvider";
-import { SidebarProvider } from "./components/ui/sidebar-provider";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
@@ -21,18 +11,37 @@ import "./App.css";
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Simple app initialization to show loading screen
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    const initApp = async () => {
+      try {
+        // Check if important configurations are available
+        if (!window.SUPABASE_CONFIG?.url || !window.SUPABASE_CONFIG?.key) {
+          console.warn("Supabase configuration is missing or incomplete");
+        }
+        
+        // Simulate initial loading
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("App initialization error:", error);
+        setInitError((error as Error).message || "Failed to initialize application");
+        setIsLoading(false);
+      }
+    };
     
-    return () => clearTimeout(timer);
+    initApp();
   }, []);
 
   if (isLoading) {
     return <LoadingScreen message="Initializing application..." />;
+  }
+
+  if (initError) {
+    return <LoadingScreen error={initError} />;
   }
 
   return (
@@ -40,22 +49,8 @@ function App() {
       <AuthProvider>
         <MarketDataProvider>
           <BrowserRouter>
-            <SidebarProvider>
-              <Routes>
-                <Route path="/" element={<Layout />}>
-                  <Route index element={<Index />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="leaderboard" element={<Leaderboard />} />
-                  <Route path="predict" element={<MakePrediction />} />
-                  <Route path="predictions/:id" element={<PredictionDetail />} />
-                  <Route path="profile" element={<Profile />} />
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-              </Routes>
-              <Toaster />
-            </SidebarProvider>
+            <AppRoutes />
+            <Toaster />
           </BrowserRouter>
         </MarketDataProvider>
       </AuthProvider>
