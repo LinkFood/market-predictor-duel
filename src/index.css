@@ -5,180 +5,368 @@
 
 @layer base {
   :root {
-    /* Apple-inspired Dark Theme (used as default) */
-    --background: 220 13% 10%;
-    --foreground: 0 0% 98%;
+    /* True iOS 17 Dark Theme */
+    --background: 222 18% 8%; /* iOS dark background */
+    --foreground: 210 6% 93%; /* iOS text color */
 
-    --card: 224 16% 12%;
-    --card-foreground: 0 0% 98%;
+    --card: 220 12% 10%;
+    --card-foreground: 210 6% 93%;
 
-    --popover: 224 16% 12%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 220 12% 10%;
+    --popover-foreground: 210 6% 93%;
 
-    /* SF Blue */
-    --primary: 211 100% 60%;
+    /* iOS System Blue */
+    --primary: 213 94% 68%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 226 20% 15%;
-    --secondary-foreground: 0 0% 98%;
+    /* iOS Secondary / System Gray */
+    --secondary: 220 9% 14%;
+    --secondary-foreground: 210 6% 93%;
 
-    --muted: 220 15% 16%;
-    --muted-foreground: 240 6% 70%;
+    /* iOS Muted - System Gray 2-5 */
+    --muted: 220 8% 18%;
+    --muted-foreground: 220 5% 64%;
 
-    --accent: 211 100% 60%;
-    --accent-foreground: 0 0% 100%;
+    /* iOS Accent - System Teal */
+    --accent: 180 70% 48%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 72% 51%;
+    /* iOS Red */
+    --destructive: 0 90% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 224 15% 18%;
-    --input: 224 15% 18%;
-    --ring: 211 100% 60%;
+    /* iOS System Components */
+    --border: 230 12% 18%;
+    --input: 224 12% 15%;
+    --ring: 213 94% 68%;
 
-    --radius: 1rem;
+    /* iOS 17 Rounded Corners */
+    --radius: 1.1rem;
 
-    /* App navigation styling */
-    --sidebar-background: 220 17% 8%;
-    --sidebar-foreground: 0 0% 90%;
-    --sidebar-primary: 211 100% 60%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 212 30% 18%;
-    --sidebar-accent-foreground: 211 100% 60%;
-    --sidebar-border: 220 20% 14%;
-    --sidebar-ring: 211 100% 60%;
-  }
-
-  /* Light mode preserved as an option but not used by default */
-  .light {
-    --background: 0 0% 98%;
-    --foreground: 224 16% 12%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 224 16% 12%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 224 16% 12%;
-
-    --primary: 211 100% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 224 16% 12%;
-
-    --muted: 220 14% 96%;
-    --muted-foreground: 240 5% 50%;
-
-    --accent: 211 100% 50%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 211 100% 50%;
+    /* Additional iOS System Colors */
+    --ios-green: 142 70% 45%;
+    --ios-yellow: 44 100% 52%;
+    --ios-orange: 24 100% 57%;
+    --ios-indigo: 231 91% 64%;
+    --ios-purple: 292 90% 65%;
+    --ios-pink: 350 82% 57%;
+    
+    /* iOS Vibrancy Backgrounds */
+    --vibrancy-background: 222 40% 12%/85%;
+    --vibrancy-foreground: 210 6% 93%;
+    
+    /* iOS Blur Backdrop Strength */
+    --backdrop-blur: 20px;
+    
+    /* iOS Notification Handle */
+    --handle-width: 36px;
+    --handle-height: 5px;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+  /* iOS Precise Typography */
+  h1 {
+    @apply text-2xl font-bold tracking-tight;
+    letter-spacing: -0.02em;
+  }
+  
+  h2 {
+    @apply text-xl font-semibold tracking-tight;
+    letter-spacing: -0.015em;
+  }
+  
+  h3 {
+    @apply text-lg font-semibold;
+    letter-spacing: -0.01em;
+  }
+  
+  h4, h5, h6 {
+    @apply font-medium;
   }
 
+  /* iOS System Font Sizes */
+  .text-title1 { @apply text-[28px] font-bold leading-tight tracking-tight; }
+  .text-title2 { @apply text-[22px] font-bold leading-tight tracking-tight; }
+  .text-title3 { @apply text-[20px] font-semibold leading-tight; }
+  .text-headline { @apply text-[17px] font-semibold; }
+  .text-body { @apply text-[17px] leading-relaxed; }
+  .text-callout { @apply text-[16px] leading-relaxed; }
+  .text-subhead { @apply text-[15px]; }
+  .text-footnote { @apply text-[13px] leading-normal; }
+  .text-caption1 { @apply text-[12px] leading-normal; }
+  .text-caption2 { @apply text-[11px] leading-tight; }
+
+  /* Financial Values - SF Mono style */
   .financial-value {
-    @apply font-mono tabular-nums;
+    @apply font-mono tabular-nums tracking-tight text-title3;
   }
 }
 
 @layer components {
-  /* App-like cards with iOS-style blurred backgrounds */
-  .app-card {
-    @apply bg-card/90 backdrop-blur-lg border border-border/40 rounded-2xl shadow-sm;
+  /* iOS Sheet Drag Handle */
+  .ios-handle {
+    @apply w-[var(--handle-width)] h-[var(--handle-height)] bg-foreground/40 mx-auto rounded-full;
+  }
+
+  /* iOS 17-style Module Card */
+  .ios-module {
+    @apply bg-card rounded-2xl overflow-hidden;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
   }
   
-  /* iOS-style button */
+  /* iOS 17-style Card */
+  .ios-card {
+    @apply bg-secondary/60 backdrop-blur-[var(--backdrop-blur)] border border-white/5 rounded-2xl p-4;
+  }
+  
+  /* iOS 17-style Inset Card (darker) */
+  .ios-card-inset {
+    @apply bg-[#1C1C1E] rounded-xl p-3;
+  }
+  
+  /* iOS 17-style Vibrancy Background */
+  .ios-vibrancy {
+    @apply bg-[hsl(var(--vibrancy-background))] backdrop-blur-[var(--backdrop-blur)] border border-white/5;
+  }
+  
+  /* iOS 17-style Button */
   .ios-button {
-    @apply rounded-full font-medium flex items-center justify-center transition-all active:scale-95 shadow-sm;
+    @apply rounded-full font-medium flex items-center justify-center transition-all active:scale-[0.97] text-subhead;
+    -webkit-tap-highlight-color: transparent;
   }
   
-  /* Primary action button */
+  /* iOS Primary Button (Filled) */
   .ios-button-primary {
-    @apply ios-button bg-primary text-primary-foreground hover:brightness-110 py-3 px-6;
+    @apply ios-button bg-primary text-primary-foreground py-3 px-6;
   }
   
-  /* Secondary action button */
+  /* iOS Secondary Button (Transparent with Border) */
   .ios-button-secondary {
-    @apply ios-button bg-secondary text-secondary-foreground hover:bg-secondary/90 py-2.5 px-5;
+    @apply ios-button bg-white/10 border border-white/20 text-foreground py-2.5 px-5;
   }
   
-  /* iOS-style tab bar item */
-  .tab-item {
-    @apply flex flex-col items-center gap-1 p-2 rounded-lg text-xs font-medium transition-all;
+  /* iOS Tinted Button (System Blue Text) */
+  .ios-button-tinted {
+    @apply ios-button bg-transparent text-primary py-2.5 px-5;
   }
   
-  /* iOS-style segmented control */
-  .segmented-control {
-    @apply flex p-1 rounded-full bg-secondary;
+  /* iOS Danger Button */
+  .ios-button-danger {
+    @apply ios-button bg-destructive text-destructive-foreground py-3 px-6;
   }
   
-  .segmented-button {
-    @apply px-4 py-1.5 text-sm font-medium rounded-full transition-all;
+  /* iOS Small Button */
+  .ios-button-sm {
+    @apply py-2 px-4 text-footnote;
   }
   
-  .segmented-button-active {
-    @apply bg-primary text-primary-foreground shadow-sm;
+  /* iOS Tab Bar */
+  .ios-tab-bar {
+    @apply fixed bottom-0 left-0 right-0 bg-[#1C1C1E]/95 backdrop-blur-lg border-t border-white/5 h-[85px] pt-1 pb-7 px-2 z-50;
   }
   
-  /* iOS-style navigation bar */
-  .nav-bar {
-    @apply px-4 py-3 flex items-center gap-2 backdrop-blur-lg bg-background/95 border-b border-border/40;
+  /* iOS Tab Item */
+  .ios-tab-item {
+    @apply relative flex flex-col items-center justify-center gap-1 py-1 rounded-lg;
   }
   
-  /* Dynamic island style notification */
-  .dynamic-island {
-    @apply fixed top-4 inset-x-0 mx-auto w-max max-w-[90%] rounded-full bg-black/95 backdrop-blur-xl text-white py-3 px-5 shadow-xl flex items-center gap-3 z-50 animate-scale-in;
+  /* iOS Active Tab Indicator */
+  .ios-tab-active::before {
+    @apply absolute -top-0.5 w-1 h-1 rounded-full bg-primary content-[''];
+  }
+  
+  /* iOS Navigation Bar */
+  .ios-nav-bar {
+    @apply sticky top-0 px-4 py-3 flex items-center gap-2 bg-background/90 backdrop-blur-lg z-40;
+    min-height: 48px;
+  }
+  
+  /* iOS Navigation Title */
+  .ios-nav-title {
+    @apply text-headline font-semibold text-center flex-1;
+  }
+  
+  /* iOS Search Bar */
+  .ios-search-bar {
+    @apply bg-secondary rounded-xl px-3 py-2 flex items-center gap-2 text-subhead;
+  }
+  
+  /* iOS List */
+  .ios-list {
+    @apply rounded-xl overflow-hidden bg-secondary/50 backdrop-blur-md divide-y divide-border;
+  }
+  
+  /* iOS List Item */
+  .ios-list-item {
+    @apply px-4 py-3 flex items-center justify-between;
+  }
+  
+  /* iOS Segmented Control */
+  .ios-segmented-control {
+    @apply flex p-1 rounded-lg bg-secondary;
+  }
+  
+  .ios-segment {
+    @apply px-4 py-1.5 text-subhead font-medium rounded-md transition-all flex-1 text-center;
+  }
+  
+  .ios-segment-active {
+    @apply bg-white/10 text-foreground shadow-sm;
+  }
+  
+  /* iOS Switch */
+  .ios-switch {
+    @apply relative inline-flex items-center cursor-pointer;
+  }
+  
+  /* iOS Action Sheet */
+  .ios-action-sheet {
+    @apply fixed bottom-0 inset-x-0 px-4 pb-10 pt-4 z-50 space-y-2;
+  }
+  
+  /* iOS Dynamic Island */
+  .ios-dynamic-island {
+    @apply fixed top-6 inset-x-0 mx-auto w-max max-w-[90%] rounded-3xl bg-black text-white py-3 px-4 shadow-xl flex items-center z-50 animate-scale-in;
+  }
+  
+  /* iOS Badge */
+  .ios-badge {
+    @apply bg-[hsl(var(--ios-red))] text-white text-caption2 font-bold rounded-full px-1.5 min-w-5 h-5 flex items-center justify-center;
+  }
+  
+  /* iOS Menu */
+  .ios-menu {
+    @apply rounded-2xl bg-secondary/80 backdrop-blur-xl p-1.5 shadow-lg border border-white/10 overflow-hidden;
+  }
+  
+  /* iOS Menu Item */
+  .ios-menu-item {
+    @apply px-3 py-2 flex items-center gap-2 rounded-xl text-subhead;
   }
 }
 
 @layer utilities {
+  /* Financial Indicators */
   .bullish {
-    @apply text-market-green;
+    @apply text-[hsl(var(--ios-green))];
   }
 
   .bearish {
-    @apply text-market-red;
+    @apply text-[hsl(var(--ios-red))];
   }
   
-  /* iOS-style subtle shadows */
-  .shadow-ios {
-    @apply shadow-[0_2px_10px_rgba(0,0,0,0.1)];
+  .neutral {
+    @apply text-[hsl(var(--ios-yellow))];
   }
   
-  /* Glass morphism effect */
-  .glass-morphism {
-    @apply bg-card/70 backdrop-blur-md border border-white/10;
+  /* iOS-specific Shadows */
+  .shadow-ios-sm {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   }
   
-  /* Focus within effect for interactive elements */
-  .focus-effect {
-    @apply transition-transform hover:scale-[1.01] active:scale-[0.99];
+  .shadow-ios-md {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
   
-  /* SF Mono style numbers for financial data */
-  .sf-nums {
-    @apply font-mono tabular-nums tracking-tight;
+  .shadow-ios-lg {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   }
   
-  /* Custom scrollbar */
-  .custom-scrollbar {
-    @apply scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent;
+  /* iOS-specific Blur Strengths */
+  .backdrop-blur-ios {
+    backdrop-filter: blur(var(--backdrop-blur));
+  }
+  
+  /* iOS-specific Interaction Animations */
+  .ios-press {
+    @apply transition-transform active:scale-[0.97];
+  }
+  
+  .ios-tap {
+    @apply transition-opacity active:opacity-60;
+  }
+  
+  /* iOS SF Symbols style animation */
+  .pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* iOS Home Screen Appearance */
+  .ios-app-icon {
+    @apply rounded-2xl overflow-hidden shadow-ios-sm;
+    aspect-ratio: 1 / 1;
+  }
+  
+  /* iOS 17 bottom safe area */
+  .ios-safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+  }
+  
+  /* iOS 17 edge radius */
+  .rounded-ios {
+    @apply rounded-2xl;
+  }
+  
+  /* SF Numeric Display */
+  .sf-numeric {
+    @apply font-mono tabular-nums tracking-tight font-medium;
+  }
+  
+  /* Disable iOS text selection */
+  .no-select {
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  
+  /* iOS-style truncated text with ellipsis */
+  .ios-truncate {
+    @apply truncate max-w-full;
+  }
+  
+  /* iOS system font weights */
+  .font-ios-regular {
+    @apply font-normal;
+  }
+  
+  .font-ios-medium {
+    @apply font-medium;
+  }
+  
+  .font-ios-semibold {
+    @apply font-semibold;
+  }
+  
+  .font-ios-bold {
+    @apply font-bold;
+  }
+  
+  /* iOS scroll snap */
+  .snap-ios {
+    @apply snap-x snap-mandatory;
+    scroll-padding: 16px;
+  }
+  
+  /* iOS-style hide scrollbars while allowing scrolling */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
   }
 }
