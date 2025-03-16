@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import PredictionForm from "@/components/PredictionForm";
+import PredictionForm from "@/components/prediction/PredictionForm";
 import MarketDataTable from "@/components/MarketDataTable";
 import { mockMarketData, mockSectorData, mockStockData, mockLeaderboard } from "@/data/mockData";
 import { Prediction } from "@/types";
