@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "./components/ui/sidebar";
 
 import Layout from "./components/Layout";
+import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import MakePrediction from "./pages/MakePrediction";
 import PredictionDetail from "./pages/PredictionDetail";
@@ -27,7 +28,8 @@ const App = () => {
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Layout />}>
+              <Route path="/" element={<Index />} />
+              <Route path="/app" element={<Layout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="predict" element={<MakePrediction />} />
                 <Route path="predictions/:id" element={<PredictionDetail />} />
