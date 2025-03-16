@@ -1,16 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
+import { config } from './config';
 
-// Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// Create Supabase client using the config file
+export const supabase = createClient(config.supabase.url, config.supabase.anonKey);
 
-// Check if environment variables are set
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('Supabase URL or Anon Key is missing. Please check your .env file.');
-}
-
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Log for debugging
+console.log('Supabase client initialized with URL:', config.supabase.url);
 
 // Auth helpers
 export const signIn = async (email: string, password: string) => {
