@@ -6,6 +6,10 @@
 import { supabase } from './supabase';
 import { getStockPrediction } from './xai-service';
 import { getStockData } from './market-data-service';
+import { DEV_USER } from './dev-mode';
+
+// Dev mode flag
+const USE_DEV_MODE = true;
 
 // Types
 export interface Prediction {
@@ -39,10 +43,17 @@ export interface PredictionRequest {
  */
 export async function createPrediction(request: PredictionRequest): Promise<Prediction> {
   try {
-    // Get current user
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      throw new Error("User not authenticated");
+    // Get current user (use dev user in dev mode)
+    let user;
+    if (USE_DEV_MODE) {
+      user = DEV_USER;
+      console.log('🧪 Development mode: Using dev user for prediction creation');
+    } else {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error("User not authenticated");
+      }
+      user = userData.user;
     }
     
     // Get current stock data
@@ -58,7 +69,7 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     
     // Create the prediction record
     const newPrediction: Omit<Prediction, 'id'> = {
-      userId: userData.user.id,
+      userId: user.id,
       ticker: request.ticker,
       stockName: stockData.name,
       predictionType: request.predictionType,
@@ -101,10 +112,17 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
  */
 export async function getUserPredictions(status?: 'pending' | 'completed'): Promise<Prediction[]> {
   try {
-    // Get current user
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) {
-      throw new Error("User not authenticated");
+    // Get current user (use dev user in dev mode)
+    let user;
+    if (USE_DEV_MODE) {
+      user = DEV_USER;
+      console.log('🧪 Development mode: Using dev user for getting predictions');
+    } else {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        throw new Error("User not authenticated");
+      }
+      user = userData.user;
     }
     
     /* In a real implementation, we would fetch from Supabase
@@ -128,7 +146,7 @@ export async function getUserPredictions(status?: 'pending' | 'completed'): Prom
     // Return mock data
     return Array.from({ length: 5 }).map((_, index) => ({
       id: Math.random().toString(36).substring(2, 15),
-      userId: userData.user.id,
+      userId: user.id,
       ticker: ['AAPL', 'TSLA', 'MSFT', 'AMZN', 'GOOGL'][index % 5],
       stockName: ['Apple Inc.', 'Tesla Inc.', 'Microsoft Corp.', 'Amazon.com Inc.', 'Alphabet Inc.'][index % 5],
       predictionType: index % 2 === 0 ? 'trend' : 'price' as 'trend' | 'price',
@@ -320,11 +338,17 @@ export async function getUserStats(userId?: string): Promise<{
   try {
     // Get current user if no userId is provided
     if (!userId) {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
-        throw new Error("User not authenticated");
+      if (USE_DEV_MODE) {
+        // In dev mode, use dev user
+        userId = DEV_USER.id;
+        console.log('🧪 Development mode: Using dev user for stats');
+      } else {
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData.user) {
+          throw new Error("User not authenticated");
+        }
+        userId = userData.user.id;
       }
-      userId = userData.user.id;
     }
     
     /* In a real implementation, we would fetch from Supabase

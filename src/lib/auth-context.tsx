@@ -2,6 +2,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabase';
+import { DEV_USER, DEV_SESSION } from './dev-mode';
+
+// Enable dev mode to skip real authentication
+const USE_DEV_MODE = true;
 
 // Define the context type
 type AuthContextType = {
@@ -18,11 +22,18 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Create a provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // In dev mode, start with a user already logged in
+  const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER as User : null);
+  const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION as Session : null);
+  const [isLoading, setIsLoading] = useState(!USE_DEV_MODE);
 
   useEffect(() => {
+    // If dev mode is enabled, skip actual authentication
+    if (USE_DEV_MODE) {
+      console.log('🧪 Development mode: Using mock authentication');
+      return;
+    }
+    
     // Check for active session on mount
     const getInitialSession = async () => {
       setIsLoading(true);
@@ -66,6 +77,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign in function
   const signIn = async (email: string, password: string) => {
+    // In dev mode, auto sign in - no need to check credentials
+    if (USE_DEV_MODE) {
+      console.log('🧪 Development mode: Auto signing in');
+      setUser(DEV_USER as User);
+      setSession(DEV_SESSION as Session);
+      return { error: null };
+    }
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       return { error };
@@ -76,6 +95,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign up function
   const signUp = async (email: string, password: string) => {
+    // In dev mode, auto sign up
+    if (USE_DEV_MODE) {
+      console.log('🧪 Development mode: Auto signing up');
+      setUser(DEV_USER as User);
+      setSession(DEV_SESSION as Session);
+      return { error: null };
+    }
+    
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       return { error };
@@ -86,6 +113,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Sign out function
   const signOut = async () => {
+    if (USE_DEV_MODE) {
+      // In dev mode, we can still clear the user state but it will be reset on reload
+      console.log('🧪 Development mode: Signing out (temporarily)');
+      setUser(null);
+      setSession(null);
+      return;
+    }
+    
     await supabase.auth.signOut();
   };
 

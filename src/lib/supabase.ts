@@ -52,23 +52,30 @@ if (!supabaseAnonKey || supabaseAnonKey.length < 20) {
   }
 }
 
+// Dev mode flag (can be imported from dev-mode.ts)
+const USE_DEV_MODE = true;
+
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // Log for debugging
 console.log('Supabase client initialized with URL:', supabaseUrl);
 
-// Test connection
-supabase.auth.getSession().then(({ data, error }) => {
-  if (error) {
-    console.error('Supabase connection test failed:', error.message);
-    if (typeof window.showError === 'function') {
-      window.showError('Supabase Connection Error', `Failed to connect to Supabase: ${error.message}`);
+// Test connection if not in dev mode
+if (!USE_DEV_MODE) {
+  supabase.auth.getSession().then(({ data, error }) => {
+    if (error) {
+      console.error('Supabase connection test failed:', error.message);
+      if (typeof window.showError === 'function') {
+        window.showError('Supabase Connection Error', `Failed to connect to Supabase: ${error.message}`);
+      }
+    } else {
+      console.log('Supabase connection test successful:', data);
     }
-  } else {
-    console.log('Supabase connection test successful:', data);
-  }
-});
+  });
+} else {
+  console.log('🧪 Development mode: Skipping Supabase connection test');
+}
 
 // Auth helpers
 export const signIn = async (email: string, password: string) => {

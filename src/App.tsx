@@ -21,9 +21,17 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+// Dev mode flag
+const USE_DEV_MODE = true;
+
 // Protected route component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
+  
+  // In dev mode, allow access without authentication checks
+  if (USE_DEV_MODE) {
+    return <>{children}</>;
+  }
   
   // Show loading state
   if (isLoading) {
@@ -43,21 +51,26 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
-  // Check if Supabase is configured
-  const configError = getSupabaseConfigError();
+  // Skip Supabase configuration check in dev mode
+  if (!USE_DEV_MODE) {
+    // Check if Supabase is configured
+    const configError = getSupabaseConfigError();
 
-  if (configError) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
-        <p className="mb-4">{configError}</p>
-        <div className="p-4 bg-gray-100 rounded-md text-left max-w-lg">
-          <p className="font-semibold mb-2">Debug Information:</p>
-          <p>Supabase URL: {window.SUPABASE_CONFIG?.url || 'Not set'}</p>
-          <p>Supabase key: {window.SUPABASE_CONFIG?.key ? `${window.SUPABASE_CONFIG.key.substring(0, 5)}...` : 'Not set'}</p>
+    if (configError) {
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
+          <p className="mb-4">{configError}</p>
+          <div className="p-4 bg-gray-100 rounded-md text-left max-w-lg">
+            <p className="font-semibold mb-2">Debug Information:</p>
+            <p>Supabase URL: {window.SUPABASE_CONFIG?.url || 'Not set'}</p>
+            <p>Supabase key: {window.SUPABASE_CONFIG?.key ? `${window.SUPABASE_CONFIG.key.substring(0, 5)}...` : 'Not set'}</p>
+          </div>
         </div>
-      </div>
-    );
+      );
+    }
+  } else {
+    console.log('🧪 Development mode: Bypassing Supabase configuration check');
   }
 
   return (
