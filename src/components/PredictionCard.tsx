@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Prediction } from "@/lib/prediction-service";
+import { Prediction } from "@/lib/prediction/types";
 
 interface PredictionCardProps {
   prediction: Prediction;
@@ -77,7 +76,6 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
     }
   };
 
-  // Function to display prediction value
   const renderPredictionValue = (value: string, type: 'price' | 'trend') => {
     if (type === 'price') {
       return (
@@ -87,7 +85,6 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         </div>
       );
     } else {
-      // It's a trend prediction
       if (value === 'uptrend') {
         return (
           <div className="flex items-center gap-1 text-green-600">
@@ -137,7 +134,6 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
           </div>
         </div>
         
-        {/* Date information */}
         <div className="mt-2 text-xs text-muted-foreground space-y-1">
           <div>Created: {formatDate(prediction.createdAt)}</div>
           {prediction.status === "completed" && prediction.resolvedAt && (
@@ -145,7 +141,6 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
           )}
         </div>
         
-        {/* Result information (for completed predictions) */}
         {prediction.status === "completed" && prediction.endPrice && (
           <div className="mt-2 pt-2 border-t">
             <div className="text-xs text-muted-foreground mb-1">Final Price:</div>

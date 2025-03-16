@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { createPrediction } from "@/lib/prediction-service";
+import { createPrediction } from "@/lib/prediction";
 import { getStockData } from "@/lib/market";
 
 // Components
