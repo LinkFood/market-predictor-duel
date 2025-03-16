@@ -1,11 +1,10 @@
 
 import React, { useState } from "react";
-import { Bell, Search, ChevronLeft, Wallet, BarChart3, Menu } from "lucide-react";
+import { Bell, Search, ChevronLeft, Wallet, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import DesktopMenu from "./DesktopMenu";
 
 interface HeaderProps {

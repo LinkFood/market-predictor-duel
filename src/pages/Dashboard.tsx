@@ -1,6 +1,7 @@
 
 import React from "react";
-import { Sparkles, Clock, Calendar } from "lucide-react";
+import { Sparkles, Clock, Calendar, TrendingUp } from "lucide-react";
+import { Link } from "react-router-dom";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import GlobalBattleStats from "@/components/dashboard/GlobalBattleStats";
 import StatsCard from "@/components/dashboard/StatsCard";
