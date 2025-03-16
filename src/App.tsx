@@ -16,15 +16,31 @@ import { SidebarProvider } from "./components/ui/sidebar-provider";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 function App() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simple app initialization to show loading screen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingScreen message="Initializing application..." />;
+  }
+
   return (
     <ErrorBoundary>
       <AuthProvider>
         <MarketDataProvider>
-          <SidebarProvider>
-            <BrowserRouter>
+          <BrowserRouter>
+            <SidebarProvider>
               <Routes>
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Index />} />
@@ -38,9 +54,9 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
               </Routes>
-            </BrowserRouter>
-            <Toaster />
-          </SidebarProvider>
+              <Toaster />
+            </SidebarProvider>
+          </BrowserRouter>
         </MarketDataProvider>
       </AuthProvider>
     </ErrorBoundary>
