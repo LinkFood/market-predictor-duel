@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -13,6 +14,7 @@ import {
   X
 } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import MobileNavBar from "./MobileNavBar";
 
 // App Navigation Component with shared layout
 const AppLayout: React.FC = () => {
@@ -46,41 +48,6 @@ const AppLayout: React.FC = () => {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-  
-  // App tabs for bottom navigation
-  const appTabs = [
-    { icon: Home, label: "Home", path: "/app" },
-    { icon: TrendingUp, label: "Predict", path: "/app/predict" },
-    { icon: LineChart, label: "History", path: "/app/predictions/history" },
-    { icon: Trophy, label: "Leaders", path: "/app/leaderboard" },
-    { icon: User, label: "Profile", path: "/app/profile" }
-  ];
-  
-  // Check if a tab is active
-  const isTabActive = (path: string) => {
-    if (path === "/app") {
-      return location.pathname === "/app" || location.pathname === "/app/";
-    }
-    return location.pathname.startsWith(path);
-  };
-  
-  // Tab Bar Component
-  const TabBar = () => (
-    <div className="app-tab-bar">
-      <div className="grid grid-cols-5 gap-1">
-        {appTabs.map((tab) => (
-          <button
-            key={tab.path}
-            onClick={() => navigate(tab.path)}
-            className={`app-tab ${isTabActive(tab.path) ? 'app-tab-active' : 'app-tab-inactive'}`}
-          >
-            <tab.icon className="h-5 w-5 mb-1" />
-            <span className="caption">{tab.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
   
   // Search Overlay Component
   const SearchOverlay = () => (
@@ -153,19 +120,60 @@ const AppLayout: React.FC = () => {
         </div>
         
         <div className="space-y-4">
-          {appTabs.map((tab) => (
-            <button
-              key={tab.path}
-              onClick={() => {
-                navigate(tab.path);
-                setShowMenu(false);
-              }}
-              className="w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity"
-            >
-              <tab.icon className={`h-5 w-5 mr-3 ${isTabActive(tab.path) ? 'text-[hsl(var(--primary))]' : ''}`} />
-              <span className="body-md">{tab.label}</span>
-            </button>
-          ))}
+          <button
+            onClick={() => {
+              navigate("/app");
+              setShowMenu(false);
+            }}
+            className={`w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity ${location.pathname === "/app" ? "text-[hsl(var(--primary))]" : ""}`}
+          >
+            <Home className={`h-5 w-5 mr-3 ${location.pathname === "/app" ? "text-[hsl(var(--primary))]" : ""}`} />
+            <span className="body-md">Home</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              navigate("/app/predict");
+              setShowMenu(false);
+            }}
+            className={`w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity ${location.pathname.includes("/predict") ? "text-[hsl(var(--primary))]" : ""}`}
+          >
+            <TrendingUp className={`h-5 w-5 mr-3 ${location.pathname.includes("/predict") ? "text-[hsl(var(--primary))]" : ""}`} />
+            <span className="body-md">Predict</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              navigate("/app/predictions/history");
+              setShowMenu(false);
+            }}
+            className={`w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity ${location.pathname.includes("/predictions/history") ? "text-[hsl(var(--primary))]" : ""}`}
+          >
+            <LineChart className={`h-5 w-5 mr-3 ${location.pathname.includes("/predictions/history") ? "text-[hsl(var(--primary))]" : ""}`} />
+            <span className="body-md">History</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              navigate("/app/leaderboard");
+              setShowMenu(false);
+            }}
+            className={`w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity ${location.pathname.includes("/leaderboard") ? "text-[hsl(var(--primary))]" : ""}`}
+          >
+            <Trophy className={`h-5 w-5 mr-3 ${location.pathname.includes("/leaderboard") ? "text-[hsl(var(--primary))]" : ""}`} />
+            <span className="body-md">Leaderboard</span>
+          </button>
+          
+          <button
+            onClick={() => {
+              navigate("/app/profile");
+              setShowMenu(false);
+            }}
+            className={`w-full flex items-center py-3 px-1 border-b border-white/5 touch-opacity ${location.pathname.includes("/profile") ? "text-[hsl(var(--primary))]" : ""}`}
+          >
+            <User className={`h-5 w-5 mr-3 ${location.pathname.includes("/profile") ? "text-[hsl(var(--primary))]" : ""}`} />
+            <span className="body-md">Profile</span>
+          </button>
           
           <div className="pt-4">
             <button className="btn-secondary btn-md w-full">
@@ -249,7 +257,7 @@ const AppLayout: React.FC = () => {
       </main>
       
       {/* Bottom Tab Bar */}
-      <TabBar />
+      <MobileNavBar />
       
       {/* Home indicator at bottom of screen */}
       <div className="fixed bottom-1 left-0 right-0 flex justify-center pointer-events-none z-50">

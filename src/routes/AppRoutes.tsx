@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Public only route (redirects to dashboard if logged in)
+// Public only route (redirects to app if logged in)
 const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isInitialized } = useAuth();
   
@@ -52,7 +52,8 @@ const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    // Fixed: redirect to /app instead of /dashboard
+    return <Navigate to="/app" replace />;
   }
   
   return <>{children}</>;
@@ -89,6 +90,9 @@ const AppRoutes = () => {
             <Register />
           </PublicOnlyRoute>
         } />
+        
+        {/* Legacy route support - redirect /dashboard to /app */}
+        <Route path="/dashboard" element={<Navigate to="/app" replace />} />
         
         {/* App routes with new modern mobile layout */}
         <Route path="/app" element={
