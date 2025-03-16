@@ -64,6 +64,7 @@ export interface MarketData {
   value: number;
   change: number;
   changePercent: number;
+  symbol?: string; // Add symbol property to fix the errors
 }
 
 export interface GlobalStats {

@@ -226,7 +226,7 @@ const Dashboard: React.FC = () => {
                           {prediction.timeframe === "1d" ? "1 Day" : prediction.timeframe === "1w" ? "1 Week" : "1 Month"}
                         </span>
                       </div>
-                      <Badge variant={prediction.status === "correct" ? "success" : prediction.status === "incorrect" ? "destructive" : "outline"}>
+                      <Badge variant={prediction.status === "correct" ? "default" : prediction.status === "incorrect" ? "destructive" : "outline"}>
                         {prediction.status === "pending" ? "Pending" : prediction.status === "correct" ? "Correct" : "Incorrect"}
                       </Badge>
                     </div>
@@ -305,7 +305,7 @@ const Dashboard: React.FC = () => {
                           {opportunity.icon}
                           <h4 className="font-semibold ml-2">{opportunity.name}</h4>
                         </div>
-                        <Badge variant={opportunity.movement === "bullish" ? "success" : opportunity.movement === "bearish" ? "destructive" : "outline"} className="capitalize">
+                        <Badge variant={opportunity.movement === "bullish" ? "default" : opportunity.movement === "bearish" ? "destructive" : "outline"} className="capitalize">
                           {opportunity.movement}
                         </Badge>
                       </div>

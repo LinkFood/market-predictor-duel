@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, ArrowUp, ArrowDown, Clock, Calendar, BarChart3,
   CheckCircle, XCircle, Target, Share2, FileText, Timer,
   Award, Brain, TrendingUp, TrendingDown, Newspaper,
-  Sparkles, Flame, AlertTriangle, Zap, BarChart
+  Sparkles, Flame, AlertTriangle, Zap, BarChart, ChevronRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -25,7 +24,6 @@ const PredictionDetail: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState<string>("");
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
     const found = mockPredictions.find(p => p.id === id);
     if (found) {
       setPrediction(found);
@@ -35,7 +33,6 @@ const PredictionDetail: React.FC = () => {
   useEffect(() => {
     if (!prediction || prediction.resolved) return;
     
-    // Calculate time remaining
     const calculateTimeRemaining = () => {
       const now = new Date();
       const resolveDate = new Date(prediction.resolvesAt);
@@ -60,7 +57,7 @@ const PredictionDetail: React.FC = () => {
     };
     
     calculateTimeRemaining();
-    const interval = setInterval(calculateTimeRemaining, 60000); // Update every minute
+    const interval = setInterval(calculateTimeRemaining, 60000);
     
     return () => clearInterval(interval);
   }, [prediction]);
@@ -172,7 +169,6 @@ const PredictionDetail: React.FC = () => {
     );
   };
 
-  // Mock news for the price movement context
   const marketNews = [
     {
       title: "Fed signals potential rate cut in upcoming meeting",
@@ -257,10 +253,8 @@ const PredictionDetail: React.FC = () => {
             
             <CardContent className="p-0">
               <div className="p-6 space-y-6">
-                {/* Status indicator */}
                 {getStatusIndicator()}
                 
-                {/* Main prediction cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
                   <Card className={cn(
                     "border-2 shadow-sm relative overflow-hidden",
@@ -367,7 +361,6 @@ const PredictionDetail: React.FC = () => {
                   </Card>
                 </div>
                 
-                {/* Agreement banner */}
                 <Alert className={cn(
                   "border-0",
                   prediction.userPrediction === prediction.aiPrediction
@@ -386,7 +379,6 @@ const PredictionDetail: React.FC = () => {
                   </AlertDescription>
                 </Alert>
                 
-                {/* Actual results section (if resolved) */}
                 {prediction.resolved && prediction.actualResult && (
                   <Card className="border-0 shadow-md bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
                     <CardHeader className="pb-2">
@@ -484,7 +476,6 @@ const PredictionDetail: React.FC = () => {
                   </Card>
                 )}
                 
-                {/* AI Analysis section */}
                 <div>
                   <h3 className="text-lg font-semibold mb-4 flex items-center">
                     <Brain className="h-5 w-5 mr-2 text-indigo-500" />
@@ -605,7 +596,6 @@ const PredictionDetail: React.FC = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Prediction details card */}
           <Card className="shadow-sm border-0">
             <CardHeader className="bg-slate-50 dark:bg-slate-900 border-b pb-3">
               <CardTitle className="text-base font-semibold">Prediction Details</CardTitle>
@@ -677,7 +667,6 @@ const PredictionDetail: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Current data card */}
           <Card className="shadow-sm border-0">
             <CardHeader className="bg-slate-50 dark:bg-slate-900 border-b pb-3">
               <div className="flex justify-between items-center">
@@ -719,7 +708,6 @@ const PredictionDetail: React.FC = () => {
             </CardContent>
           </Card>
           
-          {/* Similar predictions card */}
           <Card className="shadow-sm border-0">
             <CardHeader className="bg-slate-50 dark:bg-slate-900 border-b pb-3">
               <CardTitle className="text-base font-semibold flex items-center">
@@ -741,7 +729,7 @@ const PredictionDetail: React.FC = () => {
                       <div className="flex justify-between items-center mb-1">
                         <span className="font-medium">{pred.targetName}</span>
                         <Badge 
-                          variant={pred.status === "correct" ? "success" : pred.status === "incorrect" ? "destructive" : "outline"}
+                          variant={pred.status === "correct" ? "default" : pred.status === "incorrect" ? "destructive" : "outline"}
                           className="text-xs"
                         >
                           {pred.status === "pending" ? "Pending" : pred.status === "correct" ? "Correct" : "Incorrect"}
