@@ -3,11 +3,12 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info, ExternalLink } from "lucide-react";
+import { Info, ExternalLink, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createPrediction } from "@/lib/prediction";
 import { getStockData } from "@/lib/market";
 import { FEATURES } from "@/lib/config";
+import { Alert, AlertDescription } from "../ui/alert";
 
 // Components
 import SearchBar from "./SearchBar";
@@ -25,6 +26,7 @@ interface PredictionFormProps {
 const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<any | null>(null);
   const [predictionType, setPredictionType] = useState<PredictionType>('trend');
   const [timeframe, setTimeframe] = useState('1d');
@@ -35,10 +37,14 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
   const handleSelectStock = async (stock: any) => {
     try {
       setIsLoading(true);
+      setError(null);
+      console.log('Selected stock:', stock);
       const stockDetails = await getStockData(stock.symbol);
+      console.log('Retrieved stock details:', stockDetails);
       setSelectedStock(stockDetails);
     } catch (error) {
       console.error('Error fetching stock details:', error);
+      setError("Failed to load stock details. Please try again.");
       toast({
         variant: "destructive",
         title: "Error",
@@ -80,6 +86,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
 
     try {
       setIsLoading(true);
+      setError(null);
       
       const predictionRequest = {
         ticker: selectedStock.symbol,
@@ -88,7 +95,9 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
         timeframe
       };
       
+      console.log('Submitting prediction:', predictionRequest);
       const newPrediction = await createPrediction(predictionRequest);
+      console.log('Prediction created:', newPrediction);
       
       toast({
         title: "Prediction Submitted",
@@ -104,6 +113,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
       onPredictionMade(newPrediction);
     } catch (error) {
       console.error('Error creating prediction:', error);
+      setError("Failed to submit your prediction. Please try again.");
       toast({
         variant: "destructive",
         title: "Error",
@@ -123,6 +133,13 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         {/* Stock Search */}
         <SearchBar onSelectStock={handleSelectStock} />
         
@@ -204,7 +221,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
         </Button>
         <div className="flex items-center text-xs text-muted-foreground gap-1">
           <Info className="h-3 w-3" />
-          <span>The AI will analyze your prediction and provide feedback</span>
+          <span>{FEATURES.enableAIAnalysis ? "The AI will analyze your prediction and provide feedback" : "Your prediction will be recorded"}</span>
         </div>
       </CardFooter>
     </Card>
