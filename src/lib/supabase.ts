@@ -1,6 +1,5 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { config } from './config';
 
 // Type guard to check if SUPABASE_CONFIG exists and has required properties
 export const isSupabaseConfigured = (): boolean => {
@@ -26,9 +25,17 @@ export const getSupabaseConfigError = (): string | null => {
   return null;
 };
 
-// Get Supabase config from window or fallback to config file
-const supabaseUrl = window.SUPABASE_CONFIG?.url || config.supabase.url;
-const supabaseAnonKey = window.SUPABASE_CONFIG?.key || config.supabase.anonKey;
+// Default Supabase configuration values (for development only)
+const defaultConfig = {
+  supabase: {
+    url: 'https://iphpwxputfwxsiwdmqmk.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaHB3eHB1dGZ3eHNpd2RtcW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTc1OTgsImV4cCI6MjA1NzY3MzU5OH0.f3UDw6w8FGXz-SpQKlcsGFzyxCOICaUANeBJ2lCYFlE'
+  }
+};
+
+// Get Supabase config from window or fallback to default config
+const supabaseUrl = window.SUPABASE_CONFIG?.url || defaultConfig.supabase.url;
+const supabaseAnonKey = window.SUPABASE_CONFIG?.key || defaultConfig.supabase.anonKey;
 
 // Validation checks
 if (!supabaseUrl || supabaseUrl === 'https://example.supabase.co') {
