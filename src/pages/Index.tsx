@@ -16,7 +16,8 @@ const Index: React.FC = () => {
   // If user is already authenticated and on the landing page, redirect to dashboard
   useEffect(() => {
     if (user && isInitialized) {
-      navigate("/dashboard");
+      console.log('User authenticated, redirecting to dashboard');
+      navigate("/dashboard", { replace: true });
     }
   }, [user, isInitialized, navigate]);
 

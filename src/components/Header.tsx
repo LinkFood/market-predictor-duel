@@ -4,14 +4,24 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { SidebarTrigger } from './ui/sidebar';
+import { toast } from '@/hooks/use-toast';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate('/login');
+    try {
+      await signOut();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      console.error('Sign out error:', error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "An error occurred while signing out."
+      });
+    }
   };
 
   return (

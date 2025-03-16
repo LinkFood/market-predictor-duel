@@ -20,10 +20,11 @@ function App() {
         // Check if important configurations are available
         if (!window.SUPABASE_CONFIG?.url || !window.SUPABASE_CONFIG?.key) {
           console.warn("Supabase configuration is missing or incomplete");
+          // Continue anyway in dev mode
         }
         
         // Simulate initial loading
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         setIsLoading(false);
       } catch (error) {
@@ -46,14 +47,14 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <MarketDataProvider>
-          <BrowserRouter>
+      <BrowserRouter>
+        <AuthProvider>
+          <MarketDataProvider>
             <AppRoutes />
             <Toaster />
-          </BrowserRouter>
-        </MarketDataProvider>
-      </AuthProvider>
+          </MarketDataProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </ErrorBoundary>
   );
 }

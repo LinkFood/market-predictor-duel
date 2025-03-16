@@ -32,11 +32,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isInitialized, setIsInitialized] = useState(USE_DEV_MODE);
   const [authError, setAuthError] = useState<Error | null>(null);
 
+  // Log initial authentication state for debugging
+  useEffect(() => {
+    console.log('AuthProvider initialized with:', {
+      devMode: USE_DEV_MODE,
+      hasUser: !!user,
+      hasSession: !!session,
+      isInitialized
+    });
+  }, []);
+
   useEffect(() => {
     // If dev mode is enabled, skip actual authentication
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Using mock authentication');
+      setUser(DEV_USER);
+      setSession(DEV_SESSION);
       setIsInitialized(true);
+      setIsLoading(false);
       return;
     }
     
@@ -50,8 +63,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast({
           variant: "destructive",
           title: "Configuration Error",
-          description: "Supabase is not configured correctly. Check your environment variables."
+          description: "Supabase is not configured correctly. Using development mode.",
         });
+        
+        // Fall back to dev mode
+        setUser(DEV_USER);
+        setSession(DEV_SESSION);
         setIsLoading(false);
         setIsInitialized(true);
         return;
@@ -70,6 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (error) {
         console.error('Error getting session:', error);
         setAuthError(error as Error);
+        
+        // Fall back to dev mode on error
+        setUser(DEV_USER);
+        setSession(DEV_SESSION);
+        
         toast({
           variant: "destructive",
           title: "Authentication Error",
@@ -212,7 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   // If still initializing auth, show loading screen
-  if (!isInitialized) {
+  if (!isInitialized && !USE_DEV_MODE) {
     return <LoadingScreen message="Initializing authentication..." />;
   }
 
