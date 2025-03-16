@@ -25,7 +25,8 @@ export interface Prediction {
   timeframe: string;
   startingValue: number;
   endValue?: number;
-  status: 'pending' | 'complete' | 'cancelled';
+  // Updated status to include "completed" to match code usage
+  status: 'pending' | 'complete' | 'cancelled' | 'completed';
   points?: number;
   createdAt: string;
   resolvesAt: string;
@@ -35,11 +36,16 @@ export interface Prediction {
     supporting: string[];
     counter: string[];
   };
+  // Add properties needed by PredictionCard
+  outcome?: 'user_win' | 'ai_win' | 'tie';
+  stockName?: string;
+  startPrice?: number;
+  endPrice?: number;
 }
 
 // Type for a resolved prediction with result
 export interface ResolvedPrediction extends Prediction {
-  status: 'complete';
+  status: 'complete' | 'completed';
   endValue: number;
   resolvedAt: string;
   result: 'win' | 'loss' | 'tie';
@@ -69,6 +75,20 @@ export interface PredictionStats {
   totalPoints: number;
 }
 
+// Type for user statistics
+export interface UserStats {
+  totalPredictions: number;
+  completedPredictions: number;
+  pendingPredictions: number;
+  totalPoints: number;
+  winRate: number;
+  winStreak: number;
+  bestWinStreak: number;
+  aiVictories: number;
+  userVictories: number;
+  ties: number;
+}
+
 // Type for leaderboard entries
 export interface LeaderboardEntry {
   userId: string;
@@ -83,4 +103,10 @@ export interface LeaderboardEntry {
     winRate: number;
   };
   rank: number;
+  // Add these for compatibility with existing code
+  totalPoints?: number;
+  winRate?: number;
+  predictions?: number;
+  totalPredictions?: number;
+  avatarUrl?: string;
 }

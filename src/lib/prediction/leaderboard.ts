@@ -27,7 +27,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     return data;
     */
     
-    // Return mock data
+    // Return mock data with corrected properties to match LeaderboardEntry type
     return Array.from({ length: 20 }).map((_, index) => ({
       userId: Math.random().toString(36).substring(2, 15),
       username: [
@@ -36,9 +36,17 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
         'ProfitProphet', 'StockSage', 'ValueVenture', 'WealthWarrior', 'MarketMogul',
         'TradingTitan', 'StockStrategist', 'PortfolioPro', 'ReturnRanger', 'EquityExpert'
       ][index],
-      totalPoints: 1000 - index * 40 + Math.floor(Math.random() * 30),
+      points: 1000 - index * 40 + Math.floor(Math.random() * 30),
       winRate: 70 - index * 1.5 + Math.random() * 5,
-      predictions: 50 - index + Math.floor(Math.random() * 10)
+      predictionsCount: 50 - index + Math.floor(Math.random() * 10),
+      winCount: Math.floor((50 - index) * (70 - index * 1.5) / 100),
+      accuracy: (70 - index * 1.5 + Math.random() * 5) / 100,
+      rank: index + 1,
+      vsAI: {
+        wins: Math.floor((50 - index) * 0.4),
+        losses: Math.floor((50 - index) * 0.3),
+        winRate: 0.6 - (index * 0.01)
+      }
     }));
   } catch (error) {
     console.error("Error fetching leaderboard:", error);

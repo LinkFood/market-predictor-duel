@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -85,7 +86,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         </div>
       );
     } else {
-      if (value === 'uptrend') {
+      if (value === 'uptrend' || value === 'bullish') {
         return (
           <div className="flex items-center gap-1 text-green-600">
             <TrendingUp className="h-4 w-4" />
@@ -109,7 +110,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className={cn("line-clamp-1", compact ? "text-base" : "text-lg")}>
-              {prediction.stockName}
+              {prediction.targetName || prediction.stockName}
             </CardTitle>
             <CardDescription>
               {prediction.ticker} • {getTimeframeText(prediction.timeframe)}
@@ -136,23 +137,23 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         
         <div className="mt-2 text-xs text-muted-foreground space-y-1">
           <div>Created: {formatDate(prediction.createdAt)}</div>
-          {prediction.status === "completed" && prediction.resolvedAt && (
+          {(prediction.status === "completed" || prediction.status === "complete") && prediction.resolvedAt && (
             <div>Resolved: {formatDate(prediction.resolvedAt)}</div>
           )}
         </div>
         
-        {prediction.status === "completed" && prediction.endPrice && (
+        {(prediction.status === "completed" || prediction.status === "complete") && (prediction.endPrice || prediction.endValue) && (
           <div className="mt-2 pt-2 border-t">
             <div className="text-xs text-muted-foreground mb-1">Final Price:</div>
             <div className="font-medium flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
-              {prediction.endPrice.toFixed(2)}
+              {(prediction.endPrice || prediction.endValue)?.toFixed(2)}
               <span className={cn(
                 "text-xs",
-                prediction.startPrice < prediction.endPrice ? "text-green-600" : "text-red-600"
+                (prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "text-green-600" : "text-red-600"
               )}>
-                ({prediction.startPrice < prediction.endPrice ? "+" : ""}
-                {((prediction.endPrice - prediction.startPrice) / prediction.startPrice * 100).toFixed(2)}%)
+                ({(prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "+" : ""}
+                {(((prediction.endPrice || prediction.endValue) - (prediction.startPrice || prediction.startingValue)) / (prediction.startPrice || prediction.startingValue) * 100).toFixed(2)}%)
               </span>
             </div>
             

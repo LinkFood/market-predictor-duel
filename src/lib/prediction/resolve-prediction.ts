@@ -49,8 +49,12 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
     // For trend predictions, determine if the trend prediction was correct
     else {
       const actualTrend = stockData.change >= 0 ? 'uptrend' : 'downtrend';
-      const userCorrect = prediction.userPrediction === actualTrend;
-      const aiCorrect = prediction.aiPrediction === actualTrend;
+      const userCorrect = prediction.userPrediction === actualTrend || 
+                          (prediction.userPrediction === 'bullish' && actualTrend === 'uptrend') ||
+                          (prediction.userPrediction === 'bearish' && actualTrend === 'downtrend');
+      const aiCorrect = prediction.aiPrediction === actualTrend || 
+                        (prediction.aiPrediction === 'bullish' && actualTrend === 'uptrend') ||
+                        (prediction.aiPrediction === 'bearish' && actualTrend === 'downtrend');
       
       if (userCorrect && !aiCorrect) {
         outcome = 'user_win';
@@ -67,10 +71,10 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
       }
     }
     
-    // Update the prediction
+    // Update the prediction - using "complete" to match the type
     const updatedPrediction: Prediction = {
       ...prediction,
-      status: 'completed',
+      status: 'complete',
       endPrice: stockData.price,
       outcome,
       points,
