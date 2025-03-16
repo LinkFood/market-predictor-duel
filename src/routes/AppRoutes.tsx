@@ -1,6 +1,6 @@
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import Layout from "@/components/Layout";
+import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Leaderboard from "@/pages/Leaderboard";
 import MakePrediction from "@/pages/MakePrediction";
@@ -12,7 +12,6 @@ import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Suspense, useEffect } from "react";
 
 // Protected route wrapper
@@ -74,56 +73,41 @@ const AppRoutes = () => {
   }
 
   return (
-    <SidebarProvider>
-      <Suspense fallback={<LoadingScreen message="Loading content..." />}>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Index />} />
-            
-            {/* Protected routes */}
-            <Route path="dashboard" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="leaderboard" element={
-              <ProtectedRoute>
-                <Leaderboard />
-              </ProtectedRoute>
-            } />
-            <Route path="predict" element={
-              <ProtectedRoute>
-                <MakePrediction />
-              </ProtectedRoute>
-            } />
-            <Route path="predictions/:id" element={
-              <ProtectedRoute>
-                <PredictionDetail />
-              </ProtectedRoute>
-            } />
-            <Route path="profile" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            <Route path="*" element={<NotFound />} />
-          </Route>
-          
-          {/* Auth routes - redirect to dashboard if already logged in */}
-          <Route path="/login" element={
-            <PublicOnlyRoute>
-              <Login />
-            </PublicOnlyRoute>
-          } />
-          <Route path="/register" element={
-            <PublicOnlyRoute>
-              <Register />
-            </PublicOnlyRoute>
-          } />
-        </Routes>
-      </Suspense>
-    </SidebarProvider>
+    <Suspense fallback={<LoadingScreen message="Loading content..." />}>
+      <Routes>
+        {/* Public routes */}
+        <Route path="/" element={<Index />} />
+        
+        {/* Auth routes - redirect to app if already logged in */}
+        <Route path="/login" element={
+          <PublicOnlyRoute>
+            <Login />
+          </PublicOnlyRoute>
+        } />
+        <Route path="/register" element={
+          <PublicOnlyRoute>
+            <Register />
+          </PublicOnlyRoute>
+        } />
+        
+        {/* App routes with new modern mobile layout */}
+        <Route path="/app" element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<Dashboard />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="predict" element={<MakePrediction />} />
+          <Route path="predictions/history" element={<Dashboard />} /> {/* Replace with actual history component */}
+          <Route path="predictions/:id" element={<PredictionDetail />} />
+          <Route path="profile" element={<Profile />} />
+        </Route>
+        
+        {/* Catch-all route */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Suspense>
   );
 };
 
