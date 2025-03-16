@@ -63,7 +63,14 @@ const Dashboard: React.FC = () => {
   
   // Only show 2 recent predictions on mobile
   const recentPredictions = mockPredictions.slice(0, 2);
-  const userRank = mockLeaderboard.find(item => item.userId === currentUser.id)?.rank;
+  const userRank = mockLeaderboard.find(item => item.userId === currentUser.id)?.rank || 0;
+  
+  // Add calculated property for win rate to current user
+  Object.defineProperty(currentUser, 'winRate', {
+    get: function() { 
+      return Math.round((this.correctPredictions / this.totalPredictions) * 100); 
+    }
+  });
   
   // Hot opportunities for today (swipeable on mobile)
   const hotOpportunities = [
@@ -81,7 +88,7 @@ const Dashboard: React.FC = () => {
       description: "Fed announcement", 
       confidence: 76, 
       movement: "bearish" as const,
-      icon: <Clock className="h-4 w-4 text-[hsl(var(--ios-blue))]" /> 
+      icon: <Clock className="h-4 w-4 text-[hsl(var(--ios-indigo))]" /> 
     },
     { 
       name: "Retail", 
@@ -183,19 +190,19 @@ const Dashboard: React.FC = () => {
                   <p className="text-subhead font-ios-medium">{stock.name.split(' ')[0]}</p>
                 </div>
                 <MarketIndicator 
-                  type={stock.percentChange > 0 ? 'bullish' : stock.percentChange < 0 ? 'bearish' : 'neutral'} 
+                  type={stock.changePercent > 0 ? 'bullish' : stock.changePercent < 0 ? 'bearish' : 'neutral'} 
                 />
               </div>
               
               <div className="mt-1">
-                <p className="text-title3 sf-numeric">${stock.price.toFixed(2)}</p>
+                <p className="text-title3 sf-numeric">${stock.value.toFixed(2)}</p>
                 <p className={cn(
                   "text-caption1 sf-numeric",
-                  stock.percentChange > 0 ? "text-[hsl(var(--ios-green))]" : 
-                  stock.percentChange < 0 ? "text-[hsl(var(--ios-red))]" : 
+                  stock.changePercent > 0 ? "text-[hsl(var(--ios-green))]" : 
+                  stock.changePercent < 0 ? "text-[hsl(var(--ios-red))]" : 
                   "text-[hsl(var(--ios-yellow))]"
                 )}>
-                  {stock.percentChange > 0 ? '+' : ''}{stock.percentChange.toFixed(2)}%
+                  {stock.changePercent > 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
                 </p>
               </div>
             </div>
@@ -318,29 +325,29 @@ const Dashboard: React.FC = () => {
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "w-10 h-10 rounded-full flex items-center justify-center",
-                  prediction.result === 'win' && "bg-[hsl(var(--ios-green))]/20",
-                  prediction.result === 'loss' && "bg-[hsl(var(--ios-red))]/20",
-                  prediction.result === 'pending' && "bg-[hsl(var(--ios-yellow))]/20",
+                  prediction.winner === 'user' && "bg-[hsl(var(--ios-green))]/20",
+                  prediction.winner === 'ai' && "bg-[hsl(var(--ios-red))]/20",
+                  prediction.status === 'pending' && "bg-[hsl(var(--ios-yellow))]/20",
                 )}>
-                  <span className="text-footnote font-ios-medium">{prediction.symbol}</span>
+                  <span className="text-footnote font-ios-medium">{prediction.targetName.slice(0,4)}</span>
                 </div>
                 
                 <div>
-                  <p className="text-subhead font-ios-medium">{prediction.asset}</p>
-                  <p className="text-caption1 text-muted-foreground">{prediction.direction} • {prediction.timeframe}</p>
+                  <p className="text-subhead font-ios-medium">{prediction.targetName}</p>
+                  <p className="text-caption1 text-muted-foreground">{prediction.userPrediction} • {prediction.timeframe}</p>
                 </div>
               </div>
               
               <div className="flex items-center">
                 <span className={cn(
                   "text-subhead mr-2",
-                  prediction.result === 'win' && "text-[hsl(var(--ios-green))]",
-                  prediction.result === 'loss' && "text-[hsl(var(--ios-red))]",
-                  prediction.result === 'pending' && "text-[hsl(var(--ios-yellow))]",
+                  prediction.winner === 'user' && "text-[hsl(var(--ios-green))]",
+                  prediction.winner === 'ai' && "text-[hsl(var(--ios-red))]",
+                  prediction.status === 'pending' && "text-[hsl(var(--ios-yellow))]",
                 )}>
-                  {prediction.result === 'win' && '+'}
-                  {prediction.result === 'win' ? prediction.points : 
-                   prediction.result === 'loss' ? '-' + prediction.points :
+                  {prediction.winner === 'user' && '+'}
+                  {prediction.winner === 'user' ? '25' : 
+                   prediction.winner === 'ai' ? '-15' :
                    'Pending'}
                 </span>
                 <ChevronRight className="h-4 w-4 text-muted-foreground" />

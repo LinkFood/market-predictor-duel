@@ -364,9 +364,18 @@
   .hide-scrollbar {
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;  /* Firefox */
+    overflow-y: auto;
+    overflow-x: auto;
   }
   
   .hide-scrollbar::-webkit-scrollbar {
     display: none; /* Chrome, Safari and Opera */
+  }
+  
+  /* Fix for the scrollbar on iOS devices */
+  @supports (-webkit-touch-callout: none) {
+    .hide-scrollbar {
+      -webkit-overflow-scrolling: touch;
+    }
   }
 }

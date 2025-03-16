@@ -266,31 +266,36 @@ export const mockSectorData: MarketData[] = [
 // Mock popular stocks
 export const mockStockData: MarketData[] = [
   {
-    name: "AAPL",
+    name: "Apple Inc",
+    symbol: "AAPL",
     value: 191.45,
     change: 2.35,
     changePercent: 1.24
   },
   {
-    name: "MSFT",
+    name: "Microsoft Corp",
+    symbol: "MSFT",
     value: 397.58,
     change: 5.82,
     changePercent: 1.49
   },
   {
-    name: "GOOGL",
+    name: "Alphabet Inc",
+    symbol: "GOOGL",
     value: 142.32,
     change: 1.87,
     changePercent: 1.33
   },
   {
-    name: "AMZN",
+    name: "Amazon.com Inc",
+    symbol: "AMZN",
     value: 176.76,
     change: 3.24,
     changePercent: 1.87
   },
   {
-    name: "TSLA",
+    name: "Tesla Inc",
+    symbol: "TSLA",
     value: 242.89,
     change: -3.45,
     changePercent: -1.40
