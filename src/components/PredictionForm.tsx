@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +8,7 @@ import { ArrowUp, ArrowDown, Info, DollarSign, Percent, Search, TrendingUp, Tren
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { createPrediction } from "@/lib/prediction-service";
-import { searchStocks, getStockData } from "@/lib/market-data-service";
+import { searchStocks, getStockData } from "@/lib/market";
 
 // Types
 type PredictionType = 'trend' | 'price';

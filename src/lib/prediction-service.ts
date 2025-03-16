@@ -5,7 +5,7 @@
 
 import { supabase } from './supabase';
 import { getStockPrediction } from './xai-service';
-import { getStockData } from './market-data-service';
+import { getStockData } from './market'; // Updated import
 import { DEV_USER } from './dev-mode';
 
 // Dev mode flag
