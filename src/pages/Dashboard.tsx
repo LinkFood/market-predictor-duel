@@ -23,21 +23,21 @@ const Dashboard: React.FC = () => {
       name: "NVIDIA (NVDA)", 
       description: "Earnings tomorrow", 
       confidence: 89, 
-      movement: "volatile",
+      movement: "volatile" as const,
       icon: <Sparkles className="h-4 w-4 text-amber-500" /> 
     },
     { 
       name: "S&P 500", 
       description: "Fed announcement", 
       confidence: 76, 
-      movement: "bearish",
+      movement: "bearish" as const,
       icon: <Clock className="h-4 w-4 text-sky-500" /> 
     },
     { 
       name: "Retail Sector", 
       description: "Consumer data release", 
       confidence: 82, 
-      movement: "bullish",
+      movement: "bullish" as const,
       icon: <Calendar className="h-4 w-4 text-emerald-500" /> 
     },
   ];
