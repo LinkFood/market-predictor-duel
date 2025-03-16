@@ -1,7 +1,10 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { DEV_USER, DEV_SESSION } from './dev-mode';
+import LoadingScreen from '@/components/LoadingScreen';
+import { toast } from '@/hooks/use-toast';
 
 // Enable dev mode to skip real authentication
 const USE_DEV_MODE = true;
@@ -11,6 +14,7 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
+  isInitialized: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
@@ -25,11 +29,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER : null);
   const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION : null);
   const [isLoading, setIsLoading] = useState(!USE_DEV_MODE);
+  const [isInitialized, setIsInitialized] = useState(USE_DEV_MODE);
+  const [authError, setAuthError] = useState<Error | null>(null);
 
   useEffect(() => {
     // If dev mode is enabled, skip actual authentication
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Using mock authentication');
+      setIsInitialized(true);
       return;
     }
     
@@ -40,38 +47,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Check if Supabase is properly configured
       if (!isSupabaseConfigured()) {
         console.error('Supabase is not configured properly');
+        toast({
+          variant: "destructive",
+          title: "Configuration Error",
+          description: "Supabase is not configured correctly. Check your environment variables."
+        });
         setIsLoading(false);
+        setIsInitialized(true);
         return;
       }
       
       try {
         // Get session from supabase
-        const { data } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          throw error;
+        }
+        
         setSession(data.session);
         setUser(data.session?.user ?? null);
       } catch (error) {
         console.error('Error getting session:', error);
+        setAuthError(error as Error);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Failed to get user session. Using development mode."
+        });
       } finally {
         setIsLoading(false);
+        setIsInitialized(true);
       }
     };
 
     getInitialSession();
 
-    // Listen for auth changes
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state changed:', event);
-        setSession(session);
-        setUser(session?.user ?? null);
-        setIsLoading(false);
-      }
-    );
+    if (!USE_DEV_MODE) {
+      // Listen for auth changes
+      const { data: authListener } = supabase.auth.onAuthStateChange(
+        (event, session) => {
+          console.log('Auth state changed:', event);
+          setSession(session);
+          setUser(session?.user ?? null);
+          setIsLoading(false);
+        }
+      );
 
-    // Cleanup subscription on unmount
-    return () => {
-      authListener.subscription.unsubscribe();
-    };
+      // Cleanup subscription on unmount
+      return () => {
+        authListener.subscription.unsubscribe();
+      };
+    }
   }, []);
 
   // Sign in function
@@ -85,10 +112,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signInWithPassword({ email, password });
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Login Failed",
+          description: error.message
+        });
+      }
+      
       return { error };
     } catch (error) {
+      console.error("Sign in error:", error);
+      toast({
+        variant: "destructive",
+        title: "Login Error",
+        description: "An unexpected error occurred during login."
+      });
       return { error };
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,10 +148,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     
     try {
+      setIsLoading(true);
       const { error } = await supabase.auth.signUp({ email, password });
+      
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Registration Failed",
+          description: error.message
+        });
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email to confirm your account."
+        });
+      }
+      
       return { error };
     } catch (error) {
+      console.error("Sign up error:", error);
+      toast({
+        variant: "destructive",
+        title: "Registration Error",
+        description: "An unexpected error occurred during registration."
+      });
       return { error };
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,17 +185,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🧪 Development mode: Signing out (temporarily)');
       setUser(null);
       setSession(null);
+      toast({
+        title: "Signed Out",
+        description: "You have been signed out (development mode)."
+      });
       return;
     }
     
-    await supabase.auth.signOut();
+    setIsLoading(true);
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out."
+      });
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast({
+        variant: "destructive",
+        title: "Sign Out Error",
+        description: "An error occurred while signing out."
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // If still initializing auth, show loading screen
+  if (!isInitialized) {
+    return <LoadingScreen message="Initializing authentication..." />;
+  }
 
   // Create the value object
   const value = {
     user,
     session,
     isLoading,
+    isInitialized,
     signIn,
     signUp,
     signOut,

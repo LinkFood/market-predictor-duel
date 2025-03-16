@@ -12,29 +12,38 @@ import NotFound from "./pages/NotFound";
 import Index from "./pages/Index";
 import { AuthProvider } from "./lib/auth-context";
 import { MarketDataProvider } from "./lib/market/MarketDataProvider";
+import { SidebarProvider } from "./components/ui/sidebar-provider";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { Toaster } from "./components/ui/toaster";
+import LoadingScreen from "./components/LoadingScreen";
 import "./App.css";
 
 function App() {
   return (
-    <AuthProvider>
-      <MarketDataProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={<Index />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="leaderboard" element={<Leaderboard />} />
-              <Route path="predict" element={<MakePrediction />} />
-              <Route path="predictions/:id" element={<PredictionDetail />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-          </Routes>
-        </BrowserRouter>
-      </MarketDataProvider>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <MarketDataProvider>
+          <SidebarProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Index />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="leaderboard" element={<Leaderboard />} />
+                  <Route path="predict" element={<MakePrediction />} />
+                  <Route path="predictions/:id" element={<PredictionDetail />} />
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Routes>
+            </BrowserRouter>
+            <Toaster />
+          </SidebarProvider>
+        </MarketDataProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
