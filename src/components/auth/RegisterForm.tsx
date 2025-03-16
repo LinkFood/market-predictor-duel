@@ -69,8 +69,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
       // Debug info
       console.log("Attempting signup with:", data.email);
       
-      // Register with supabase
-      const { error } = await signUp(data.email, data.password);
+      // Register with supabase - pass username as third argument
+      const { error } = await signUp(data.email, data.password, data.username);
       
       if (error) {
         console.error("Signup error:", error);

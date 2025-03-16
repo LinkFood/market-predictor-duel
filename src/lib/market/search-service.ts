@@ -5,44 +5,32 @@
  */
 
 import { StockData } from "./types";
-import { API_ENDPOINT, API_KEY } from "./config";
+import { FEATURES, config } from "../config";
 import { searchMockStocks } from "./mock-data-utils";
+import { searchPolygonStocks } from "./polygon-api-service";
 
 /**
  * Search for stocks by keyword
  */
 export async function searchStocks(query: string): Promise<StockData[]> {
   try {
-    // In a real implementation, we would make an API call
-    // For now, filter mock data
-    return searchMockStocks(query);
-    
-    /* Uncomment this for actual API integration
-    const response = await fetch(
-      `${API_ENDPOINT}?function=SYMBOL_SEARCH&keywords=${query}&apikey=${API_KEY}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`API request failed with status ${response.status}`);
+    // Check if query is empty
+    if (!query.trim()) {
+      return [];
     }
-
-    const data = await response.json();
     
-    // Process the API response
-    return data.bestMatches.map((match: any) => ({
-      symbol: match['1. symbol'],
-      name: match['2. name'],
-      type: match['3. type'],
-      region: match['4. region'],
-      currency: match['8. currency'],
-      price: 0, // We'd need to make another API call to get the price
-      change: 0,
-      changePercent: 0,
-      datetime: new Date().toISOString()
-    }));
-    */
+    // Use real market data if enabled, otherwise use mock data
+    if (FEATURES.enableRealMarketData && config.polygon.enabled) {
+      console.log(`🌐 Searching for stocks matching "${query}" via Polygon.io`);
+      return await searchPolygonStocks(query);
+    } else {
+      console.log(`🧪 Searching mock stocks for "${query}"`);
+      return searchMockStocks(query);
+    }
   } catch (error) {
     console.error("Error searching stocks:", error);
-    throw error;
+    console.log("Falling back to mock data");
+    // Fall back to mock data on error
+    return searchMockStocks(query);
   }
 }

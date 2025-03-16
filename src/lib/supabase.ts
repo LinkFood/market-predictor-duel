@@ -52,11 +52,17 @@ if (!supabaseAnonKey || supabaseAnonKey.length < 20) {
   }
 }
 
-// Dev mode flag (can be imported from dev-mode.ts)
+// Dev mode flag
 const USE_DEV_MODE = true;
 
 // Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+});
 
 // Log for debugging
 console.log('Supabase client initialized with URL:', supabaseUrl);
@@ -86,10 +92,15 @@ export const signIn = async (email: string, password: string) => {
   return { data, error };
 };
 
-export const signUp = async (email: string, password: string) => {
+export const signUp = async (email: string, password: string, username?: string) => {
+  const options = username 
+    ? { data: { username } }
+    : undefined;
+  
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options
   });
   return { data, error };
 };

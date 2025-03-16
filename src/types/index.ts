@@ -1,7 +1,7 @@
 
 export type PredictionTimeframe = "1d" | "1w" | "1m";
 export type PredictionCategory = "market" | "sector" | "stock";
-export type PredictionDirection = "bullish" | "bearish";
+export type PredictionDirection = "bullish" | "bearish" | "uptrend" | "downtrend";
 export type PredictionStatus = "pending" | "correct" | "incorrect";
 export type PredictionWinner = "user" | "ai" | "both" | "neither";
 

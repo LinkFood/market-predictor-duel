@@ -2,10 +2,11 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { searchStocks } from "@/lib/market";
+import { FEATURES } from "@/lib/config";
 
 interface SearchBarProps {
   onSelectStock: (stock: any) => void;
@@ -27,6 +28,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
       const results = await searchStocks(searchQuery);
       setSearchResults(results);
       setShowSearchResults(true);
+      
+      if (results.length === 0) {
+        toast({
+          title: "No results found",
+          description: `No stocks found matching "${searchQuery}"`,
+          variant: "default"
+        });
+      }
     } catch (error) {
       console.error('Error searching stocks:', error);
       toast({
@@ -41,7 +50,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">Search for a stock</label>
+      <div className="flex items-center justify-between">
+        <label className="text-sm font-medium">Search for a stock</label>
+        {FEATURES.enableRealMarketData && (
+          <span className="text-xs px-2 py-0.5 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded-full">
+            Live Data
+          </span>
+        )}
+      </div>
       <div className="flex space-x-2">
         <div className="relative flex-grow">
           <Input
@@ -51,6 +67,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
             className="pl-10"
+            disabled={isLoading}
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         </div>
@@ -59,7 +76,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
           onClick={handleSearch}
           disabled={isLoading || !searchQuery.trim()}
         >
-          {isLoading ? 'Searching...' : 'Search'}
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            "Search"
+          )}
         </Button>
       </div>
       
