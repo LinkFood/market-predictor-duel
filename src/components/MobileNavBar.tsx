@@ -51,7 +51,7 @@ const MobileNavBar: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-16 bg-secondary/80 backdrop-blur-xl border-t border-border/40 z-20">
+    <div className="fixed bottom-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-xl border-t border-border/40 z-20">
       <div className="grid grid-cols-5 h-full">
         {tabItems.map(item => (
           <Link 
