@@ -1,3 +1,4 @@
+
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
@@ -7,4 +8,13 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env: ImportMetaEnv;
+}
+
+// Extend Window interface to include SUPABASE_CONFIG
+interface Window {
+  SUPABASE_CONFIG?: {
+    url: string;
+    key: string;
+  };
+  showError?: (title: string, message: string) => void;
 }

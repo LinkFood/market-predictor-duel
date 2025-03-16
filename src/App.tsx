@@ -6,6 +6,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { AuthProvider, useAuth } from "./lib/auth-context";
+import { isSupabaseConfigured, getSupabaseConfigError } from "./lib/supabase";
 
 import Layout from "./components/Layout";
 import Index from "./pages/Index";
@@ -42,6 +43,23 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const App = () => {
+  // Check if Supabase is configured
+  const configError = getSupabaseConfigError();
+
+  if (configError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-4">Configuration Error</h1>
+        <p className="mb-4">{configError}</p>
+        <div className="p-4 bg-gray-100 rounded-md text-left max-w-lg">
+          <p className="font-semibold mb-2">Debug Information:</p>
+          <p>Supabase URL: {window.SUPABASE_CONFIG?.url || 'Not set'}</p>
+          <p>Supabase key: {window.SUPABASE_CONFIG?.key ? `${window.SUPABASE_CONFIG.key.substring(0, 5)}...` : 'Not set'}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
