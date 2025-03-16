@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { TrendingUp } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
+import { useToast } from "@/hooks/use-toast";
 
 type LoginFormData = {
   email: string;
@@ -20,6 +21,7 @@ type LoginFormData = {
 const Login: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -40,18 +42,26 @@ const Login: React.FC = () => {
       setIsLoading(true);
       setError(null);
       
+      console.log("Attempting login with:", data.email);
+      
       const { error } = await signIn(data.email, data.password);
       
       if (error) {
+        console.error("Login error:", error);
         setError(error.message || 'Failed to sign in');
         return;
       }
       
+      toast({
+        title: "Login successful",
+        description: "Welcome back to StockDuel!",
+      });
+      
       // If successful, navigate to the app
       navigate('/app');
     } catch (err) {
+      console.error("Unexpected error during login:", err);
       setError('An unexpected error occurred');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }

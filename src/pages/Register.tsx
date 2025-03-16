@@ -12,6 +12,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useToast } from "@/hooks/use-toast";
 
 // Validation schema
 const registerSchema = z.object({
@@ -32,6 +33,7 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 const Register: React.FC = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -57,16 +59,25 @@ const Register: React.FC = () => {
       setError(null);
       setSuccess(null);
       
+      // Debug info
+      console.log("Attempting signup with:", data.email);
+      
       // Register with supabase
       const { error } = await signUp(data.email, data.password);
       
       if (error) {
+        console.error("Signup error:", error);
         setError(error.message || 'Failed to create account');
         return;
       }
       
       // On success show message
-      setSuccess('Registration successful! Please check your email to confirm your account.');
+      const successMessage = 'Registration successful! Please check your email to confirm your account.';
+      setSuccess(successMessage);
+      toast({
+        title: "Account created",
+        description: successMessage,
+      });
       
       // Redirect to login after a short delay
       setTimeout(() => {
@@ -74,8 +85,8 @@ const Register: React.FC = () => {
       }, 3000);
       
     } catch (err) {
+      console.error("Unexpected error during signup:", err);
       setError('An unexpected error occurred');
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
