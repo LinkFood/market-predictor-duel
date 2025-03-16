@@ -192,7 +192,7 @@ const Index = () => {
                         <div 
                           key={index} 
                           className="p-3 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
-                          onClick={() => navigate("/predict")}
+                          onClick={() => navigate("/app/predict")}
                         >
                           <div>
                             <div className="font-medium">{stock.name}</div>
@@ -200,7 +200,7 @@ const Index = () => {
                               {stock.value.toFixed(2)} USD
                             </div>
                           </div>
-                          <Button size="sm">
+                          <Button size="sm" onClick={() => navigate("/app/predict")}>
                             Predict
                             <ChevronRight className="ml-1 h-3 w-3" />
                           </Button>
@@ -306,7 +306,7 @@ const Index = () => {
           
           <div className="text-center mt-12">
             <Button 
-              onClick={() => navigate("/register")}
+              onClick={() => navigate("/app/predict")}
               className="bg-indigo-600 hover:bg-indigo-700"
               size="lg"
             >
