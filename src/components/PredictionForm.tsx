@@ -8,13 +8,14 @@ import { ArrowUp, ArrowDown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockMarketData, mockSectorData, mockStockData, generatePrediction } from "@/data/mockData";
 import { PredictionCategory, PredictionDirection, PredictionTimeframe, Prediction } from "@/types";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface PredictionFormProps {
   onPredictionMade: (prediction: Prediction) => void;
 }
 
 const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<PredictionCategory>("market");
   const [selectedTarget, setSelectedTarget] = useState<string>("");
   const [timeframe, setTimeframe] = useState<PredictionTimeframe>("1d");
@@ -40,7 +41,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
 
   const handleSubmit = () => {
     if (!selectedTarget || !direction || !timeframe) {
-      toast.error("Please complete your prediction");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please complete your prediction"
+      });
       return;
     }
 

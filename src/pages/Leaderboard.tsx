@@ -6,23 +6,25 @@ import { Button } from "@/components/ui/button";
 import LeaderboardTable from "@/components/LeaderboardTable";
 import DataCard from "@/components/DataCard";
 import { Trophy, Users, Zap } from "lucide-react";
+import { LeaderboardEntry } from "@/types";
 
-// Mock leaderboard data
-const mockLeaderboardData = [
-  { rank: 1, username: "MarketWizard", accuracy: 73, totalPredictions: 112, humanVsAi: "67%", points: 1423 },
-  { rank: 2, username: "StockSage", accuracy: 71, totalPredictions: 89, humanVsAi: "63%", points: 1256 },
-  { rank: 3, username: "BullBaron", accuracy: 68, totalPredictions: 134, humanVsAi: "59%", points: 1187 },
-  { rank: 4, username: "TradingTitan", accuracy: 66, totalPredictions: 95, humanVsAi: "61%", points: 1022 },
-  { rank: 5, username: "WallStWinner", accuracy: 64, totalPredictions: 78, humanVsAi: "57%", points: 986 },
-  { rank: 6, username: "PredictionPro", accuracy: 63, totalPredictions: 103, humanVsAi: "54%", points: 954 },
-  { rank: 7, username: "MarketMaster", accuracy: 61, totalPredictions: 121, humanVsAi: "56%", points: 923 },
-  { rank: 8, username: "FinancePhenom", accuracy: 60, totalPredictions: 86, humanVsAi: "53%", points: 891 },
-  { rank: 9, username: "IndexInsight", accuracy: 59, totalPredictions: 92, humanVsAi: "51%", points: 872 },
-  { rank: 10, username: "ChartChampion", accuracy: 58, totalPredictions: 76, humanVsAi: "52%", points: 837 },
+// Transform mock data to match the LeaderboardEntry type
+const mockLeaderboardData: LeaderboardEntry[] = [
+  { rank: 1, userId: "user1", username: "MarketWizard", accuracy: 0.73, totalPredictions: 112, winRateAgainstAi: 0.67, points: 1423 },
+  { rank: 2, userId: "user2", username: "StockSage", accuracy: 0.71, totalPredictions: 89, winRateAgainstAi: 0.63, points: 1256 },
+  { rank: 3, userId: "user3", username: "BullBaron", accuracy: 0.68, totalPredictions: 134, winRateAgainstAi: 0.59, points: 1187 },
+  { rank: 4, userId: "user4", username: "TradingTitan", accuracy: 0.66, totalPredictions: 95, winRateAgainstAi: 0.61, points: 1022 },
+  { rank: 5, userId: "user5", username: "WallStWinner", accuracy: 0.64, totalPredictions: 78, winRateAgainstAi: 0.57, points: 986 },
+  { rank: 6, userId: "user6", username: "PredictionPro", accuracy: 0.63, totalPredictions: 103, winRateAgainstAi: 0.54, points: 954 },
+  { rank: 7, userId: "user7", username: "MarketMaster", accuracy: 0.61, totalPredictions: 121, winRateAgainstAi: 0.56, points: 923 },
+  { rank: 8, userId: "user8", username: "FinancePhenom", accuracy: 0.60, totalPredictions: 86, winRateAgainstAi: 0.53, points: 891 },
+  { rank: 9, userId: "user9", username: "IndexInsight", accuracy: 0.59, totalPredictions: 92, winRateAgainstAi: 0.51, points: 872 },
+  { rank: 10, userId: "user10", username: "ChartChampion", accuracy: 0.58, totalPredictions: 76, winRateAgainstAi: 0.52, points: 837 },
 ];
 
 const Leaderboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<"all" | "month" | "week">("all");
+  const currentUserId = "user1"; // Mock current user for highlighting in the table
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -89,15 +91,15 @@ const Leaderboard: React.FC = () => {
               <TabsTrigger value="vsai">Best vs AI</TabsTrigger>
             </TabsList>
             <TabsContent value="points">
-              <LeaderboardTable data={mockLeaderboardData} />
+              <LeaderboardTable entries={mockLeaderboardData} currentUserId={currentUserId} />
             </TabsContent>
             <TabsContent value="accuracy">
-              <LeaderboardTable data={[...mockLeaderboardData].sort((a, b) => b.accuracy - a.accuracy)} />
+              <LeaderboardTable entries={[...mockLeaderboardData].sort((a, b) => b.accuracy - a.accuracy)} currentUserId={currentUserId} />
             </TabsContent>
             <TabsContent value="vsai">
-              <LeaderboardTable data={[...mockLeaderboardData].sort((a, b) => 
-                parseInt(b.humanVsAi) - parseInt(a.humanVsAi)
-              )} />
+              <LeaderboardTable entries={[...mockLeaderboardData].sort((a, b) => 
+                b.winRateAgainstAi - a.winRateAgainstAi
+              )} currentUserId={currentUserId} />
             </TabsContent>
           </Tabs>
         </CardContent>

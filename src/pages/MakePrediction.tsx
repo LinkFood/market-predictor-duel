@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowUp, ArrowDown } from "lucide-react";
@@ -9,17 +10,21 @@ import PredictionForm from "@/components/PredictionForm";
 import MarketDataTable from "@/components/MarketDataTable";
 import { mockMarketData, mockSectorData, mockStockData } from "@/data/mockData";
 import { Prediction } from "@/types";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const MakePrediction: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [predictionStep, setPredictionStep] = useState<"form" | "result">("form");
   const [prediction, setPrediction] = useState<Prediction | null>(null);
 
   const handlePredictionMade = (newPrediction: Prediction) => {
     setPrediction(newPrediction);
     setPredictionStep("result");
-    toast.success("Prediction submitted successfully!");
+    toast({
+      title: "Success",
+      description: "Prediction submitted successfully!"
+    });
   };
 
   const handleNewPrediction = () => {
@@ -28,7 +33,10 @@ const MakePrediction: React.FC = () => {
   };
 
   const handleSavePrediction = () => {
-    toast.success("Prediction saved successfully!");
+    toast({
+      title: "Success",
+      description: "Prediction saved successfully!"
+    });
     navigate("/");
   };
 
