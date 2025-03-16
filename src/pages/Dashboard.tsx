@@ -43,7 +43,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in pb-10">
+    <div className="space-y-6 animate-fade-in pb-10">
       {/* Header with welcome and action buttons */}
       <DashboardHeader user={currentUser} />
 
@@ -53,30 +53,29 @@ const Dashboard: React.FC = () => {
       {/* Stats cards */}
       <StatsCard currentUser={currentUser} userRank={userRank} />
 
-      {/* Market overview and recent predictions */}
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Recent predictions column */}
-        <div className="md:col-span-1">
-          <RecentPredictions predictions={recentPredictions} />
+      {/* Main dashboard layout */}
+      <div className="grid gap-5 lg:grid-cols-4">
+        {/* Main content - 3/4 width on large screens */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Market overview card */}
+          <MarketPulse marketData={mockMarketData} stockData={mockStockData} />
+          
+          {/* Performance chart */}
+          <PerformanceCard />
+          
+          {/* Top Performers Preview */}
+          <TopPerformers leaderboard={mockLeaderboard} />
         </div>
 
-        {/* Market pulse and performance column */}
-        <div className="md:col-span-2">
-          <div className="grid gap-6">
-            {/* Market overview card */}
-            <MarketPulse marketData={mockMarketData} stockData={mockStockData} />
-            
-            {/* Hot prediction opportunities */}
-            <HotOpportunities opportunities={hotOpportunities} />
-          </div>
+        {/* Sidebar content - 1/4 width on large screens */}
+        <div className="lg:col-span-1 space-y-5">
+          {/* Recent predictions */}
+          <RecentPredictions predictions={recentPredictions} />
+          
+          {/* Hot prediction opportunities */}
+          <HotOpportunities opportunities={hotOpportunities} />
         </div>
       </div>
-
-      {/* Performance chart */}
-      <PerformanceCard />
-
-      {/* Top Performers Preview */}
-      <TopPerformers leaderboard={mockLeaderboard} />
     </div>
   );
 };
