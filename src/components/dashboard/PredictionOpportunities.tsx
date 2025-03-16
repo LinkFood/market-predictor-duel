@@ -1,7 +1,6 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight, Sparkles, Clock, Calendar, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import TrendIndicator from "./TrendIndicator";
 import MarketBadge from "./MarketBadge";

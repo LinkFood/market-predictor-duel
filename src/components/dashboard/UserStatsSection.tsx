@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Users, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-import { User, LeaderboardEntry } from "@/types";
+import { User } from "@/types";
 
 interface UserStatsSectionProps {
   currentUser: User;

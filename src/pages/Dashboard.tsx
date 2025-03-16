@@ -1,9 +1,10 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, Sparkles, Clock, Calendar, Zap } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { mockMarketData, mockPredictions, mockStockData, currentUser, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
+import { mockMarketData, mockPredictions, currentUser, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
+import useAnimations from "@/hooks/useAnimations";
 
 // Component imports
 import AlertBanner from "@/components/dashboard/AlertBanner";
@@ -14,29 +15,10 @@ import PredictionOpportunities from "@/components/dashboard/PredictionOpportunit
 import RecentPredictionsSection from "@/components/dashboard/RecentPredictionsSection";
 import CommunityStats from "@/components/dashboard/CommunityStats";
 
-// Animation variants for staggered animations
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { 
-    opacity: 1,
-    transition: { 
-      staggerChildren: 0.07
-    }
-  }
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.5, ease: [0.25, 0.1, 0.25, 1.0] }
-  }
-};
-
-// Main Dashboard Component
+// Dashboard Component
 const Dashboard: React.FC = () => {
   const [showAlert, setShowAlert] = useState(true);
+  const { containerVariants, itemVariants } = useAnimations();
   const recentPredictions = mockPredictions.slice(0, 3);
   const userRank = mockLeaderboard.find(item => item.userId === currentUser.id)?.rank || 0;
   
