@@ -22,15 +22,15 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
   const humanWinPercentage = Math.round((stats.humanWins / totalBattles) * 100);
   
   return (
-    <Card className="overflow-hidden border-0 shadow-md bg-gradient-to-r from-market-blue to-indigo-800 text-white">
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+    <div className="text-white bg-gradient-to-br from-primary/90 to-primary-foreground/20 rounded-2xl backdrop-blur-md">
+      <div className="p-4 md:p-5">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-5">
           <div className="text-center md:text-left">
-            <h3 className="text-xl font-bold mb-2 flex items-center gap-2">
+            <h3 className="text-lg font-bold mb-2 flex items-center gap-2 justify-center md:justify-start">
               <Zap className="h-5 w-5 text-yellow-300" />
               Global AI vs Humans Battle
             </h3>
-            <p className="mb-3 text-indigo-100">
+            <p className="mb-2 text-sm">
               Humans are currently {stats.humanWins > stats.aiWins ? (
                 <span className="font-bold text-emerald-300">winning</span>
               ) : (
@@ -38,63 +38,61 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
               )} against the AI!
             </p>
             
-            <div className="relative pt-1 mb-2">
-              <div className="flex items-center justify-between mb-1">
-                <div className="font-medium text-sm text-indigo-200">Humans: {humanWinPercentage}%</div>
-                <div className="font-medium text-sm text-indigo-200">AI: {100 - humanWinPercentage}%</div>
+            <div className="relative mb-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="font-medium text-xs opacity-90">Humans: {humanWinPercentage}%</div>
+                <div className="font-medium text-xs opacity-90">AI: {100 - humanWinPercentage}%</div>
               </div>
-              <div className="overflow-hidden h-2 mb-1 text-xs flex rounded-full bg-indigo-900">
+              <div className="overflow-hidden h-2 text-xs flex rounded-full bg-white/10 relative">
                 <div 
                   style={{ width: `${humanWinPercentage}%` }} 
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-emerald-400"
+                  className="shadow-inner flex flex-col text-center whitespace-nowrap justify-center bg-emerald-400 transition-all duration-500"
                 ></div>
                 <div 
                   style={{ width: `${100 - humanWinPercentage}%` }} 
-                  className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-400"
+                  className="shadow-inner flex flex-col text-center whitespace-nowrap justify-center bg-red-400 transition-all duration-500"
                 ></div>
               </div>
             </div>
             
-            <div className="mt-2 flex items-center justify-center md:justify-start space-x-4">
-              <div className="text-center">
-                <span className="text-2xl font-bold block">{stats.humanWins}</span>
-                <span className="text-xs">Human Wins</span>
+            <div className="flex items-center justify-center md:justify-start space-x-6">
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-bold sf-nums">{stats.humanWins}</span>
+                <span className="text-[10px] uppercase tracking-wider opacity-70">Human Wins</span>
               </div>
-              <Separator orientation="vertical" className="h-10 bg-indigo-400/30" />
-              <div className="text-center">
-                <span className="text-2xl font-bold block">{stats.aiWins}</span>
-                <span className="text-xs">AI Wins</span>
+              <div className="h-10 w-px bg-white/20"></div>
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-bold sf-nums">{stats.aiWins}</span>
+                <span className="text-[10px] uppercase tracking-wider opacity-70">AI Wins</span>
               </div>
-              <Separator orientation="vertical" className="h-10 bg-indigo-400/30" />
-              <div className="text-center">
-                <span className="text-2xl font-bold block">{stats.ties}</span>
-                <span className="text-xs">Ties</span>
+              <div className="h-10 w-px bg-white/20"></div>
+              <div className="flex flex-col items-center">
+                <span className="text-2xl font-bold sf-nums">{stats.ties}</span>
+                <span className="text-[10px] uppercase tracking-wider opacity-70">Ties</span>
               </div>
             </div>
           </div>
-          <div className="flex flex-col space-y-3">
+          
+          {/* Action buttons */}
+          <div className="flex flex-row md:flex-col mt-4 md:mt-0 gap-3">
             <Button 
-              variant="secondary" 
-              size="lg"
-              onClick={() => navigate("/leaderboard")}
-              className="bg-white text-market-blue hover:bg-white/90"
+              onClick={() => navigate("/app/leaderboard")}
+              className="rounded-full bg-white/10 border border-white/20 hover:bg-white/20 text-white font-medium py-2 px-4 text-sm flex items-center"
             >
-              <Users className="mr-2 h-4 w-4" />
-              View Leaderboard
+              <Users className="mr-1.5 h-3.5 w-3.5" />
+              Leaderboard
             </Button>
             <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => navigate("/predict")}
-              className="bg-indigo-700/50 border-indigo-400 hover:bg-indigo-700 text-white"
+              onClick={() => navigate("/app/predict")}
+              className="ios-button-primary"
             >
-              <Lightbulb className="mr-2 h-4 w-4 text-yellow-300" />
-              Join the Battle
+              <Lightbulb className="mr-1.5 h-3.5 w-3.5 text-yellow-200" />
+              Join Battle
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

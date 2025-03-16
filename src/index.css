@@ -5,74 +5,78 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Apple-inspired Dark Theme (used as default) */
+    --background: 220 13% 10%;
+    --foreground: 0 0% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 224 16% 12%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 224 16% 12%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 222 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* SF Blue */
+    --primary: 211 100% 60%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 226 20% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 15% 16%;
+    --muted-foreground: 240 6% 70%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 211 100% 60%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 224 15% 18%;
+    --input: 224 15% 18%;
+    --ring: 211 100% 60%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
 
-    --sidebar-background: 224 71% 4%;
-    --sidebar-foreground: 225 25% 85%;
-    --sidebar-primary: 225 50% 40%;
+    /* App navigation styling */
+    --sidebar-background: 220 17% 8%;
+    --sidebar-foreground: 0 0% 90%;
+    --sidebar-primary: 211 100% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 226 64% 15%;
-    --sidebar-accent-foreground: 225 25% 95%;
-    --sidebar-border: 225 32% 12%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 212 30% 18%;
+    --sidebar-accent-foreground: 211 100% 60%;
+    --sidebar-border: 220 20% 14%;
+    --sidebar-ring: 211 100% 60%;
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  /* Light mode preserved as an option but not used by default */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 224 16% 12%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 224 16% 12%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 224 16% 12%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 211 100% 50%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 224 16% 12%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 240 5% 50%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 211 100% 50%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 211 100% 50%;
   }
 }
 
@@ -82,15 +86,65 @@
   }
 
   body {
-    @apply bg-market-gray text-market-darkGray font-sans;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold;
+    @apply font-semibold tracking-tight;
   }
 
   .financial-value {
-    @apply font-mono;
+    @apply font-mono tabular-nums;
+  }
+}
+
+@layer components {
+  /* App-like cards with iOS-style blurred backgrounds */
+  .app-card {
+    @apply bg-card/90 backdrop-blur-lg border border-border/40 rounded-2xl shadow-sm;
+  }
+  
+  /* iOS-style button */
+  .ios-button {
+    @apply rounded-full font-medium flex items-center justify-center transition-all active:scale-95 shadow-sm;
+  }
+  
+  /* Primary action button */
+  .ios-button-primary {
+    @apply ios-button bg-primary text-primary-foreground hover:brightness-110 py-3 px-6;
+  }
+  
+  /* Secondary action button */
+  .ios-button-secondary {
+    @apply ios-button bg-secondary text-secondary-foreground hover:bg-secondary/90 py-2.5 px-5;
+  }
+  
+  /* iOS-style tab bar item */
+  .tab-item {
+    @apply flex flex-col items-center gap-1 p-2 rounded-lg text-xs font-medium transition-all;
+  }
+  
+  /* iOS-style segmented control */
+  .segmented-control {
+    @apply flex p-1 rounded-full bg-secondary;
+  }
+  
+  .segmented-button {
+    @apply px-4 py-1.5 text-sm font-medium rounded-full transition-all;
+  }
+  
+  .segmented-button-active {
+    @apply bg-primary text-primary-foreground shadow-sm;
+  }
+  
+  /* iOS-style navigation bar */
+  .nav-bar {
+    @apply px-4 py-3 flex items-center gap-2 backdrop-blur-lg bg-background/95 border-b border-border/40;
+  }
+  
+  /* Dynamic island style notification */
+  .dynamic-island {
+    @apply fixed top-4 inset-x-0 mx-auto w-max max-w-[90%] rounded-full bg-black/95 backdrop-blur-xl text-white py-3 px-5 shadow-xl flex items-center gap-3 z-50 animate-scale-in;
   }
 }
 
@@ -101,5 +155,30 @@
 
   .bearish {
     @apply text-market-red;
+  }
+  
+  /* iOS-style subtle shadows */
+  .shadow-ios {
+    @apply shadow-[0_2px_10px_rgba(0,0,0,0.1)];
+  }
+  
+  /* Glass morphism effect */
+  .glass-morphism {
+    @apply bg-card/70 backdrop-blur-md border border-white/10;
+  }
+  
+  /* Focus within effect for interactive elements */
+  .focus-effect {
+    @apply transition-transform hover:scale-[1.01] active:scale-[0.99];
+  }
+  
+  /* SF Mono style numbers for financial data */
+  .sf-nums {
+    @apply font-mono tabular-nums tracking-tight;
+  }
+  
+  /* Custom scrollbar */
+  .custom-scrollbar {
+    @apply scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent;
   }
 }

@@ -43,38 +43,67 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6 animate-fade-in pb-10">
+    <div className="animate-fade-in pb-12 space-y-6">
       {/* Header with welcome and action buttons */}
       <DashboardHeader user={currentUser} />
 
-      {/* Global AI vs Humans battle stats */}
-      <GlobalBattleStats stats={mockGlobalStats} />
+      {/* Global AI vs Humans battle stats - the gamification element */}
+      <div className="app-card p-4">
+        <GlobalBattleStats stats={mockGlobalStats} />
+      </div>
       
-      {/* Stats cards */}
-      <StatsCard currentUser={currentUser} userRank={userRank} />
-
-      {/* Main dashboard layout */}
-      <div className="grid gap-5 lg:grid-cols-4">
-        {/* Main content - 3/4 width on large screens */}
-        <div className="lg:col-span-3 space-y-5">
-          {/* Market overview card */}
-          <MarketPulse marketData={mockMarketData} stockData={mockStockData} />
-          
-          {/* Performance chart */}
-          <PerformanceCard />
-          
-          {/* Top Performers Preview */}
-          <TopPerformers leaderboard={mockLeaderboard} />
+      {/* Main dashboard content */}
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-8">
+        {/* Stats cards - responsive cards that stack on mobile */}
+        <div className="md:col-span-2 lg:col-span-2">
+          <div className="app-card h-full p-4 focus-effect">
+            <StatsCard currentUser={currentUser} userRank={userRank} />
+          </div>
         </div>
-
-        {/* Sidebar content - 1/4 width on large screens */}
-        <div className="lg:col-span-1 space-y-5">
-          {/* Recent predictions */}
-          <RecentPredictions predictions={recentPredictions} />
-          
-          {/* Hot prediction opportunities */}
-          <HotOpportunities opportunities={hotOpportunities} />
+        
+        {/* Hot prediction opportunities - swiping cards on mobile */}
+        <div className="md:col-span-2 lg:col-span-2">
+          <div className="app-card h-full p-4 focus-effect">
+            <HotOpportunities opportunities={hotOpportunities} />
+          </div>
         </div>
+        
+        {/* Recent predictions */}
+        <div className="md:col-span-2 lg:col-span-4">
+          <div className="app-card h-full p-4 focus-effect">
+            <RecentPredictions predictions={recentPredictions} />
+          </div>
+        </div>
+        
+        {/* Market overview - full width on all screens */}
+        <div className="lg:col-span-full">
+          <div className="app-card p-5 focus-effect">
+            <MarketPulse marketData={mockMarketData} stockData={mockStockData} />
+          </div>
+        </div>
+        
+        {/* Performance chart - 2/3 width */}
+        <div className="lg:col-span-5">
+          <div className="app-card p-4 focus-effect">
+            <PerformanceCard />
+          </div>
+        </div>
+        
+        {/* Top Performers Preview - 1/3 width */}
+        <div className="lg:col-span-3">
+          <div className="app-card p-4 focus-effect">
+            <TopPerformers leaderboard={mockLeaderboard} />
+          </div>
+        </div>
+      </div>
+      
+      {/* Floating action button - only visible on mobile */}
+      <div className="fixed right-6 bottom-20 md:hidden z-10">
+        <Link to="/app/predict">
+          <button className="ios-button-primary h-14 w-14 shadow-lg">
+            <TrendingUp className="h-6 w-6" />
+          </button>
+        </Link>
       </div>
     </div>
   );
