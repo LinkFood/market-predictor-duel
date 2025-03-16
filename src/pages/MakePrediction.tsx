@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { 
   ArrowLeft, ArrowUp, ArrowDown, LineChart, Sparkles, 
   Timer, Share2, Brain, BookMarked, Clock, ChevronRight,
-  BellRing, BadgeCheck, Trophy, BarChart, Lightbulb
+  BellRing, BadgeCheck, Trophy, BarChart, Lightbulb, Calendar
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
