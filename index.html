@@ -11,8 +11,31 @@
     <!-- Supabase Configuration -->
     <script>
       window.SUPABASE_CONFIG = {
-        url: "https://xvojivdhshgdbxrwcokx.supabase.co",
-        key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2ppdmRoc2hnZGJ4cndjb2t4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDQxNDUsImV4cCI6MjA1NzY4MDE0NX0.G0HNXKFNUqIba27xsKY9t1KYRDL68ZHbsSgLmPQsXc4"
+        url: "https://iphpwxputfwxsiwdmqmk.supabase.co",
+        key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaHB3eHB1dGZ3eHNpd2RtcW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTc1OTgsImV4cCI6MjA1NzY3MzU5OH0.f3UDw6w8FGXz-SpQKlcsGFzyxCOICaUANeBJ2lCYFlE"
+      };
+      
+      // Debug info
+      console.log("Supabase config loaded:", window.SUPABASE_CONFIG);
+      
+      // Error handler function to show errors on the page
+      window.showError = function(title, message) {
+        document.addEventListener('DOMContentLoaded', function() {
+          const root = document.getElementById('root');
+          if (root) {
+            root.innerHTML = `
+              <div style="font-family: system-ui, -apple-system, sans-serif; padding: 2rem; max-width: 600px; margin: 0 auto;">
+                <h1 style="color: #e11d48;">${title}</h1>
+                <p>${message}</p>
+                <div style="margin-top: 1rem; padding: 1rem; background: #f3f4f6; border-radius: 0.375rem;">
+                  <p><strong>Debug info:</strong></p>
+                  <p>Supabase URL: ${window.SUPABASE_CONFIG?.url || 'Not set'}</p>
+                  <p>Supabase key length: ${window.SUPABASE_CONFIG?.key ? window.SUPABASE_CONFIG.key.length : 'Key not set'}</p>
+                </div>
+              </div>
+            `;
+          }
+        });
       };
     </script>
   </head>
