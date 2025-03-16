@@ -5,13 +5,27 @@
  */
 
 import { StockData } from "./types";
+import { FEATURES, config } from "../config";
 import { getMockTopMovers } from "./mock-data-utils";
+import { getPolygonMarketMovers } from "./polygon-api-service";
 
 /**
  * Get top gainers and losers for the day
  */
 export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: StockData[] }> {
-  // In a real implementation, we would fetch this data from an API
-  // For now, sort mock data by change percent
-  return getMockTopMovers();
+  try {
+    // Use real market data if enabled, otherwise use mock data
+    if (FEATURES.enableRealMarketData && config.polygon.enabled) {
+      console.log(`🌐 Fetching market movers from Polygon.io`);
+      return await getPolygonMarketMovers();
+    } else {
+      console.log(`🧪 Using mock market movers data`);
+      return getMockTopMovers();
+    }
+  } catch (error) {
+    console.error("Error fetching market movers:", error);
+    console.log("Falling back to mock data");
+    // Fall back to mock data on error
+    return getMockTopMovers();
+  }
 }

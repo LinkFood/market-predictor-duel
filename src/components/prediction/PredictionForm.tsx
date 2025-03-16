@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { Info, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { createPrediction } from "@/lib/prediction";
 import { getStockData } from "@/lib/market";
+import { FEATURES } from "@/lib/config";
 
 // Components
 import SearchBar from "./SearchBar";
@@ -124,6 +125,27 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
       <CardContent className="space-y-6">
         {/* Stock Search */}
         <SearchBar onSelectStock={handleSelectStock} />
+        
+        {/* Data Source Indicator */}
+        <div className="flex items-center text-xs text-muted-foreground gap-1 mt-2">
+          <Info className="h-3 w-3" />
+          <span>
+            {FEATURES.enableRealMarketData 
+              ? "Using real-time market data from Polygon.io" 
+              : "Using simulated market data"}
+          </span>
+          {FEATURES.enableRealMarketData && (
+            <a 
+              href="https://polygon.io" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center text-xs text-indigo-500 hover:underline ml-1"
+            >
+              <ExternalLink className="h-3 w-3 mr-0.5" />
+              Polygon.io
+            </a>
+          )}
+        </div>
         
         {/* Selected Stock Info */}
         {selectedStock && <StockInfo stock={selectedStock} />}
