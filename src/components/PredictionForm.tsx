@@ -8,7 +8,7 @@ import { ArrowUp, ArrowDown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { mockMarketData, mockSectorData, mockStockData, generatePrediction } from "@/data/mockData";
 import { PredictionCategory, PredictionDirection, PredictionTimeframe, Prediction } from "@/types";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 
 interface PredictionFormProps {
   onPredictionMade: (prediction: Prediction) => void;

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowUp, ArrowDown } from "lucide-react";
@@ -10,7 +9,7 @@ import PredictionForm from "@/components/PredictionForm";
 import MarketDataTable from "@/components/MarketDataTable";
 import { mockMarketData, mockSectorData, mockStockData } from "@/data/mockData";
 import { Prediction } from "@/types";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "@/hooks/use-toast";
 
 const MakePrediction: React.FC = () => {
   const navigate = useNavigate();
@@ -28,11 +27,8 @@ const MakePrediction: React.FC = () => {
     setPredictionStep("form");
   };
 
-  // Mock function to save prediction
   const handleSavePrediction = () => {
-    // In a real app, this would save to the database
     toast.success("Prediction saved successfully!");
-    // Navigate to the dashboard
     navigate("/");
   };
 
