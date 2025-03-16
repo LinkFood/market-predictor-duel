@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     <div className="flex h-screen w-full items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Market Oracle</CardTitle>
+          <CardTitle className="text-2xl text-center">StockDuel</CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access your account
           </CardDescription>

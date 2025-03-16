@@ -49,7 +49,7 @@ const Sidebar: React.FC = () => {
         <div className="p-4 border-b">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-6 w-6 text-market-blue" />
-            <h1 className="text-xl font-bold text-market-blue">Market Oracle</h1>
+            <h1 className="text-xl font-bold text-market-blue">StockDuel</h1>
           </div>
         </div>
         <SidebarContent>

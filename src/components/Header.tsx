@@ -12,7 +12,7 @@ const Header: React.FC = () => {
     <header className="border-b p-4 bg-white">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold">Market Oracle</h2>
+          <h2 className="text-lg font-semibold">StockDuel</h2>
         </div>
         <div className="flex items-center gap-4">
           {isLoggedIn ? (

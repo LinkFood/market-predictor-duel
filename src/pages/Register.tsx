@@ -20,14 +20,14 @@ const Register: React.FC = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Create an account</CardTitle>
           <CardDescription className="text-center">
-            Enter your information to get started with Market Oracle
+            Enter your information to get started with StockDuel
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
-              <Input id="username" placeholder="MarketPredictorPro" required />
+              <Input id="username" placeholder="StockPredictorPro" required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
