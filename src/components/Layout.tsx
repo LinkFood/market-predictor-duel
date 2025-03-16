@@ -3,20 +3,20 @@ import React from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import { useSidebar } from "./ui/sidebar-provider";
+import { 
+  SidebarInset,
+} from "@/components/ui/sidebar";
 
 const Layout: React.FC = () => {
-  const { open } = useSidebar();
-  
   return (
-    <div className="min-h-screen w-full flex">
+    <div className="min-h-screen flex w-full">
       <Sidebar />
-      <div className={`flex flex-col flex-1 transition-all duration-200 ${open ? 'md:ml-64' : ''}`}>
+      <SidebarInset className="flex-1">
         <Header />
-        <main className="flex-1 p-4 md:p-6">
+        <main className="flex-1 p-4 md:p-6 pt-0">
           <Outlet />
         </main>
-      </div>
+      </SidebarInset>
     </div>
   );
 };

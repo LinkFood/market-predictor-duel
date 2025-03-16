@@ -10,9 +10,9 @@ import PredictionDetail from "@/pages/PredictionDetail";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
-import { SidebarProvider } from "@/components/ui/sidebar-provider";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 const AppRoutes = () => {
   const { isInitialized } = useAuth();

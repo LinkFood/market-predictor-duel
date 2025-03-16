@@ -9,7 +9,6 @@ import {
   User, 
   Home 
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { 
   Sidebar as ShadcnSidebar, 
   SidebarContent,
@@ -18,7 +17,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { useSidebar } from "./ui/sidebar-provider";
 
 const menuItems = [
   { 
@@ -50,7 +48,6 @@ const menuItems = [
 
 const Sidebar: React.FC = () => {
   const location = useLocation();
-  const { open } = useSidebar();
 
   return (
     <ShadcnSidebar>
@@ -67,7 +64,7 @@ const Sidebar: React.FC = () => {
               <Link to={item.path}>
                 <SidebarMenuButton 
                   isActive={location.pathname === item.path}
-                  tooltip={!open ? item.label : undefined}
+                  tooltip={item.label}
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.label}</span>
