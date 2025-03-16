@@ -65,12 +65,8 @@ const Dashboard: React.FC = () => {
   const recentPredictions = mockPredictions.slice(0, 2);
   const userRank = mockLeaderboard.find(item => item.userId === currentUser.id)?.rank || 0;
   
-  // Add calculated property for win rate to current user
-  Object.defineProperty(currentUser, 'winRate', {
-    get: function() { 
-      return Math.round((this.correctPredictions / this.totalPredictions) * 100); 
-    }
-  });
+  // Calculate win rate for current user
+  const userWinRate = Math.round((currentUser.correctPredictions / currentUser.totalPredictions) * 100);
   
   // Hot opportunities for today (swipeable on mobile)
   const hotOpportunities = [
@@ -103,8 +99,8 @@ const Dashboard: React.FC = () => {
   return (
     <div className="animate-fade-in space-y-5 mt-1">
       {/* Welcome Message - iOS Dynamic Island style notification */}
-      {showWelcome && (
-        <div className="ios-dynamic-island mb-3" onClick={() => setShowWelcome(false)}>
+      {showWelcome ? (
+        <div className="ios-dynamic-island mb-3">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
               <div className="p-1.5 bg-primary/20 rounded-full">
@@ -123,7 +119,7 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Battle Stats Module - Gamification Element */}
       <section className="ios-module mb-5">
@@ -270,7 +266,7 @@ const Dashboard: React.FC = () => {
             <h3 className="text-headline font-ios-semibold mb-1">Your Performance</h3>
             <div className="flex items-center gap-3 mt-2">
               <div className="flex flex-col items-center">
-                <p className="text-headline sf-numeric">{currentUser.winRate}%</p>
+                <p className="text-headline sf-numeric">{userWinRate}%</p>
                 <p className="text-caption2 text-muted-foreground">Win Rate</p>
               </div>
               <div className="h-8 w-px bg-border"></div>
