@@ -1,7 +1,7 @@
-
 import React from "react";
 import { ArrowUp, ArrowDown, Newspaper } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import { Prediction } from "@/types";
 
 interface AnalysisTabsProps {
