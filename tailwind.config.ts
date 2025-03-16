@@ -69,6 +69,10 @@ export default {
           red: "#EF4444",
           gray: "#F3F4F6",
           darkGray: "#1F2937",
+          indigo: "#4F46E5",
+          violet: "#7C3AED",
+          amber: "#F59E0B",
+          emerald: "#10B981",
         },
       },
       borderRadius: {
