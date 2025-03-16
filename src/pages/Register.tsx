@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Beaker } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,10 +31,11 @@ const registerSchema = z.object({
 type RegisterFormData = z.infer<typeof registerSchema>;
 
 const Register: React.FC = () => {
-  const { signUp } = useAuth();
+  const { signUp, signIn } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [devLoginLoading, setDevLoginLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
@@ -89,6 +90,32 @@ const Register: React.FC = () => {
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleDevLogin = async () => {
+    setDevLoginLoading(true);
+    try {
+      // Use the dev mode auto sign-in functionality
+      console.log("🧪 Using development login");
+      await signIn("dev@example.com", "password");
+      
+      toast({
+        title: "Development Login",
+        description: "Successfully logged in with development account",
+      });
+      
+      // Navigate to the app dashboard
+      navigate('/app');
+    } catch (error) {
+      console.error("Dev login error:", error);
+      toast({
+        title: "Development Login Error",
+        description: "Something went wrong with dev login",
+        variant: "destructive"
+      });
+    } finally {
+      setDevLoginLoading(false);
     }
   };
 
@@ -209,6 +236,19 @@ const Register: React.FC = () => {
                 'Create Account'
               )}
             </Button>
+            
+            {/* Development Login Button */}
+            <Button 
+              type="button"
+              variant="outline" 
+              className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700 flex items-center justify-center"
+              onClick={handleDevLogin}
+              disabled={devLoginLoading}
+            >
+              <Beaker className="mr-2 h-4 w-4" />
+              {devLoginLoading ? 'Logging in...' : 'Development Login (Skip Auth)'}
+            </Button>
+            
             <div className="text-center text-sm">
               Already have an account?{" "}
               <Link to="/login" className="text-indigo-600 hover:underline">
