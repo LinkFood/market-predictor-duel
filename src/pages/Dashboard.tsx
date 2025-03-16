@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { mockMarketData, mockPredictions, currentUser, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
@@ -62,7 +62,7 @@ const Dashboard: React.FC = () => {
       trend: 'up' as const, 
       reason: "Consumer data release",
       aiSentiment: "Moderately Bullish",
-      icon: <Calendar className="h-4 w-4 text-[hsl(var(--primary))]" />
+      icon: <CalendarIcon className="h-4 w-4 text-[hsl(var(--primary))]" />
     }
   ];
 

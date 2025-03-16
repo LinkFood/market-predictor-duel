@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
-import MobileNavBar from "./MobileNavBar";
+import { AnimatePresence, motion } from "framer-motion";
+import useAnimations from "@/hooks/useAnimations";
+import MobileNavBar from "./navigation/MobileNavBar";
 import SearchOverlay from "./SearchOverlay";
 import MenuOverlay from "./MenuOverlay";
 import AppHeader from "./AppHeader";
@@ -12,6 +13,7 @@ const AppLayout: React.FC = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { pageTransitionVariants } = useAnimations();
   
   // Track scroll for header transparency
   useEffect(() => {
@@ -32,10 +34,16 @@ const AppLayout: React.FC = () => {
         scrolled={scrolled}
       />
       
-      {/* Main content area */}
-      <main className="flex-1 pb-24">
+      {/* Main content area with page transitions */}
+      <motion.main 
+        className="flex-1 pb-24"
+        variants={pageTransitionVariants}
+        initial="initial"
+        animate="enter"
+        exit="exit"
+      >
         <Outlet />
-      </main>
+      </motion.main>
       
       {/* Bottom Tab Bar */}
       <MobileNavBar />
