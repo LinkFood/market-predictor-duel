@@ -11,7 +11,7 @@ import MarketDataTable from "@/components/MarketDataTable";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAnimations } from "@/hooks/useAnimations";
+import useAnimations from "@/hooks/useAnimations";
 import { showErrorToast } from "@/lib/error-handling";
 import useWindowSize from "@/hooks/useWindowSize";
 
