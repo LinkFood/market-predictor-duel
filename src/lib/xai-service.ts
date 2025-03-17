@@ -4,12 +4,12 @@
  * Handles all interactions with the X.ai API for AI predictions
  */
 
-import { FEATURES } from './config';
+import { FEATURES, config } from './config';
 import { showErrorToast } from './error-handling';
 
 // Configuration
-const API_KEY = "xai-4rv1Rbqn7wij0qg71KGIkjst8TLHn71I79yFflHgVrpwmC4fk0r57IqmuELV2SUMgkadDfPH7sbZfta4";
-const API_URL = "https://api.x.ai/v1";
+const API_KEY = config.xai.apiKey;
+const API_URL = config.xai.baseUrl;
 
 // Types
 export interface StockPredictionRequest {
@@ -40,57 +40,75 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
     
     console.log('Fetching AI prediction for', request.ticker);
     
-    const response = await fetch(`${API_URL}/predictions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gemini-pro', // Using a powerful model for financial predictions
-        messages: [
-          {
-            role: 'system',
-            content: `You are a financial analysis AI specialized in stock market predictions. 
-                      Analyze the given stock and provide a prediction based on current market data, 
-                      trends, and historical performance. Explain your reasoning and provide a 
-                      confidence score from 0 to 100.`
-          },
-          {
-            role: 'user',
-            content: `Please predict the ${request.predictionType} for ${request.ticker} 
-                      over the next ${request.timeframe}. ${request.currentPrice ? 
-                      `The current price is $${request.currentPrice}.` : ''}`
-          }
-        ],
-        temperature: 0.2, // Low temperature for more consistent predictions
-        top_p: 0.7,
-      })
-    });
+    // Add a timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    try {
+      const response = await fetch(`${API_URL}/predictions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gemini-pro', // Using a powerful model for financial predictions
+          messages: [
+            {
+              role: 'system',
+              content: `You are a financial analysis AI specialized in stock market predictions. 
+                        Analyze the given stock and provide a prediction based on current market data, 
+                        trends, and historical performance. Explain your reasoning and provide a 
+                        confidence score from 0 to 100.`
+            },
+            {
+              role: 'user',
+              content: `Please predict the ${request.predictionType} for ${request.ticker} 
+                        over the next ${request.timeframe}. ${request.currentPrice ? 
+                        `The current price is $${request.currentPrice}.` : ''}`
+            }
+          ],
+          temperature: 0.2, // Low temperature for more consistent predictions
+          top_p: 0.7,
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.error(`X.ai API request failed with status ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Error response: ${errorText}`);
+        return getMockPrediction(request);
+      }
 
-    if (!response.ok) {
-      console.error(`API request failed with status ${response.status}`);
-      return getMockPrediction(request);
+      const data = await response.json();
+      
+      // Process the response to extract prediction, confidence, and rationale
+      const aiResponse = data.choices?.[0]?.message?.content;
+      
+      if (!aiResponse) {
+        console.error('Invalid AI response format, falling back to mock data');
+        return getMockPrediction(request);
+      }
+      
+      // Here we would parse the AI response to extract structured data
+      // For now, we'll use our mock response structure
+      return {
+        prediction: request.predictionType === 'price' ? '$185.75' : 'uptrend',
+        confidence: 85,
+        rationale: aiResponse || "Based on recent market trends, strong earnings reports, and positive sentiment analysis, I predict an uptrend for this stock.",
+        timestamp: new Date().toISOString()
+      };
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        console.error('Request timeout for X.ai API');
+        return getMockPrediction(request);
+      }
+      throw err;
     }
-
-    const data = await response.json();
-    
-    // Process the response to extract prediction, confidence, and rationale
-    const aiResponse = data.choices?.[0]?.message?.content;
-    
-    if (!aiResponse) {
-      console.error('Invalid AI response format, falling back to mock data');
-      return getMockPrediction(request);
-    }
-    
-    // In a real implementation, we would parse the AI response
-    // For now, we'll use our mock response structure
-    return {
-      prediction: request.predictionType === 'price' ? '$185.75' : 'uptrend',
-      confidence: 85,
-      rationale: "Based on recent market trends, strong earnings reports, and positive sentiment analysis, I predict an uptrend for this stock.",
-      timestamp: new Date().toISOString()
-    };
   } catch (error) {
     console.error("Error fetching AI prediction:", error);
     // Return mock data on error
@@ -166,42 +184,63 @@ export async function getMarketAnalysis(ticker: string): Promise<string> {
       return getMockAnalysis(ticker);
     }
     
-    const response = await fetch(`${API_URL}/analysis`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`
-      },
-      body: JSON.stringify({
-        model: 'gemini-pro',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a financial analysis AI specialized in stock market analysis.
-                      Provide detailed market analysis for the given stock.`
-          },
-          {
-            role: 'user',
-            content: `Please provide a comprehensive market analysis for ${ticker}.`
-          }
-        ],
-        temperature: 0.3,
-      })
-    });
-
-    if (!response.ok) {
-      console.error(`API request failed with status ${response.status}`);
-      return getMockAnalysis(ticker);
-    }
-
-    const data = await response.json();
+    console.log('Fetching market analysis for', ticker);
     
-    // Check if we have a valid response
-    if (!data.choices?.[0]?.message?.content) {
-      return getMockAnalysis(ticker);
-    }
+    // Add a timeout to the fetch request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    return data.choices[0].message.content;
+    try {
+      const response = await fetch(`${API_URL}/analysis`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gemini-pro',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a financial analysis AI specialized in stock market analysis.
+                        Provide detailed market analysis for the given stock.`
+            },
+            {
+              role: 'user',
+              content: `Please provide a comprehensive market analysis for ${ticker}.`
+            }
+          ],
+          temperature: 0.3,
+        }),
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.error(`X.ai API request failed with status ${response.status}`);
+        const errorText = await response.text();
+        console.error(`Error response: ${errorText}`);
+        return getMockAnalysis(ticker);
+      }
+
+      const data = await response.json();
+      
+      // Check if we have a valid response
+      if (!data.choices?.[0]?.message?.content) {
+        console.error('Invalid X.ai API response format');
+        return getMockAnalysis(ticker);
+      }
+      
+      return data.choices[0].message.content;
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err.name === 'AbortError') {
+        console.error('Request timeout for X.ai API');
+        return getMockAnalysis(ticker);
+      }
+      throw err;
+    }
   } catch (error) {
     console.error("Error fetching market analysis:", error);
     return getMockAnalysis(ticker);

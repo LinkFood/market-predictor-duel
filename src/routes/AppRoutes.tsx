@@ -10,6 +10,7 @@ import PredictionDetail from "@/pages/PredictionDetail";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
+import Markets from "@/pages/Markets";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense, useEffect } from "react";
@@ -103,6 +104,7 @@ const AppRoutes = () => {
           <Route index element={<Dashboard />} />
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="predict" element={<MakePrediction />} />
+          <Route path="markets" element={<Markets />} />
           <Route path="predictions/history" element={<Dashboard />} /> {/* Replace with actual history component */}
           <Route path="predictions/:id" element={<PredictionDetail />} />
           <Route path="profile" element={<Profile />} />
