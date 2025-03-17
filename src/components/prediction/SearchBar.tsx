@@ -25,7 +25,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
     
     try {
       setIsLoading(true);
+      console.log('Searching for stocks:', searchQuery);
       const results = await searchStocks(searchQuery);
+      console.log('Search results:', results);
       setSearchResults(results);
       setShowSearchResults(true);
       

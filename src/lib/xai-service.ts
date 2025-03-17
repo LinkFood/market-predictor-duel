@@ -5,6 +5,7 @@
  */
 
 import { FEATURES } from './config';
+import { showErrorToast } from './error-handling';
 
 // Configuration
 const API_KEY = "xai-4rv1Rbqn7wij0qg71KGIkjst8TLHn71I79yFflHgVrpwmC4fk0r57IqmuELV2SUMgkadDfPH7sbZfta4";
