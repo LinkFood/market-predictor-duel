@@ -1,59 +1,22 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DataCard from "@/components/DataCard";
-import MarketInfoDisplay from "@/components/MarketInfoDisplay";
-import { BarChart3, TrendingUp, ChevronDown } from "lucide-react";
 import { useMarketData } from "@/lib/market/MarketDataProvider";
-import { MarketData } from "@/types";
-import MarketDataTable from "@/components/MarketDataTable";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import useAnimations from "@/hooks/useAnimations";
 import { showErrorToast } from "@/lib/error-handling";
+import useAnimations from "@/hooks/useAnimations";
 import useWindowSize from "@/hooks/useWindowSize";
+import useMarketIndices from "@/hooks/useMarketIndices";
+import OverviewTabContent from "@/components/markets/OverviewTabContent";
+import MarketTabContent from "@/components/markets/MarketTabContent";
 
 const Markets: React.FC = () => {
   const { gainers, losers, isLoading, lastUpdated, refreshData } = useMarketData();
   const [selectedTab, setSelectedTab] = useState<"overview" | "stocks" | "crypto">("overview");
-  const [marketIndices, setMarketIndices] = useState<MarketData[]>([]);
+  const marketIndices = useMarketIndices();
   const { containerVariants, itemVariants } = useAnimations();
   const { width } = useWindowSize();
   const isMobile = width < 768;
-
-  useEffect(() => {
-    // Create mock market indices data
-    const mockIndices = [
-      { 
-        name: "S&P 500", 
-        value: 5234.32, 
-        change: 12.45, 
-        changePercent: 0.24,
-      },
-      { 
-        name: "Dow Jones", 
-        value: 38721.78, 
-        change: -82.12, 
-        changePercent: -0.21,
-      },
-      { 
-        name: "NASDAQ", 
-        value: 16432.67, 
-        change: 87.34, 
-        changePercent: 0.53,
-      },
-      { 
-        name: "Russell 2000", 
-        value: 2146.89, 
-        change: -5.23, 
-        changePercent: -0.24,
-      }
-    ];
-    
-    setMarketIndices(mockIndices);
-  }, []);
 
   const handleRefresh = async () => {
     try {
@@ -67,6 +30,21 @@ const Markets: React.FC = () => {
     if (!date) return "Never updated";
     return date.toLocaleString();
   };
+
+  // Map market data to the format expected by the components
+  const mappedGainers = gainers.map(item => ({
+    name: item.symbol,
+    value: item.price,
+    change: item.change,
+    changePercent: item.changePercent
+  }));
+
+  const mappedLosers = losers.map(item => ({
+    name: item.symbol,
+    value: item.price,
+    change: item.change,
+    changePercent: item.changePercent
+  }));
 
   return (
     <motion.div
@@ -100,100 +78,28 @@ const Markets: React.FC = () => {
         </TabsList>
         
         <TabsContent value="overview" className="space-y-4">
-          <motion.div 
-            variants={itemVariants} 
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
-          >
-            <Card className="shadow-sm border-0 overflow-hidden">
-              <CardHeader className="bg-slate-50 dark:bg-slate-900 border-b pb-3">
-                <CardTitle className="text-lg font-semibold">Market Indices</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y">
-                  {marketIndices.map((index, i) => (
-                    <div key={i} className="p-4 flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">{index.name}</p>
-                        <p className={`text-sm ${index.changePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {index.changePercent >= 0 ? '+' : ''}{index.changePercent.toFixed(2)}%
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-mono font-medium">{index.value.toLocaleString()}</p>
-                        <p className={`text-sm ${index.change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {index.change >= 0 ? '+' : ''}{index.change.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            
-            <MarketInfoDisplay />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Top Gainers</h2>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRefresh}
-                disabled={isLoading}
-              >
-                {isLoading ? "Refreshing..." : "Refresh"}
-              </Button>
-            </div>
-            <MarketDataTable 
-              data={gainers.map(item => ({
-                name: item.symbol,
-                value: item.price,
-                change: item.change,
-                changePercent: item.changePercent
-              }))} 
-              title="Top Gainers"
-            />
-          </motion.div>
-          
-          <motion.div variants={itemVariants}>
-            <h2 className="text-xl font-semibold mb-4">Top Losers</h2>
-            <MarketDataTable 
-              data={losers.map(item => ({
-                name: item.symbol,
-                value: item.price,
-                change: item.change,
-                changePercent: item.changePercent
-              }))} 
-              title="Top Losers"
-            />
-          </motion.div>
+          <OverviewTabContent 
+            gainers={mappedGainers}
+            losers={mappedLosers}
+            marketIndices={marketIndices}
+            onRefresh={handleRefresh}
+            isLoading={isLoading}
+            itemVariants={itemVariants}
+          />
         </TabsContent>
         
         <TabsContent value="stocks" className="space-y-4">
-          <motion.div variants={itemVariants}>
-            <Card className="shadow-sm border-0">
-              <CardHeader>
-                <CardTitle>Popular Stocks</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Stock market data coming soon...</p>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <MarketTabContent 
+            title="Popular Stocks" 
+            variants={itemVariants} 
+          />
         </TabsContent>
         
         <TabsContent value="crypto" className="space-y-4">
-          <motion.div variants={itemVariants}>
-            <Card className="shadow-sm border-0">
-              <CardHeader>
-                <CardTitle>Cryptocurrency Market</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p>Crypto market data coming soon...</p>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <MarketTabContent 
+            title="Cryptocurrency Market" 
+            variants={itemVariants} 
+          />
         </TabsContent>
       </Tabs>
     </motion.div>
