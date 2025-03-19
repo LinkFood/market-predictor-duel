@@ -29,9 +29,17 @@ async function callPolygonApi(endpoint: string, params = {}) {
       throw error;
     }
     
+    // Check if the response contains an error message from the edge function
+    if (data && data.error) {
+      console.error('Polygon API returned an error:', data.error, data.message);
+      recordApiFailure('polygon', new Error(data.error));
+      throw new Error(`Polygon API error: ${data.error} - ${data.message || ''}`);
+    }
+    
     // Record successful API call
     recordApiSuccess('polygon');
     
+    console.log(`Successfully received data for ${endpoint}`);
     return data;
   } catch (error) {
     console.error(`Error in callPolygonApi for ${endpoint}:`, error);
@@ -182,47 +190,68 @@ export async function searchPolygonStocks(query: string): Promise<StockData[]> {
  */
 export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], losers: StockData[]}> {
   try {
-    // For simplicity, we'll get snapshot data for major indices and sort them
-    const data = await callPolygonApi(`/v2/snapshot/locale/us/markets/stocks/tickers`);
-
-    // Check if API returned tickers
-    if (!data.tickers || data.tickers.length === 0) {
-      throw new Error('No snapshot data available');
-    }
-
-    // Process tickers with price data
-    const stocksWithData = data.tickers
-      .filter(ticker => ticker.day && ticker.prevDay) // Ensure we have data
-      .map(ticker => {
-        const dayClose = ticker.day.c;
-        const prevDayClose = ticker.prevDay.c;
-        const change = dayClose - prevDayClose;
-        const changePercent = (change / prevDayClose) * 100;
-
-        return {
-          symbol: ticker.ticker,
-          name: ticker.ticker,
-          price: dayClose,
-          change,
-          changePercent,
-          volume: ticker.day.v,
-          datetime: new Date().toISOString()
-        };
+    // Using the snapshot endpoint to get data for major tickers
+    const snapshotUrl = `/v2/snapshot/locale/us/markets/stocks/gainers`;
+    console.log(`Fetching market movers using endpoint: ${snapshotUrl}`);
+    
+    // Get gainers first
+    const gainersData = await callPolygonApi(snapshotUrl);
+    
+    // Now get losers
+    const losersData = await callPolygonApi(`/v2/snapshot/locale/us/markets/stocks/losers`);
+    
+    if (!gainersData.tickers || !losersData.tickers) {
+      console.error('Invalid response format from Polygon API:', { 
+        gainersDataKeys: Object.keys(gainersData || {}),
+        losersDataKeys: Object.keys(losersData || {})
       });
-
-    // Sort by percent change
-    const sortedStocks = [...stocksWithData].sort((a, b) => b.changePercent - a.changePercent);
-
-    // Get top 5 gainers and losers
-    return {
-      gainers: sortedStocks.slice(0, 5),
-      losers: sortedStocks.slice(-5).reverse()
-    };
+      throw new Error('Invalid response format from Polygon API');
+    }
+    
+    // Process gainers
+    const gainers = gainersData.tickers
+      .slice(0, 5)
+      .map(ticker => mapSnapshotToStockData(ticker));
+      
+    // Process losers
+    const losers = losersData.tickers
+      .slice(0, 5)
+      .map(ticker => mapSnapshotToStockData(ticker));
+    
+    console.log(`Successfully processed market movers: ${gainers.length} gainers, ${losers.length} losers`);
+    
+    return { gainers, losers };
   } catch (error) {
     logError(error, "getPolygonMarketMovers");
     console.error('Error fetching Polygon market movers:', error);
     throw error;
   }
+}
+
+/**
+ * Helper function to map Polygon snapshot data to our StockData format
+ */
+function mapSnapshotToStockData(ticker: any): StockData {
+  // Ensure we have the necessary data
+  if (!ticker || !ticker.day || !ticker.ticker) {
+    console.warn('Incomplete ticker data:', ticker);
+    throw new Error('Incomplete ticker data from Polygon API');
+  }
+  
+  const todayClose = ticker.day.c;
+  const todayOpen = ticker.day.o;
+  const change = ticker.todaysChange || (todayClose - todayOpen);
+  const changePercent = ticker.todaysChangePerc || ((change / todayOpen) * 100);
+  
+  return {
+    symbol: ticker.ticker,
+    name: ticker.name || ticker.ticker,
+    price: todayClose,
+    change,
+    changePercent,
+    volume: ticker.day.v,
+    datetime: new Date().toISOString()
+  };
 }
 
 /**

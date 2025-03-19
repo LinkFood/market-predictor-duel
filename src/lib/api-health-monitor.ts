@@ -101,11 +101,10 @@ export function isApiHealthy(apiName: 'polygon' | 'xai' | 'supabase'): boolean {
 export async function pingApiEndpoints(): Promise<void> {
   if (!FEATURES.devMode) return;
   
-  // Ping Polygon API
+  // Ping Polygon API - Using just the base URL since we no longer have the apiKey in config
   try {
-    // We don't have apiKey in config anymore as it's stored in Supabase secrets
-    // So we'll just ping the base URL without the API key
-    const response = await fetch(`${config.polygon.baseUrl}/v1/meta/status`);
+    // Simple status check endpoint that doesn't require an API key
+    const response = await fetch(`${config.polygon.baseUrl}/v1/marketstatus/now`);
     if (response.ok) {
       recordApiSuccess('polygon');
     } else {

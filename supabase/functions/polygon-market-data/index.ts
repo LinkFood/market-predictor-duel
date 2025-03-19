@@ -22,6 +22,7 @@ serve(async (req) => {
     const { endpoint, params } = await req.json();
     
     if (!endpoint) {
+      console.error("Missing required parameter: endpoint");
       throw new Error("Missing required parameter: endpoint");
     }
 
@@ -44,23 +45,48 @@ serve(async (req) => {
     // Append query parameters to URL
     url = `${url}?${queryParams.toString()}`;
     
-    console.log(`Calling Polygon API: ${url}`);
+    console.log(`Calling Polygon API: ${url.replace(POLYGON_API_KEY, '[REDACTED]')}`);
     
     // Call Polygon API
     const response = await fetch(url);
-
+    const status = response.status;
+    
     if (!response.ok) {
       const errorData = await response.text();
-      console.error(`Polygon API error (${response.status}): ${errorData}`);
-      throw new Error(`Polygon API error: ${response.status}`);
+      console.error(`Polygon API error (${status}): ${errorData}`);
+      
+      return new Response(
+        JSON.stringify({ 
+          error: `Polygon API error: ${status}`,
+          message: errorData,
+          endpoint
+        }),
+        { 
+          status: status,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
 
     const data = await response.json();
-    console.log("Successfully received data from Polygon API");
+    console.log(`Successfully received data from Polygon API for ${endpoint}`);
+    
+    // Add metadata to help with debugging
+    const enhancedData = {
+      ...data,
+      _meta: {
+        source: 'polygon',
+        timestamp: new Date().toISOString(),
+        endpoint
+      }
+    };
     
     // Return the data
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(enhancedData),
       { 
         headers: { 
           ...corsHeaders,
@@ -74,7 +100,8 @@ serve(async (req) => {
     // Return error response
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An error occurred processing your request" 
+        error: error.message || "An error occurred processing your request",
+        timestamp: new Date().toISOString()
       }),
       { 
         status: 500,

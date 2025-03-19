@@ -16,11 +16,11 @@ export const config = {
 
 // Feature flags
 export const FEATURES = {
-  enableRealMarketData: config.polygon.enabled,
-  enableAIAnalysis: true, // Ensure this is set to true
+  enableRealMarketData: true, // Explicitly enable real market data
+  enableAIAnalysis: true,
   enableHistoricalData: true,
   enableSocialSharing: false,
-  devMode: false // Disable development mode
+  devMode: true // Enable development mode for better logging
 };
 
 // Market Data Configuration
