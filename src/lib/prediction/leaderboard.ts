@@ -3,49 +3,53 @@
  * Handles leaderboard functionality
  */
 
-import { supabase } from '../supabase';
-import { DEV_USER } from '../dev-mode';
+import { supabase } from '@/integrations/supabase/client';
 import { LeaderboardEntry, UserStats } from './types';
-
-// Dev mode flag
-const USE_DEV_MODE = true;
 
 /**
  * Get leaderboard data
  */
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   try {
-    /* In a real implementation, we would fetch from Supabase
+    // Fetch user stats joined with profiles to get usernames
     const { data, error } = await supabase
-      .from('leaderboard')
-      .select('*')
-      .order('totalPoints', { ascending: false })
+      .from('user_stats')
+      .select(`
+        user_id,
+        total_predictions,
+        correct_predictions,
+        wins_against_ai,
+        losses_against_ai,
+        total_points,
+        profiles(username, avatar_url)
+      `)
+      .order('total_points', { ascending: false })
       .limit(20);
     
     if (error) throw error;
     
-    return data;
-    */
-    
-    // Return mock data with corrected properties to match LeaderboardEntry type
-    return Array.from({ length: 20 }).map((_, index) => ({
-      userId: Math.random().toString(36).substring(2, 15),
-      username: [
-        'InvestorPro', 'MarketGuru', 'StockWhisperer', 'WallStWizard', 'BullishTrader',
-        'AlphaBrain', 'BetaBuilder', 'MarketMaster', 'WealthWisdom', 'TrendTracker',
-        'ProfitProphet', 'StockSage', 'ValueVenture', 'WealthWarrior', 'MarketMogul',
-        'TradingTitan', 'StockStrategist', 'PortfolioPro', 'ReturnRanger', 'EquityExpert'
-      ][index],
-      points: 1000 - index * 40 + Math.floor(Math.random() * 30),
-      winRate: 70 - index * 1.5 + Math.random() * 5,
-      predictionsCount: 50 - index + Math.floor(Math.random() * 10),
-      winCount: Math.floor((50 - index) * (70 - index * 1.5) / 100),
-      accuracy: (70 - index * 1.5 + Math.random() * 5) / 100,
+    // Transform the data to match LeaderboardEntry type
+    return data.map((entry, index) => ({
+      userId: entry.user_id,
+      username: entry.profiles.username || `User ${index + 1}`,
+      avatarUrl: entry.profiles.avatar_url,
+      points: entry.total_points,
+      totalPredictions: entry.total_predictions,
+      accuracy: entry.total_predictions > 0 
+        ? (entry.correct_predictions / entry.total_predictions) 
+        : 0,
+      winRateAgainstAi: (entry.wins_against_ai + entry.losses_against_ai) > 0 
+        ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai)) 
+        : 0,
       rank: index + 1,
+      predictionsCount: entry.total_predictions,
+      winCount: entry.correct_predictions,
       vsAI: {
-        wins: Math.floor((50 - index) * 0.4),
-        losses: Math.floor((50 - index) * 0.3),
-        winRate: 0.6 - (index * 0.01)
+        wins: entry.wins_against_ai,
+        losses: entry.losses_against_ai,
+        winRate: (entry.wins_against_ai + entry.losses_against_ai) > 0 
+          ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai)) 
+          : 0
       }
     }));
   } catch (error) {
@@ -61,43 +65,36 @@ export async function getUserStats(userId?: string): Promise<UserStats> {
   try {
     // Get current user if no userId is provided
     if (!userId) {
-      if (USE_DEV_MODE) {
-        // In dev mode, use dev user
-        userId = DEV_USER.id;
-        console.log('🧪 Development mode: Using dev user for stats');
-      } else {
-        const { data: userData } = await supabase.auth.getUser();
-        if (!userData.user) {
-          throw new Error("User not authenticated");
-        }
-        userId = userData.user.id;
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!userData.user) {
+        throw new Error("User not authenticated");
       }
+      userId = userData.user.id;
     }
     
-    /* In a real implementation, we would fetch from Supabase
+    // Fetch user stats from database
     const { data, error } = await supabase
       .from('user_stats')
       .select('*')
-      .eq('userId', userId)
+      .eq('user_id', userId)
       .single();
     
     if (error) throw error;
     
-    return data;
-    */
-    
-    // Return mock data
     return {
-      totalPredictions: 47,
-      completedPredictions: 42,
-      pendingPredictions: 5,
-      totalPoints: 560,
-      winRate: 62,
-      winStreak: 3,
-      bestWinStreak: 7,
-      aiVictories: 14,
-      userVictories: 26,
-      ties: 2
+      totalPredictions: data.total_predictions,
+      completedPredictions: data.total_predictions, // Since we only update stats when predictions are completed
+      pendingPredictions: 0, // We'll calculate this separately
+      totalPoints: data.total_points,
+      winRate: data.total_predictions > 0 
+        ? (data.correct_predictions / data.total_predictions) * 100 
+        : 0,
+      winStreak: data.current_streak,
+      bestWinStreak: data.best_streak,
+      aiVictories: data.losses_against_ai,
+      userVictories: data.wins_against_ai,
+      ties: data.ties
     };
   } catch (error) {
     console.error("Error fetching user stats:", error);

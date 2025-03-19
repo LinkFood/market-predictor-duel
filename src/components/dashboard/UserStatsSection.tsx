@@ -1,23 +1,69 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Users, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-import { User } from "@/types";
+import { getUserStats } from "@/lib/prediction";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserStatsSectionProps {
-  currentUser: User;
   userRank: number;
 }
 
-const UserStatsSection: React.FC<UserStatsSectionProps> = ({ currentUser, userRank }) => {
+const UserStatsSection: React.FC<UserStatsSectionProps> = ({ userRank }) => {
+  const [userStats, setUserStats] = useState<any>(null);
+  const [username, setUsername] = useState<string>("");
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Fetch user stats
+        const stats = await getUserStats();
+        setUserStats(stats);
+        
+        // Fetch user profile info
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData && userData.user) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', userData.user.id)
+            .single();
+            
+          if (profileData) {
+            setUsername(profileData.username);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  if (loading) {
+    return (
+      <motion.section className="glass-card p-5 animate-pulse">
+        <div className="h-40 bg-gray-100 rounded-lg"></div>
+      </motion.section>
+    );
+  }
+
+  if (!userStats) {
+    return <div>No stats available</div>;
+  }
+  
   // Calculate win rate
-  const userWinRate = Math.round((currentUser.correctPredictions / currentUser.totalPredictions) * 100);
+  const userWinRate = Math.round(userStats.winRate);
   
   return (
     <motion.section className="glass-card p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="title-md">Welcome back, {currentUser.username}</h3>
+        <h3 className="title-md">Welcome back, {username}</h3>
         <div className="flex-shrink-0 h-9 w-9 rounded-full bg-[hsl(var(--surface-2))] flex items-center justify-center">
           <Users className="h-5 w-5 text-[hsl(var(--primary))]" />
         </div>
@@ -30,7 +76,7 @@ const UserStatsSection: React.FC<UserStatsSectionProps> = ({ currentUser, userRa
         </div>
         <div>
           <p className="caption text-[hsl(var(--muted-foreground))]">Score</p>
-          <p className="numeric-md">{currentUser.points}</p>
+          <p className="numeric-md">{userStats.totalPoints}</p>
         </div>
         <div>
           <p className="caption text-[hsl(var(--muted-foreground))]">Rank</p>

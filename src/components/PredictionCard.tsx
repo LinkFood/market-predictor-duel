@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Clock, CheckCircle, XCircle, Trophy, AlertCircle, 
+  Clock, Trophy, AlertCircle, 
   TrendingUp, TrendingDown, ArrowRight, DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,8 +43,23 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
     }
   };
 
+  // Support both new database fields and legacy fields
+  const targetName = prediction.target_name || prediction.targetName || prediction.stockName;
+  const ticker = prediction.ticker;
+  const status = prediction.status;
+  const outcome = prediction.outcome;
+  const userPrediction = prediction.user_prediction || prediction.userPrediction;
+  const aiPrediction = prediction.ai_prediction || prediction.aiPrediction;
+  const predictionType = prediction.prediction_type || prediction.predictionType;
+  const timeframe = prediction.timeframe;
+  const startingValue = prediction.starting_value || prediction.startingValue || prediction.startPrice;
+  const finalValue = prediction.final_value || prediction.finalValue || prediction.endPrice || prediction.endValue;
+  const points = prediction.points;
+  const createdAt = prediction.createdAt || prediction.created_at;
+  const resolvedAt = prediction.resolvedAt || prediction.resolved_at;
+
   const getStatusBadge = () => {
-    if (prediction.status === "pending") {
+    if (status === "pending") {
       return (
         <Badge variant="outline" className="flex items-center gap-1">
           <Clock className="h-3 w-3" />
@@ -53,14 +68,14 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
       );
     }
     
-    if (prediction.outcome === "user_win") {
+    if (outcome === "user_win") {
       return (
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
           <Trophy className="h-3 w-3" />
           <span>You Won!</span>
         </Badge>
       );
-    } else if (prediction.outcome === "ai_win") {
+    } else if (outcome === "ai_win") {
       return (
         <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
@@ -77,7 +92,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
     }
   };
 
-  const renderPredictionValue = (value: string, type: 'price' | 'trend') => {
+  const renderPredictionValue = (value: string, type: string) => {
     if (type === 'price') {
       return (
         <div className="flex items-center gap-1">
@@ -110,10 +125,10 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className={cn("line-clamp-1", compact ? "text-base" : "text-lg")}>
-              {prediction.targetName || prediction.stockName}
+              {targetName}
             </CardTitle>
             <CardDescription>
-              {prediction.ticker} • {getTimeframeText(prediction.timeframe)}
+              {ticker} • {getTimeframeText(timeframe)}
             </CardDescription>
           </div>
           {getStatusBadge()}
@@ -124,43 +139,43 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">Your Prediction</div>
             <div className="font-medium">
-              {renderPredictionValue(prediction.userPrediction, prediction.predictionType)}
+              {renderPredictionValue(userPrediction, predictionType)}
             </div>
           </div>
           <div className="space-y-1">
             <div className="text-xs text-muted-foreground">AI Prediction</div>
             <div className="font-medium">
-              {renderPredictionValue(prediction.aiPrediction, prediction.predictionType)}
+              {renderPredictionValue(aiPrediction, predictionType)}
             </div>
           </div>
         </div>
         
         <div className="mt-2 text-xs text-muted-foreground space-y-1">
-          <div>Created: {formatDate(prediction.createdAt)}</div>
-          {(prediction.status === "completed" || prediction.status === "complete") && prediction.resolvedAt && (
-            <div>Resolved: {formatDate(prediction.resolvedAt)}</div>
+          <div>Created: {formatDate(createdAt)}</div>
+          {(status === "completed" || status === "complete") && resolvedAt && (
+            <div>Resolved: {formatDate(resolvedAt)}</div>
           )}
         </div>
         
-        {(prediction.status === "completed" || prediction.status === "complete") && (prediction.endPrice || prediction.endValue) && (
+        {(status === "completed" || status === "complete") && finalValue && (
           <div className="mt-2 pt-2 border-t">
             <div className="text-xs text-muted-foreground mb-1">Final Price:</div>
             <div className="font-medium flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
-              {(prediction.endPrice || prediction.endValue)?.toFixed(2)}
+              {Number(finalValue).toFixed(2)}
               <span className={cn(
                 "text-xs",
-                (prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "text-green-600" : "text-red-600"
+                Number(startingValue) < Number(finalValue) ? "text-green-600" : "text-red-600"
               )}>
-                ({(prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "+" : ""}
-                {(((prediction.endPrice || prediction.endValue) - (prediction.startPrice || prediction.startingValue)) / (prediction.startPrice || prediction.startingValue) * 100).toFixed(2)}%)
+                ({Number(startingValue) < Number(finalValue) ? "+" : ""}
+                {(((Number(finalValue) - Number(startingValue)) / Number(startingValue)) * 100).toFixed(2)}%)
               </span>
             </div>
             
-            {prediction.points !== undefined && (
+            {points !== undefined && (
               <div className="mt-1 text-xs">
                 <span className="text-muted-foreground">Points earned: </span>
-                <span className="font-medium text-indigo-600">+{prediction.points}</span>
+                <span className="font-medium text-indigo-600">+{points}</span>
               </div>
             )}
           </div>

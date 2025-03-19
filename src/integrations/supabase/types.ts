@@ -9,7 +9,141 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      predictions: {
+        Row: {
+          actual_result: string | null
+          ai_analysis: Json | null
+          ai_confidence: number | null
+          ai_prediction: string
+          created_at: string | null
+          final_value: number | null
+          id: string
+          outcome: string | null
+          percent_change: number | null
+          points: number | null
+          prediction_type: string
+          resolved_at: string | null
+          resolves_at: string
+          starting_value: number
+          status: string
+          target_name: string
+          target_type: string
+          ticker: string
+          timeframe: string
+          user_id: string
+          user_prediction: string
+        }
+        Insert: {
+          actual_result?: string | null
+          ai_analysis?: Json | null
+          ai_confidence?: number | null
+          ai_prediction: string
+          created_at?: string | null
+          final_value?: number | null
+          id?: string
+          outcome?: string | null
+          percent_change?: number | null
+          points?: number | null
+          prediction_type: string
+          resolved_at?: string | null
+          resolves_at: string
+          starting_value: number
+          status: string
+          target_name: string
+          target_type: string
+          ticker: string
+          timeframe: string
+          user_id: string
+          user_prediction: string
+        }
+        Update: {
+          actual_result?: string | null
+          ai_analysis?: Json | null
+          ai_confidence?: number | null
+          ai_prediction?: string
+          created_at?: string | null
+          final_value?: number | null
+          id?: string
+          outcome?: string | null
+          percent_change?: number | null
+          points?: number | null
+          prediction_type?: string
+          resolved_at?: string | null
+          resolves_at?: string
+          starting_value?: number
+          status?: string
+          target_name?: string
+          target_type?: string
+          ticker?: string
+          timeframe?: string
+          user_id?: string
+          user_prediction?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          best_streak: number | null
+          correct_predictions: number | null
+          current_streak: number | null
+          losses_against_ai: number | null
+          ties: number | null
+          total_points: number | null
+          total_predictions: number | null
+          updated_at: string | null
+          user_id: string
+          wins_against_ai: number | null
+        }
+        Insert: {
+          best_streak?: number | null
+          correct_predictions?: number | null
+          current_streak?: number | null
+          losses_against_ai?: number | null
+          ties?: number | null
+          total_points?: number | null
+          total_predictions?: number | null
+          updated_at?: string | null
+          user_id: string
+          wins_against_ai?: number | null
+        }
+        Update: {
+          best_streak?: number | null
+          correct_predictions?: number | null
+          current_streak?: number | null
+          losses_against_ai?: number | null
+          ties?: number | null
+          total_points?: number | null
+          total_predictions?: number | null
+          updated_at?: string | null
+          user_id?: string
+          wins_against_ai?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
