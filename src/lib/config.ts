@@ -6,12 +6,10 @@ export const config = {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2ppdmRoc2hnZGJ4cndjb2t4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDQxNDUsImV4cCI6MjA1NzY4MDE0NX0.G0HNXKFNUqIba27xsKY9t1KYRDL68ZHbsSgLmPQsXc4'
   },
   polygon: {
-    apiKey: "4qpZEOR2MVYcrB4Oq8RdSK9bbWtkA2kZ",
     baseUrl: "https://api.polygon.io",
     enabled: true
   },
   xai: {
-    apiKey: "xai-4rv1Rbqn7wij0qg71KGIkjst8TLHn71I79yFflHgVrpwmC4fk0r57IqmuELV2SUMgkadDfPH7sbZfta4",
     baseUrl: "https://api.x.ai/v1"
   }
 };

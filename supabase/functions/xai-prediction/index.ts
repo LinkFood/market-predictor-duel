@@ -149,8 +149,8 @@ serve(async (req) => {
       // Normalize trend predictions to be either 'uptrend' or 'downtrend'
       if (!['uptrend', 'downtrend'].includes(predictionData.prediction.toLowerCase())) {
         predictionData.prediction = predictionData.prediction.toLowerCase().includes('up') || 
-                                    predictionData.prediction.toLowerCase().includes('bull') ? 
-                                    'uptrend' : 'downtrend';
+                                  predictionData.prediction.toLowerCase().includes('bull') ? 
+                                  'uptrend' : 'downtrend';
       }
     }
     

@@ -1,15 +1,38 @@
 
 /**
  * Polygon.io API Service
- * Handles interactions with the Polygon.io API for market data
+ * Handles interactions with the Polygon.io API for market data through Supabase edge function
  */
 
 import { StockData, HistoricalData } from "./types";
-import { config } from "../config";
+import { supabase } from "@/integrations/supabase/client";
+import { logError } from "../error-handling";
 
-// API configuration
-const POLYGON_API_KEY = config.polygon.apiKey;
-const POLYGON_BASE_URL = config.polygon.baseUrl;
+/**
+ * Call the Polygon API through our Supabase edge function
+ */
+async function callPolygonApi(endpoint: string, params = {}) {
+  try {
+    console.log(`Calling Polygon API endpoint ${endpoint} via edge function`);
+    
+    const { data, error } = await supabase.functions.invoke('polygon-market-data', {
+      body: { 
+        endpoint,
+        params
+      }
+    });
+
+    if (error) {
+      console.error('Error calling polygon-market-data function:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error(`Error in callPolygonApi for ${endpoint}:`, error);
+    throw error;
+  }
+}
 
 /**
  * Get current stock data for a ticker from Polygon.io
@@ -17,15 +40,7 @@ const POLYGON_BASE_URL = config.polygon.baseUrl;
 export async function getPolygonStockData(symbol: string): Promise<StockData> {
   try {
     // Fetch previous close data
-    const response = await fetch(
-      `${POLYGON_BASE_URL}/v2/aggs/ticker/${symbol}/prev?apiKey=${POLYGON_API_KEY}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Polygon API request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await callPolygonApi(`/v2/aggs/ticker/${symbol}/prev`);
 
     // Check if API returned results
     if (!data.results || data.results.length === 0) {
@@ -33,17 +48,15 @@ export async function getPolygonStockData(symbol: string): Promise<StockData> {
     }
 
     // Get ticker details for the company name
-    const detailsResponse = await fetch(
-      `${POLYGON_BASE_URL}/v3/reference/tickers/${symbol}?apiKey=${POLYGON_API_KEY}`
-    );
-
     let name = `${symbol} Stock`;
-
-    if (detailsResponse.ok) {
-      const detailsData = await detailsResponse.json();
+    try {
+      const detailsData = await callPolygonApi(`/v3/reference/tickers/${symbol}`);
       if (detailsData.results) {
         name = detailsData.results.name || name;
       }
+    } catch (detailsError) {
+      console.warn(`Could not fetch company details for ${symbol}:`, detailsError);
+      // Continue with default name
     }
 
     // Process the data
@@ -60,6 +73,7 @@ export async function getPolygonStockData(symbol: string): Promise<StockData> {
       datetime: new Date().toISOString()
     };
   } catch (error) {
+    logError(error, `getPolygonStockData:${symbol}`);
     console.error(`Error fetching Polygon data for ${symbol}:`, error);
     throw error;
   }
@@ -75,15 +89,9 @@ export async function getPolygonHistoricalData(
   toDate: string = new Date().toISOString().split('T')[0]
 ): Promise<HistoricalData> {
   try {
-    const response = await fetch(
-      `${POLYGON_BASE_URL}/v2/aggs/ticker/${symbol}/range/1/${timespan}/${fromDate}/${toDate}?apiKey=${POLYGON_API_KEY}`
+    const data = await callPolygonApi(
+      `/v2/aggs/ticker/${symbol}/range/1/${timespan}/${fromDate}/${toDate}`
     );
-
-    if (!response.ok) {
-      throw new Error(`Polygon API request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
 
     // Check if API returned results
     if (!data.results || data.results.length === 0) {
@@ -109,6 +117,7 @@ export async function getPolygonHistoricalData(
       })
     };
   } catch (error) {
+    logError(error, `getPolygonHistoricalData:${symbol}`);
     console.error(`Error fetching Polygon historical data for ${symbol}:`, error);
     throw error;
   }
@@ -120,15 +129,16 @@ export async function getPolygonHistoricalData(
 export async function searchPolygonStocks(query: string): Promise<StockData[]> {
   try {
     // Search for tickers
-    const response = await fetch(
-      `${POLYGON_BASE_URL}/v3/reference/tickers?search=${encodeURIComponent(query)}&active=true&sort=ticker&order=asc&limit=10&apiKey=${POLYGON_API_KEY}`
+    const data = await callPolygonApi(
+      `/v3/reference/tickers`,
+      {
+        search: query,
+        active: true,
+        sort: 'ticker',
+        order: 'asc',
+        limit: 10
+      }
     );
-
-    if (!response.ok) {
-      throw new Error(`Polygon API search request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
 
     // Check if API returned results
     if (!data.results || data.results.length === 0) {
@@ -155,6 +165,7 @@ export async function searchPolygonStocks(query: string): Promise<StockData[]> {
 
     return await Promise.all(promises);
   } catch (error) {
+    logError(error, `searchPolygonStocks:${query}`);
     console.error(`Error searching Polygon stocks for ${query}:`, error);
     throw error;
   }
@@ -166,15 +177,7 @@ export async function searchPolygonStocks(query: string): Promise<StockData[]> {
 export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], losers: StockData[]}> {
   try {
     // For simplicity, we'll get snapshot data for major indices and sort them
-    const response = await fetch(
-      `${POLYGON_BASE_URL}/v2/snapshot/locale/us/markets/stocks/tickers?apiKey=${POLYGON_API_KEY}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Polygon API snapshot request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
+    const data = await callPolygonApi(`/v2/snapshot/locale/us/markets/stocks/tickers`);
 
     // Check if API returned tickers
     if (!data.tickers || data.tickers.length === 0) {
@@ -210,6 +213,7 @@ export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], l
       losers: sortedStocks.slice(-5).reverse()
     };
   } catch (error) {
+    logError(error, "getPolygonMarketMovers");
     console.error('Error fetching Polygon market movers:', error);
     throw error;
   }

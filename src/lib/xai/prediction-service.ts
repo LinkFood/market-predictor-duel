@@ -4,7 +4,7 @@
  * Handles stock prediction functionality using X.ai API through Supabase edge function
  */
 
-import { FEATURES, config } from '../config';
+import { FEATURES } from '../config';
 import { StockPredictionRequest, StockPredictionResponse } from './types';
 import { getMockPrediction } from './mock-data';
 import { supabase } from '@/integrations/supabase/client';

@@ -7,3 +7,6 @@ verify_jwt = false
 
 [functions.xai-prediction]
 verify_jwt = false
+
+[functions.polygon-market-data]
+verify_jwt = false
