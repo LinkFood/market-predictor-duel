@@ -62,8 +62,8 @@ const RecentPredictions: React.FC = () => {
               <div key={prediction.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors cursor-pointer" onClick={() => navigate(`/app/predictions/${prediction.id}`)}>
                 <div className="flex justify-between items-start mb-2">
                   <div className="flex items-center">
-                    <Badge className={prediction.user_prediction === "bullish" || prediction.user_prediction === "uptrend" ? "bg-emerald-500" : "bg-red-500"}>
-                      {prediction.user_prediction === "bullish" || prediction.user_prediction === "uptrend" ? "Bullish" : "Bearish"}
+                    <Badge className={prediction.userPrediction === "bullish" || prediction.userPrediction === "uptrend" ? "bg-emerald-500" : "bg-red-500"}>
+                      {prediction.userPrediction === "bullish" || prediction.userPrediction === "uptrend" ? "Bullish" : "Bearish"}
                     </Badge>
                     <span className="text-xs text-muted-foreground ml-2">
                       {prediction.timeframe === "1d" ? "1 Day" : prediction.timeframe === "1w" ? "1 Week" : "1 Month"}
@@ -73,9 +73,9 @@ const RecentPredictions: React.FC = () => {
                     {prediction.status === "pending" ? "Pending" : prediction.outcome === "user_win" ? "Correct" : "Incorrect"}
                   </Badge>
                 </div>
-                <h4 className="font-semibold">{prediction.target_name}</h4>
+                <h4 className="font-semibold">{prediction.targetName}</h4>
                 <div className="text-sm text-muted-foreground mt-1 flex justify-between">
-                  <span>AI: {prediction.ai_prediction === "bullish" || prediction.ai_prediction === "uptrend" ? "Bullish" : "Bearish"} ({prediction.ai_confidence}/10)</span>
+                  <span>AI: {prediction.aiPrediction === "bullish" || prediction.aiPrediction === "uptrend" ? "Bullish" : "Bearish"} ({prediction.aiConfidence}/10)</span>
                   {prediction.status === "complete" && prediction.outcome && (
                     <span className={`font-medium ${
                       prediction.outcome === "user_win" ? "text-emerald-600 dark:text-emerald-400" : 

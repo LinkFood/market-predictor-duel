@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { LeaderboardEntry, UserStats } from './types';
+import { dbToLeaderboardEntry, dbToUserStats } from './adapters';
 
 /**
  * Get leaderboard data
@@ -29,29 +30,7 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
     if (error) throw error;
     
     // Transform the data to match LeaderboardEntry type
-    return data.map((entry, index) => ({
-      userId: entry.user_id,
-      username: entry.profiles.username || `User ${index + 1}`,
-      avatarUrl: entry.profiles.avatar_url,
-      points: entry.total_points,
-      totalPredictions: entry.total_predictions,
-      accuracy: entry.total_predictions > 0 
-        ? (entry.correct_predictions / entry.total_predictions) 
-        : 0,
-      winRateAgainstAi: (entry.wins_against_ai + entry.losses_against_ai) > 0 
-        ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai)) 
-        : 0,
-      rank: index + 1,
-      predictionsCount: entry.total_predictions,
-      winCount: entry.correct_predictions,
-      vsAI: {
-        wins: entry.wins_against_ai,
-        losses: entry.losses_against_ai,
-        winRate: (entry.wins_against_ai + entry.losses_against_ai) > 0 
-          ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai)) 
-          : 0
-      }
-    }));
+    return data.map((entry, index) => dbToLeaderboardEntry(entry, index));
   } catch (error) {
     console.error("Error fetching leaderboard:", error);
     throw error;
@@ -82,20 +61,7 @@ export async function getUserStats(userId?: string): Promise<UserStats> {
     
     if (error) throw error;
     
-    return {
-      totalPredictions: data.total_predictions,
-      completedPredictions: data.total_predictions, // Since we only update stats when predictions are completed
-      pendingPredictions: 0, // We'll calculate this separately
-      totalPoints: data.total_points,
-      winRate: data.total_predictions > 0 
-        ? (data.correct_predictions / data.total_predictions) * 100 
-        : 0,
-      winStreak: data.current_streak,
-      bestWinStreak: data.best_streak,
-      aiVictories: data.losses_against_ai,
-      userVictories: data.wins_against_ai,
-      ties: data.ties
-    };
+    return dbToUserStats(data);
   } catch (error) {
     console.error("Error fetching user stats:", error);
     throw error;

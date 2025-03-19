@@ -1,4 +1,3 @@
-
 /**
  * Handles creating new predictions
  */
@@ -8,6 +7,7 @@ import { getStockPrediction } from '../xai-service';
 import { getStockData } from '../market';
 import { Prediction, PredictionRequest } from './types';
 import { toast } from '@/hooks/use-toast';
+import { dbToPrediction } from './adapters';
 
 /**
  * Create a new prediction
@@ -40,7 +40,7 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     // Calculate resolves date based on timeframe
     const resolvesAt = calculateResolvesAt(request.timeframe);
     
-    // Generate AI analysis
+    // Generate AI analysis with safe defaults if properties don't exist
     const aiAnalysis = {
       reasoning: aiPredictionResult.reasoning || "Based on market analysis, this prediction has a reasonable likelihood of success.",
       supporting: aiPredictionResult.supportingPoints || ["Technical indicators suggest this direction", "Recent price action supports this view"],
@@ -56,7 +56,7 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
       prediction_type: request.predictionType,
       user_prediction: request.userPrediction,
       ai_prediction: aiPredictionResult.prediction,
-      ai_confidence: aiPredictionResult.confidence / 10, // Scale from 0-100 to 0-10
+      ai_confidence: (aiPredictionResult.confidence || 80) / 10, // Scale from 0-100 to 0-10, default to 80 if missing
       timeframe: request.timeframe,
       starting_value: stockData.price,
       status: 'pending',
@@ -72,7 +72,7 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     
     if (error) throw error;
     
-    return data as Prediction;
+    return dbToPrediction(data);
   } catch (error) {
     console.error("Error creating prediction:", error);
     toast({

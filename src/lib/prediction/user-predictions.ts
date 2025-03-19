@@ -5,6 +5,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Prediction } from './types';
+import { dbToPrediction } from './adapters';
 
 /**
  * Get user predictions
@@ -34,7 +35,8 @@ export async function getUserPredictions(status?: 'pending' | 'complete' | 'comp
     
     if (error) throw error;
     
-    return data as Prediction[];
+    // Convert database records to application model
+    return data.map(dbToPrediction);
   } catch (error) {
     console.error("Error fetching user predictions:", error);
     throw error;
@@ -54,7 +56,7 @@ export async function getPredictionById(id: string): Promise<Prediction | null> 
     
     if (error) throw error;
     
-    return data as Prediction;
+    return dbToPrediction(data);
   } catch (error) {
     console.error("Error fetching prediction:", error);
     throw error;
