@@ -103,7 +103,9 @@ export async function pingApiEndpoints(): Promise<void> {
   
   // Ping Polygon API
   try {
-    const response = await fetch(`${config.polygon.baseUrl}/v1/meta/status?apiKey=${config.polygon.apiKey}`);
+    // We don't have apiKey in config anymore as it's stored in Supabase secrets
+    // So we'll just ping the base URL without the API key
+    const response = await fetch(`${config.polygon.baseUrl}/v1/meta/status`);
     if (response.ok) {
       recordApiSuccess('polygon');
     } else {
