@@ -5,7 +5,7 @@
  */
 
 import { FEATURES } from '../config';
-import { getMarketAnalysis as getXAIAnalysis } from '../xai-service';
+import { getMarketAnalysis as getXAIAnalysis } from '../market-analysis-service';
 
 /**
  * Get market analysis for a stock

@@ -1,4 +1,3 @@
-
 /**
  * X.ai API Service
  * Handles all interactions with the X.ai API for AI predictions
@@ -6,6 +5,7 @@
 
 import { FEATURES, config } from './config';
 import { showErrorToast } from './error-handling';
+import { getMarketAnalysis as getMarketAnalysisService } from './market-analysis-service';
 
 // Configuration
 const API_KEY = config.xai.apiKey;
@@ -180,74 +180,7 @@ export function evaluatePrediction(userPrediction: string, aiPrediction: string,
  * Get market analysis for a stock
  */
 export async function getMarketAnalysis(ticker: string): Promise<string> {
-  try {
-    // Check if AI analysis is enabled
-    if (!FEATURES.enableAIAnalysis) {
-      console.log('AI analysis is disabled. Returning mock analysis.');
-      return getMockAnalysis(ticker);
-    }
-    
-    console.log('Fetching market analysis for', ticker);
-    
-    // Add a timeout to the fetch request
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    try {
-      const response = await fetch(`${API_URL}/analysis`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gemini-pro',
-          messages: [
-            {
-              role: 'system',
-              content: `You are a financial analysis AI specialized in stock market analysis.
-                        Provide detailed market analysis for the given stock.`
-            },
-            {
-              role: 'user',
-              content: `Please provide a comprehensive market analysis for ${ticker}.`
-            }
-          ],
-          temperature: 0.3,
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        console.error(`X.ai API request failed with status ${response.status}`);
-        const errorText = await response.text();
-        console.error(`Error response: ${errorText}`);
-        return getMockAnalysis(ticker);
-      }
-
-      const data = await response.json();
-      
-      // Check if we have a valid response
-      if (!data.choices?.[0]?.message?.content) {
-        console.error('Invalid X.ai API response format');
-        return getMockAnalysis(ticker);
-      }
-      
-      return data.choices[0].message.content;
-    } catch (err) {
-      clearTimeout(timeoutId);
-      if (err.name === 'AbortError') {
-        console.error('Request timeout for X.ai API');
-        return getMockAnalysis(ticker);
-      }
-      throw err;
-    }
-  } catch (error) {
-    console.error("Error fetching market analysis:", error);
-    return getMockAnalysis(ticker);
-  }
+  return getMarketAnalysisService(ticker);
 }
 
 /**
