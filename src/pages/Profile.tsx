@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { getUserStats } from "@/lib/prediction";
+import { UserStats } from "@/lib/prediction/types";
 
-// Import new components
+// Import components
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileStats from "@/components/profile/ProfileStats";
 import PerformanceHistory from "@/components/profile/PerformanceHistory";
@@ -17,15 +19,6 @@ import SettingsTab, { ProfileFormData } from "@/components/profile/SettingsTab";
 interface UserProfile {
   username: string;
   joinDate: string;
-  totalPredictions: number;
-  correctPredictions: number;
-  accuracy: number;
-  winsAgainstAI: number;
-  lossesAgainstAI: number;
-  ties: number;
-  currentStreak: number;
-  bestStreak: number;
-  badges: string[];
   avatar_url?: string;
 }
 
@@ -40,15 +33,20 @@ const Profile: React.FC = () => {
   const [userData, setUserData] = useState<UserProfile>({
     username: user?.user_metadata?.username || "User",
     joinDate: new Date(user?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-    totalPredictions: 47,
-    correctPredictions: 29,
-    accuracy: 61.7,
-    winsAgainstAI: 24,
-    lossesAgainstAI: 19,
-    ties: 4,
-    currentStreak: 3,
-    bestStreak: 7,
-    badges: ["5-Win Streak", "10 Correct Predictions", "Market Master"]
+  });
+
+  // State for user stats
+  const [userStats, setUserStats] = useState<UserStats>({
+    totalPredictions: 0,
+    completedPredictions: 0,
+    pendingPredictions: 0,
+    totalPoints: 0,
+    winRate: 0,
+    winStreak: 0,
+    bestWinStreak: 0,
+    aiVictories: 0,
+    userVictories: 0,
+    ties: 0
   });
   
   // Load user data
@@ -57,15 +55,15 @@ const Profile: React.FC = () => {
       setIsLoading(true);
       
       try {
-        // In a real app, you would fetch the user profile from Supabase
-        // For now we'll just use the mock data with the actual user email
-        
-        // For now just use dummy data with real user info
+        // For now just use real user info
         setUserData({
-          ...userData,
           username: user?.user_metadata?.username || "User",
           joinDate: new Date(user?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
         });
+        
+        // Load real user stats from Supabase
+        const stats = await getUserStats(user?.id);
+        setUserStats(stats);
         
       } catch (error) {
         console.error('Error loading profile:', error);
@@ -82,7 +80,7 @@ const Profile: React.FC = () => {
     if (user) {
       loadUserProfile();
     }
-  }, [user]);
+  }, [user, toast]);
   
   // Handle profile update
   const onUpdateProfile = async (data: ProfileFormData) => {
@@ -134,14 +132,14 @@ const Profile: React.FC = () => {
       />
 
       <ProfileStats 
-        accuracy={userData.accuracy}
-        totalPredictions={userData.totalPredictions}
-        correctPredictions={userData.correctPredictions}
-        winsAgainstAI={userData.winsAgainstAI}
-        lossesAgainstAI={userData.lossesAgainstAI}
-        ties={userData.ties}
-        currentStreak={userData.currentStreak}
-        bestStreak={userData.bestStreak}
+        accuracy={userStats.winRate}
+        totalPredictions={userStats.totalPredictions}
+        correctPredictions={userStats.totalPredictions * (userStats.winRate / 100)}
+        winsAgainstAI={userStats.userVictories}
+        lossesAgainstAI={userStats.aiVictories}
+        ties={userStats.ties}
+        currentStreak={userStats.winStreak}
+        bestStreak={userStats.bestWinStreak}
       />
 
       <PerformanceHistory />
@@ -158,7 +156,7 @@ const Profile: React.FC = () => {
         </TabsContent>
 
         <TabsContent value="badges" className="space-y-4 pt-4">
-          <BadgesTab badges={userData.badges} isLoading={isLoading} />
+          <BadgesTab badges={[]} isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4 pt-4">
