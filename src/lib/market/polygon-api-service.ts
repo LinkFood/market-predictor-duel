@@ -75,12 +75,26 @@ export async function getPolygonStockData(symbol: string): Promise<StockData> {
 
     // Process the data
     const result = data.results[0];
+    
+    // Calculate price change and percentage
+    const change = result.c - result.o; // Close minus open
+    const changePercent = ((result.c - result.o) / result.o) * 100;
+    
+    console.log(`Processed stock data for ${symbol}:`, {
+      price: result.c,
+      change,
+      changePercent,
+      open: result.o,
+      high: result.h,
+      low: result.l
+    });
+
     return {
       symbol,
       name,
       price: result.c, // Close price
-      change: result.c - result.o, // Close minus open
-      changePercent: ((result.c - result.o) / result.o) * 100,
+      change,
+      changePercent,
       high52Week: null, // Need additional API call
       low52Week: null, // Need additional API call
       volume: result.v,
@@ -207,6 +221,10 @@ export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], l
       });
       throw new Error('Invalid response format from Polygon API');
     }
+
+    console.log('Received gainers tickers count:', gainersData.tickers.length);
+    console.log('Received losers tickers count:', losersData.tickers.length);
+    console.log('Sample gainer data:', gainersData.tickers[0]);
     
     // Process gainers
     const gainers = gainersData.tickers
@@ -219,6 +237,7 @@ export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], l
       .map(ticker => mapSnapshotToStockData(ticker));
     
     console.log(`Successfully processed market movers: ${gainers.length} gainers, ${losers.length} losers`);
+    console.log('Sample processed gainer:', gainers[0]);
     
     return { gainers, losers };
   } catch (error) {
@@ -233,15 +252,31 @@ export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], l
  */
 function mapSnapshotToStockData(ticker: any): StockData {
   // Ensure we have the necessary data
-  if (!ticker || !ticker.day || !ticker.ticker) {
+  if (!ticker || !ticker.day) {
     console.warn('Incomplete ticker data:', ticker);
     throw new Error('Incomplete ticker data from Polygon API');
   }
   
   const todayClose = ticker.day.c;
   const todayOpen = ticker.day.o;
-  const change = ticker.todaysChange || (todayClose - todayOpen);
-  const changePercent = ticker.todaysChangePerc || ((change / todayOpen) * 100);
+  
+  // Handle different field names in the API response
+  let change: number;
+  let changePercent: number;
+  
+  if (ticker.todaysChange !== undefined) {
+    change = ticker.todaysChange;
+    changePercent = ticker.todaysChangePerc;
+  } else {
+    change = todayClose - todayOpen;
+    changePercent = ((todayClose - todayOpen) / todayOpen) * 100;
+  }
+  
+  console.log(`Processed ticker ${ticker.ticker}:`, {
+    price: todayClose,
+    change,
+    changePercent
+  });
   
   return {
     symbol: ticker.ticker,

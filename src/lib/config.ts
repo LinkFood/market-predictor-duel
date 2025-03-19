@@ -27,7 +27,9 @@ export const FEATURES = {
 export const MARKET_CONFIG = {
   refreshInterval: 60000, // 60 seconds
   defaultTimeframes: ['1d', '1w', '1m', '3m'],
-  chartPeriods: ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL']
+  chartPeriods: ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'],
+  retryAttempts: 3, // Number of retry attempts for API calls
+  retryDelay: 1000 // Base delay between retries in milliseconds
 };
 
 // API error messages

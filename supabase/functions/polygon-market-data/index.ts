@@ -72,6 +72,21 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    
+    // Basic validation of the response data
+    if (!data) {
+      throw new Error("Empty response from Polygon API");
+    }
+    
+    // For market movers endpoints, validate the tickers array
+    if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
+      if (!data.tickers || !Array.isArray(data.tickers)) {
+        console.error("Invalid response format for market movers:", data);
+        throw new Error("Invalid response format for market movers");
+      }
+      console.log(`Received ${data.tickers.length} tickers from ${endpoint}`);
+    }
+    
     console.log(`Successfully received data from Polygon API for ${endpoint}`);
     
     // Add metadata to help with debugging

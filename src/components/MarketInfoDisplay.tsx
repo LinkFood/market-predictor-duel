@@ -27,6 +27,11 @@ export const MarketInfoDisplay: React.FC = () => {
     }
   };
   
+  // Format price to always show 2 decimal places
+  const formatPrice = (price: number) => {
+    return price.toFixed(2);
+  };
+  
   return (
     <Card className="shadow-sm border-0">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -65,8 +70,11 @@ export const MarketInfoDisplay: React.FC = () => {
                 gainers.slice(0, 3).map((stock, idx) => (
                   <li key={idx} className="flex justify-between text-sm">
                     <span>{stock.symbol}</span>
-                    <span className="font-medium text-green-600 dark:text-green-400">
-                      +{stock.changePercent.toFixed(1)}%
+                    <span className="flex items-center font-medium text-green-600 dark:text-green-400">
+                      ${formatPrice(stock.price)}
+                      <span className="ml-2">
+                        +{Math.abs(stock.changePercent).toFixed(1)}%
+                      </span>
                     </span>
                   </li>
                 ))
@@ -91,8 +99,11 @@ export const MarketInfoDisplay: React.FC = () => {
                 losers.slice(0, 3).map((stock, idx) => (
                   <li key={idx} className="flex justify-between text-sm">
                     <span>{stock.symbol}</span>
-                    <span className="font-medium text-red-600 dark:text-red-400">
-                      {stock.changePercent.toFixed(1)}%
+                    <span className="flex items-center font-medium text-red-600 dark:text-red-400">
+                      ${formatPrice(stock.price)}
+                      <span className="ml-2">
+                        {stock.changePercent.toFixed(1)}%
+                      </span>
                     </span>
                   </li>
                 ))
