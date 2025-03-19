@@ -22,7 +22,7 @@ const TopPerformers: React.FC = () => {
     const fetchLeaderboard = async () => {
       try {
         const data = await getLeaderboard();
-        setLeaderboard(data);
+        setLeaderboard(data.slice(0, 3)); // Just show top 3
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
       } finally {
@@ -54,10 +54,11 @@ const TopPerformers: React.FC = () => {
         ) : leaderboard.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             <p>No leaderboard data yet</p>
+            <p className="text-sm mt-1">Make predictions to join the leaderboard!</p>
           </div>
         ) : (
           <div className="divide-y">
-            {leaderboard.slice(0, 3).map((user, index) => (
+            {leaderboard.map((user, index) => (
               <div key={user.userId} className="p-4 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-900 transition-colors">
                 <div className="flex items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${

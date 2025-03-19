@@ -55,6 +55,7 @@ const RecentPredictions: React.FC = () => {
         ) : predictions.length === 0 ? (
           <div className="p-4 text-center text-muted-foreground">
             <p>No predictions yet</p>
+            <p className="text-sm mt-1">Make your first prediction to get started!</p>
           </div>
         ) : (
           <div className="divide-y">

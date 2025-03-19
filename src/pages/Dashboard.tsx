@@ -1,10 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { mockMarketData, mockPredictions, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
+import { mockMarketData, mockGlobalStats } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
+import { getUserPredictions, getUserStats, getLeaderboard } from "@/lib/prediction";
+import { Prediction, LeaderboardEntry } from "@/lib/prediction/types";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 // Component imports
 import AlertBanner from "@/components/dashboard/AlertBanner";
@@ -19,8 +23,45 @@ import CommunityStats from "@/components/dashboard/CommunityStats";
 const Dashboard: React.FC = () => {
   const [showAlert, setShowAlert] = useState(true);
   const { containerVariants, itemVariants } = useAnimations();
-  const recentPredictions = mockPredictions.slice(0, 3);
-  const userRank = mockLeaderboard.find(item => item.userId === 'current-user-id')?.rank || 0;
+  
+  // State for real data
+  const [recentPredictions, setRecentPredictions] = useState<Prediction[]>([]);
+  const [userRank, setUserRank] = useState<number>(0);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch real user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get user predictions
+        const predictions = await getUserPredictions();
+        setRecentPredictions(predictions.slice(0, 3));
+        
+        // Get leaderboard to determine user rank
+        const leaderboard = await getLeaderboard();
+        
+        // Get current user
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData && userData.user) {
+          const currentUserRank = leaderboard.find(item => item.userId === userData.user.id)?.rank || 0;
+          setUserRank(currentUserRank);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast({
+          title: "Error loading data",
+          description: "Could not load your data. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchUserData();
+  }, []);
   
   // Generate opportunities with smart suggestions
   const opportunities = [
