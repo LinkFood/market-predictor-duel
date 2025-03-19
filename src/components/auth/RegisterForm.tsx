@@ -12,6 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { isSupabaseConfigured, getSupabaseConfigError } from "@/lib/supabase";
 
 // Validation schema
 const registerSchema = z.object({
@@ -37,6 +38,10 @@ const RegisterForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   
+  // Check if Supabase is properly configured
+  const configError = getSupabaseConfigError();
+  const [supabaseError, setSupabaseError] = useState<string | null>(configError);
+  
   const { 
     register, 
     handleSubmit,
@@ -59,6 +64,13 @@ const RegisterForm: React.FC = () => {
       setError(null);
       setSuccess(null);
       
+      // Check if Supabase is configured before attempting signup
+      if (!isSupabaseConfigured()) {
+        setError('Supabase is not properly configured. Please check your configuration.');
+        console.error('Supabase configuration error:', getSupabaseConfigError());
+        return;
+      }
+      
       // Debug info
       console.log("Attempting signup with:", data.email);
       console.log("Terms agreed:", data.terms);
@@ -68,7 +80,12 @@ const RegisterForm: React.FC = () => {
       
       if (error) {
         console.error("Signup error:", error);
-        setError(error.message || 'Failed to create account');
+        // Enhanced error message handling
+        if (error.message === 'Load failed') {
+          setError('Connection to authentication service failed. Please check your internet connection and try again.');
+        } else {
+          setError(error.message || 'Failed to create account');
+        }
         return;
       }
       
@@ -87,7 +104,7 @@ const RegisterForm: React.FC = () => {
       
     } catch (err) {
       console.error("Unexpected error during signup:", err);
-      setError('An unexpected error occurred');
+      setError('An unexpected error occurred. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -96,6 +113,15 @@ const RegisterForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
+        {/* Show Supabase configuration error if present */}
+        {supabaseError && (
+          <Alert variant="destructive">
+            <AlertDescription>
+              <span className="font-semibold">Configuration Error:</span> {supabaseError}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
