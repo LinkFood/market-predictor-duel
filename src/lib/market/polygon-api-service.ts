@@ -6,46 +6,63 @@
 
 import { StockData, HistoricalData } from "./types";
 import { supabase } from "@/integrations/supabase/client";
-import { logError } from "../error-handling";
+import { logError, showErrorToast } from "../error-handling";
 import { recordApiSuccess, recordApiFailure } from "../api-health-monitor";
+import { MARKET_CONFIG } from "../config";
 
 /**
- * Call the Polygon API through our Supabase edge function
+ * Call the Polygon API through our Supabase edge function with retries
  */
-async function callPolygonApi(endpoint: string, params = {}) {
-  try {
-    console.log(`Calling Polygon API endpoint ${endpoint} via edge function`);
-    
-    const { data, error } = await supabase.functions.invoke('polygon-market-data', {
-      body: { 
-        endpoint,
-        params
-      }
-    });
+async function callPolygonApi(endpoint: string, params = {}, maxRetries = MARKET_CONFIG.retryAttempts) {
+  let attempts = 0;
+  let lastError = null;
 
-    if (error) {
-      console.error('Error calling polygon-market-data function:', error);
-      recordApiFailure('polygon', error);
-      throw error;
+  while (attempts < maxRetries) {
+    try {
+      console.log(`Calling Polygon API endpoint ${endpoint} via edge function (attempt ${attempts + 1}/${maxRetries})`);
+      
+      const { data, error } = await supabase.functions.invoke('polygon-market-data', {
+        body: { 
+          endpoint,
+          params
+        }
+      });
+
+      if (error) {
+        console.error('Error calling polygon-market-data function:', error);
+        recordApiFailure('polygon', error);
+        throw error;
+      }
+      
+      // Check if the response contains an error message from the edge function
+      if (data && data.error) {
+        console.error('Polygon API returned an error:', data.error, data.message);
+        recordApiFailure('polygon', new Error(data.error));
+        throw new Error(`Polygon API error: ${data.error} - ${data.message || ''}`);
+      }
+      
+      // Record successful API call
+      recordApiSuccess('polygon');
+      
+      console.log(`Successfully received data for ${endpoint}`);
+      return data;
+    } catch (error) {
+      lastError = error;
+      attempts++;
+      
+      if (attempts >= maxRetries) {
+        console.error(`Final attempt ${attempts} failed for ${endpoint}:`, error);
+        throw error;
+      }
+      
+      // Exponential backoff
+      const delayMs = MARKET_CONFIG.retryDelay * Math.pow(2, attempts - 1);
+      console.log(`Retrying in ${delayMs}ms... (attempt ${attempts + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, delayMs));
     }
-    
-    // Check if the response contains an error message from the edge function
-    if (data && data.error) {
-      console.error('Polygon API returned an error:', data.error, data.message);
-      recordApiFailure('polygon', new Error(data.error));
-      throw new Error(`Polygon API error: ${data.error} - ${data.message || ''}`);
-    }
-    
-    // Record successful API call
-    recordApiSuccess('polygon');
-    
-    console.log(`Successfully received data for ${endpoint}`);
-    return data;
-  } catch (error) {
-    console.error(`Error in callPolygonApi for ${endpoint}:`, error);
-    recordApiFailure('polygon', error);
-    throw error;
   }
+
+  throw lastError || new Error('All retry attempts failed');
 }
 
 /**
@@ -81,6 +98,8 @@ export async function getPolygonStockData(symbol: string): Promise<StockData> {
     const changePercent = ((result.c - result.o) / result.o) * 100;
     
     console.log(`Processed stock data for ${symbol}:`, {
+      symbol,
+      name,
       price: result.c,
       change,
       changePercent,
@@ -103,7 +122,7 @@ export async function getPolygonStockData(symbol: string): Promise<StockData> {
   } catch (error) {
     logError(error, `getPolygonStockData:${symbol}`);
     console.error(`Error fetching Polygon data for ${symbol}:`, error);
-    throw error;
+    throw error; // Rethrow to prevent silent fallback
   }
 }
 
@@ -147,7 +166,7 @@ export async function getPolygonHistoricalData(
   } catch (error) {
     logError(error, `getPolygonHistoricalData:${symbol}`);
     console.error(`Error fetching Polygon historical data for ${symbol}:`, error);
-    throw error;
+    throw error; // Rethrow to prevent silent fallback
   }
 }
 
@@ -180,6 +199,7 @@ export async function searchPolygonStocks(query: string): Promise<StockData[]> {
         return await getPolygonStockData(result.ticker);
       } catch (error) {
         // Return basic stock data if price fetch fails
+        console.warn(`Failed to get price data for ${result.ticker}:`, error);
         return {
           symbol: result.ticker,
           name: result.name || `${result.ticker} Stock`,
@@ -195,7 +215,7 @@ export async function searchPolygonStocks(query: string): Promise<StockData[]> {
   } catch (error) {
     logError(error, `searchPolygonStocks:${query}`);
     console.error(`Error searching Polygon stocks for ${query}:`, error);
-    throw error;
+    throw error; // Rethrow to prevent silent fallback
   }
 }
 
@@ -243,7 +263,7 @@ export async function getPolygonMarketMovers(): Promise<{gainers: StockData[], l
   } catch (error) {
     logError(error, "getPolygonMarketMovers");
     console.error('Error fetching Polygon market movers:', error);
-    throw error;
+    throw error; // Rethrow to prevent silent fallback
   }
 }
 

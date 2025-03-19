@@ -2,6 +2,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 import { FEATURES } from "@/lib/config";
+import { AlertCircle } from "lucide-react";
 
 interface StockInfoProps {
   stock: {
@@ -14,9 +15,10 @@ interface StockInfoProps {
     high52Week?: number;
     low52Week?: number;
   } | null;
+  isRealData?: boolean;
 }
 
-const StockInfo: React.FC<StockInfoProps> = ({ stock }) => {
+const StockInfo: React.FC<StockInfoProps> = ({ stock, isRealData = FEATURES.enableRealMarketData }) => {
   if (!stock) return null;
   
   return (
@@ -38,7 +40,7 @@ const StockInfo: React.FC<StockInfoProps> = ({ stock }) => {
       </div>
       
       {/* Additional stock details shown when using real market data */}
-      {FEATURES.enableRealMarketData && (
+      {isRealData && (
         <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
           {stock.volume && (
             <div>
@@ -60,6 +62,13 @@ const StockInfo: React.FC<StockInfoProps> = ({ stock }) => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {!isRealData && (
+        <div className="mt-3 flex items-center text-xs text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 p-2 rounded">
+          <AlertCircle className="h-3.5 w-3.5 mr-1.5" />
+          Using simulated stock data. Actual prices may vary.
         </div>
       )}
     </div>

@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Search, Loader2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { searchStocks } from "@/lib/market";
 import { FEATURES } from "@/lib/config";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SearchBarProps {
   onSelectStock: (stock: any) => void;
@@ -18,6 +20,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Handle search
   const handleSearch = async () => {
@@ -25,7 +28,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
     
     try {
       setIsLoading(true);
+      setError(null);
       console.log('Searching for stocks:', searchQuery);
+      
       const results = await searchStocks(searchQuery);
       console.log('Search results:', results);
       setSearchResults(results);
@@ -40,6 +45,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
       }
     } catch (error) {
       console.error('Error searching stocks:', error);
+      setError(error instanceof Error ? error.message : "Failed to search for stocks");
       toast({
         variant: "destructive",
         title: "Search Error",
@@ -54,11 +60,12 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium">Search for a stock</label>
-        {FEATURES.enableRealMarketData && (
-          <span className="text-xs px-2 py-0.5 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 rounded-full">
-            Live Data
-          </span>
-        )}
+        <Badge variant={FEATURES.enableRealMarketData ? "default" : "outline"} className={cn(
+          "text-xs",
+          !FEATURES.enableRealMarketData && "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
+        )}>
+          {FEATURES.enableRealMarketData ? "Live Data" : "Simulated Data"}
+        </Badge>
       </div>
       <div className="flex space-x-2">
         <div className="relative flex-grow">
@@ -88,6 +95,13 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
           )}
         </Button>
       </div>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       
       {/* Search Results */}
       {showSearchResults && searchResults.length > 0 && (

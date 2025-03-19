@@ -2,15 +2,18 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { StockData } from './types';
 import { getTopMovers } from './market-movers-service';
-import { MARKET_CONFIG } from '../config';
+import { MARKET_CONFIG, FEATURES } from '../config';
 import { useToast } from '@/hooks/use-toast';
 
 interface MarketDataContextType {
   gainers: StockData[];
   losers: StockData[];
   isLoading: boolean;
+  isError: boolean;
+  errorMessage: string | null;
   lastUpdated: Date | null;
   refreshData: () => Promise<void>;
+  usingMockData: boolean;
 }
 
 const MarketDataContext = createContext<MarketDataContextType | undefined>(undefined);
@@ -32,12 +35,18 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
   const [gainers, setGainers] = useState<StockData[]>([]);
   const [losers, setLosers] = useState<StockData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [usingMockData, setUsingMockData] = useState(!FEATURES.enableRealMarketData);
 
   const fetchMarketData = async () => {
     try {
       setIsLoading(true);
+      setIsError(false);
+      setErrorMessage(null);
       console.log('Fetching market movers data...');
+      
       const { gainers: newGainers, losers: newLosers } = await getTopMovers();
       
       console.log('Received market movers data:', { 
@@ -50,8 +59,10 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
         setGainers(newGainers);
         setLosers(newLosers);
         setLastUpdated(new Date());
+        setUsingMockData(!FEATURES.enableRealMarketData);
       } else {
-        console.warn('Received empty market movers data');
+        setIsError(true);
+        setErrorMessage("Received empty market data");
         toast({
           title: "Market Data Warning",
           description: "Received empty market data. Using latest available data.",
@@ -60,11 +71,16 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
       }
     } catch (error) {
       console.error('Error fetching market data:', error);
+      setIsError(true);
+      setErrorMessage(error instanceof Error ? error.message : "Unknown error fetching market data");
+      
       toast({
         title: "Market Data Error",
-        description: "Failed to fetch market data. Using latest available data.",
+        description: "Failed to fetch market data. Check your API configuration.",
         variant: "destructive"
       });
+      
+      // Don't update with empty data on error
     } finally {
       setIsLoading(false);
     }
@@ -88,8 +104,11 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
         gainers, 
         losers, 
         isLoading, 
+        isError,
+        errorMessage,
         lastUpdated, 
-        refreshData: fetchMarketData 
+        refreshData: fetchMarketData,
+        usingMockData
       }}
     >
       {children}

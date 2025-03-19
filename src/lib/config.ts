@@ -7,7 +7,8 @@ export const config = {
   },
   polygon: {
     baseUrl: "https://api.polygon.io",
-    enabled: true
+    enabled: true, // Ensure this is set to true for using real data
+    apiKey: "" // Will be set through environment variables
   },
   xai: {
     baseUrl: "https://api.x.ai/v1"
@@ -29,7 +30,8 @@ export const MARKET_CONFIG = {
   defaultTimeframes: ['1d', '1w', '1m', '3m'],
   chartPeriods: ['1D', '1W', '1M', '3M', '6M', '1Y', 'ALL'],
   retryAttempts: 3, // Number of retry attempts for API calls
-  retryDelay: 1000 // Base delay between retries in milliseconds
+  retryDelay: 1000, // Base delay between retries in milliseconds
+  requestTimeout: 10000 // Timeout for API requests in milliseconds
 };
 
 // API error messages
@@ -37,7 +39,8 @@ export const API_ERRORS = {
   NETWORK_ERROR: "Network error. Please check your connection and try again.",
   AUTHENTICATION_ERROR: "Authentication error. Please log in again.",
   SERVER_ERROR: "Server error. Please try again later.",
-  NOT_FOUND: "Resource not found. Please check your request."
+  NOT_FOUND: "Resource not found. Please check your request.",
+  POLYGON_ERROR: "Error loading market data. The API key may be invalid or missing."
 };
 
 // Logging configuration

@@ -3,13 +3,22 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMarketData } from '@/lib/market/MarketDataProvider';
-import { ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { FEATURES } from '@/lib/config';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export const MarketInfoDisplay: React.FC = () => {
-  const { gainers, losers, isLoading, lastUpdated, refreshData } = useMarketData();
+  const { 
+    gainers, 
+    losers, 
+    isLoading, 
+    isError,
+    errorMessage,
+    lastUpdated, 
+    refreshData,
+    usingMockData 
+  } = useMarketData();
   
   // Format the last updated time
   const getUpdatedTime = () => {
@@ -37,8 +46,14 @@ export const MarketInfoDisplay: React.FC = () => {
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
         <CardTitle className="text-sm font-medium">Market Movers</CardTitle>
         <div className="flex items-center gap-2">
-          <Badge variant="outline" className="text-xs">
-            {FEATURES.enableRealMarketData ? 'Live Data' : 'Mock Data'}: {getUpdatedTime()}
+          <Badge 
+            variant={usingMockData ? "outline" : "secondary"} 
+            className={cn(
+              "text-xs",
+              usingMockData && "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
+            )}
+          >
+            {usingMockData ? 'Simulated Data' : 'Live Data'}: {getUpdatedTime()}
           </Badge>
           <Button
             size="sm"
@@ -53,6 +68,15 @@ export const MarketInfoDisplay: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="p-0">
+        {isError && (
+          <Alert variant="destructive" className="mb-0 rounded-none">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {errorMessage || "Error loading market data. Please refresh to try again."}
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <div className="grid grid-cols-2">
           <div className="p-4 border-r">
             <h4 className="text-sm font-medium flex items-center mb-2">
@@ -113,6 +137,12 @@ export const MarketInfoDisplay: React.FC = () => {
             </ul>
           </div>
         </div>
+
+        {usingMockData && (
+          <div className="px-4 py-2 text-xs text-center text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400">
+            Using simulated market data. Please check API configuration to enable real-time data.
+          </div>
+        )}
       </CardContent>
     </Card>
   );

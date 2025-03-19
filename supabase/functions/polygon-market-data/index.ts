@@ -47,76 +47,93 @@ serve(async (req) => {
     
     console.log(`Calling Polygon API: ${url.replace(POLYGON_API_KEY, '[REDACTED]')}`);
     
-    // Call Polygon API
-    const response = await fetch(url);
-    const status = response.status;
+    // Call Polygon API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
     
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`Polygon API error (${status}): ${errorData}`);
+    try {
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
-      return new Response(
-        JSON.stringify({ 
-          error: `Polygon API error: ${status}`,
-          message: errorData,
+      clearTimeout(timeoutId);
+      const status = response.status;
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error(`Polygon API error (${status}): ${errorData}`);
+        
+        return new Response(
+          JSON.stringify({ 
+            error: `Polygon API error: ${status}`,
+            message: errorData,
+            endpoint
+          }),
+          { 
+            status: status,
+            headers: { 
+              ...corsHeaders,
+              'Content-Type': 'application/json' 
+            } 
+          }
+        );
+      }
+
+      const data = await response.json();
+      
+      // Basic validation of the response data
+      if (!data) {
+        throw new Error("Empty response from Polygon API");
+      }
+      
+      // For market movers endpoints, validate the tickers array
+      if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
+        if (!data.tickers || !Array.isArray(data.tickers)) {
+          console.error("Invalid response format for market movers:", data);
+          throw new Error("Invalid response format for market movers");
+        }
+        console.log(`Received ${data.tickers.length} tickers from ${endpoint}`);
+      }
+      
+      console.log(`Successfully received data from Polygon API for ${endpoint}`);
+      
+      // Add metadata to help with debugging
+      const enhancedData = {
+        ...data,
+        _meta: {
+          source: 'polygon',
+          timestamp: new Date().toISOString(),
           endpoint
-        }),
+        }
+      };
+      
+      // Return the data
+      return new Response(
+        JSON.stringify(enhancedData),
         { 
-          status: status,
           headers: { 
             ...corsHeaders,
             'Content-Type': 'application/json' 
           } 
         }
       );
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      console.error("Fetch error:", fetchError);
+      throw fetchError;
     }
-
-    const data = await response.json();
-    
-    // Basic validation of the response data
-    if (!data) {
-      throw new Error("Empty response from Polygon API");
-    }
-    
-    // For market movers endpoints, validate the tickers array
-    if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
-      if (!data.tickers || !Array.isArray(data.tickers)) {
-        console.error("Invalid response format for market movers:", data);
-        throw new Error("Invalid response format for market movers");
-      }
-      console.log(`Received ${data.tickers.length} tickers from ${endpoint}`);
-    }
-    
-    console.log(`Successfully received data from Polygon API for ${endpoint}`);
-    
-    // Add metadata to help with debugging
-    const enhancedData = {
-      ...data,
-      _meta: {
-        source: 'polygon',
-        timestamp: new Date().toISOString(),
-        endpoint
-      }
-    };
-    
-    // Return the data
-    return new Response(
-      JSON.stringify(enhancedData),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json' 
-        } 
-      }
-    );
   } catch (error) {
     console.error("Error in polygon-market-data function:", error.message);
     
-    // Return error response
+    // Return specific error response
     return new Response(
       JSON.stringify({ 
         error: error.message || "An error occurred processing your request",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        isPolygonError: true
       }),
       { 
         status: 500,
