@@ -11,6 +11,7 @@ export { default as StockInfo } from './StockInfo';
 export { default as TrendPrediction } from './TrendPrediction';
 export { default as PricePrediction } from './PricePrediction';
 export { default as TimeframeSelector } from './TimeframeSelector';
+export { default as ConfirmPredictionDialog } from './ConfirmPredictionDialog';
 
 // Form components
 export * from './form';

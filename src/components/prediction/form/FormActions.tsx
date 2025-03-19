@@ -8,13 +8,19 @@ interface FormActionsProps {
   isLoading: boolean;
   isDisabled: boolean;
   onSubmit: () => void;
+  onOpenConfirmDialog: () => void;
 }
 
-const FormActions: React.FC<FormActionsProps> = ({ isLoading, isDisabled, onSubmit }) => {
+const FormActions: React.FC<FormActionsProps> = ({ 
+  isLoading, 
+  isDisabled, 
+  onSubmit,
+  onOpenConfirmDialog
+}) => {
   return (
     <>
       <Button 
-        onClick={onSubmit} 
+        onClick={onOpenConfirmDialog} 
         disabled={isLoading || isDisabled} 
         className="w-full bg-indigo-600 hover:bg-indigo-700"
       >

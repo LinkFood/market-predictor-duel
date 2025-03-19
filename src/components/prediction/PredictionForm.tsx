@@ -11,6 +11,7 @@ import StockInfo from "./StockInfo";
 import TrendPrediction from "./TrendPrediction";
 import PricePrediction from "./PricePrediction";
 import { FormContainer, FormActions, FormHeader, DataSourceIndicator } from "./form";
+import ConfirmPredictionDialog from "./ConfirmPredictionDialog";
 
 // Types
 type PredictionType = 'trend' | 'price';
@@ -28,6 +29,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
   const [timeframe, setTimeframe] = useState('1d');
   const [trendPrediction, setTrendPrediction] = useState<'uptrend' | 'downtrend' | null>(null);
   const [pricePrediction, setPricePrediction] = useState<string>('');
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   // Handle stock selection
   const handleSelectStock = async (stock: any) => {
@@ -49,6 +51,11 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Handle opening confirmation dialog
+  const handleOpenConfirmDialog = () => {
+    setConfirmDialogOpen(true);
   };
 
   // Handle submit
@@ -169,6 +176,17 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
           </TabsContent>
         </Tabs>
       )}
+      
+      {/* Confirmation Dialog */}
+      <ConfirmPredictionDialog
+        open={confirmDialogOpen}
+        onOpenChange={setConfirmDialogOpen}
+        onConfirm={handleSubmit}
+        predictionType={predictionType}
+        stockName={selectedStock?.name || ''}
+        predictionValue={predictionType === 'trend' ? trendPrediction || '' : pricePrediction}
+        timeframe={timeframe}
+      />
     </>
   );
 
@@ -181,6 +199,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
           isLoading={isLoading} 
           isDisabled={!isFormValid}
           onSubmit={handleSubmit}
+          onOpenConfirmDialog={handleOpenConfirmDialog}
         />
       }
     >
