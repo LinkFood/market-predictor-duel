@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
@@ -39,7 +39,8 @@ const RegisterForm: React.FC = () => {
   
   const { 
     register, 
-    handleSubmit, 
+    handleSubmit,
+    control,
     formState: { errors } 
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -60,6 +61,7 @@ const RegisterForm: React.FC = () => {
       
       // Debug info
       console.log("Attempting signup with:", data.email);
+      console.log("Terms agreed:", data.terms);
       
       // Register with supabase - pass username as third argument
       const { error } = await signUp(data.email, data.password, data.username);
@@ -160,10 +162,17 @@ const RegisterForm: React.FC = () => {
         </div>
         
         <div className="flex items-start space-x-2">
-          <Checkbox 
-            id="terms" 
-            {...register('terms')}
-            className={errors.terms ? 'border-red-500' : ''}
+          <Controller
+            name="terms"
+            control={control}
+            render={({ field }) => (
+              <Checkbox 
+                id="terms"
+                checked={field.value}
+                onCheckedChange={field.onChange}
+                className={errors.terms ? 'border-red-500' : ''}
+              />
+            )}
           />
           <Label htmlFor="terms" className="text-sm font-normal leading-tight">
             I agree to the{" "}
