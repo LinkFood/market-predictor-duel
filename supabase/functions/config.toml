@@ -1,0 +1,9 @@
+
+# All edge functions will be deployed to the "AI Predictions" project by default.
+project_id = "xvojivdhshgdbxrwcokx"
+
+[functions.xai-analysis]
+verify_jwt = false
+
+[functions.xai-prediction]
+verify_jwt = false

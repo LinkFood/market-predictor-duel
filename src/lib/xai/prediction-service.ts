@@ -1,16 +1,14 @@
 
 /**
  * X.ai Prediction Service
- * Handles stock prediction functionality using X.ai API
+ * Handles stock prediction functionality using X.ai API through Supabase edge function
  */
 
 import { FEATURES, config } from '../config';
 import { StockPredictionRequest, StockPredictionResponse } from './types';
 import { getMockPrediction } from './mock-data';
-
-// Configuration
-const API_KEY = config.xai.apiKey;
-const API_URL = config.xai.baseUrl;
+import { supabase } from '@/integrations/supabase/client';
+import { logError } from '../error-handling';
 
 /**
  * Get an AI prediction for a stock
@@ -25,76 +23,48 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
     
     console.log('Fetching AI prediction for', request.ticker);
     
-    // Add a timeout to the fetch request
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-    
-    try {
-      const response = await fetch(`${API_URL}/predictions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gemini-pro', // Using a powerful model for financial predictions
-          messages: [
-            {
-              role: 'system',
-              content: `You are a financial analysis AI specialized in stock market predictions. 
-                        Analyze the given stock and provide a prediction based on current market data, 
-                        trends, and historical performance. Explain your reasoning and provide a 
-                        confidence score from 0 to 100.`
-            },
-            {
-              role: 'user',
-              content: `Please predict the ${request.predictionType} for ${request.ticker} 
-                        over the next ${request.timeframe}. ${request.currentPrice ? 
-                        `The current price is $${request.currentPrice}.` : ''}`
-            }
-          ],
-          temperature: 0.2, // Low temperature for more consistent predictions
-          top_p: 0.7,
-        }),
-        signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        console.error(`X.ai API request failed with status ${response.status}`);
-        const errorText = await response.text();
-        console.error(`Error response: ${errorText}`);
-        return getMockPrediction(request);
+    // Call the Supabase edge function for prediction
+    console.log('Calling xai-prediction edge function');
+    const { data, error } = await supabase.functions.invoke('xai-prediction', {
+      body: { 
+        ticker: request.ticker,
+        timeframe: request.timeframe,
+        predictionType: request.predictionType,
+        currentPrice: request.currentPrice
       }
+    });
 
-      const data = await response.json();
-      
-      // Process the response to extract prediction, confidence, and rationale
-      const aiResponse = data.choices?.[0]?.message?.content;
-      
-      if (!aiResponse) {
-        console.error('Invalid AI response format, falling back to mock data');
-        return getMockPrediction(request);
-      }
-      
-      // Here we would parse the AI response to extract structured data
-      // For now, we'll use our mock response structure
-      return {
-        prediction: request.predictionType === 'price' ? '$185.75' : 'uptrend',
-        confidence: 85,
-        rationale: aiResponse || "Based on recent market trends, strong earnings reports, and positive sentiment analysis, I predict an uptrend for this stock.",
-        timestamp: new Date().toISOString()
-      };
-    } catch (err) {
-      clearTimeout(timeoutId);
-      if (err.name === 'AbortError') {
-        console.error('Request timeout for X.ai API');
-        return getMockPrediction(request);
-      }
-      throw err;
+    if (error) {
+      console.error('Error calling xai-prediction function:', error);
+      throw error;
     }
+    
+    if (!data || !data.prediction) {
+      console.error('Invalid response from xai-prediction function:', data);
+      throw new Error('Invalid response from xai-prediction function');
+    }
+    
+    console.log('Successfully received prediction from edge function:', data);
+    
+    // Ensure the prediction type is valid
+    if (request.predictionType === 'trend' && 
+        !['uptrend', 'downtrend'].includes(data.prediction)) {
+      console.warn('Invalid trend prediction from API, normalizing:', data.prediction);
+      data.prediction = data.prediction.toLowerCase().includes('up') || 
+                        data.prediction.toLowerCase().includes('bull') ? 
+                        'uptrend' : 'downtrend';
+    }
+    
+    return {
+      prediction: data.prediction,
+      confidence: data.confidence || 80,
+      rationale: data.rationale || data.reasoning || "Based on market analysis, the AI has made this prediction.",
+      supportingPoints: data.supportingPoints || [],
+      counterPoints: data.counterPoints || [],
+      timestamp: new Date().toISOString()
+    };
   } catch (error) {
+    logError(error, "getStockPrediction");
     console.error("Error fetching AI prediction:", error);
     // Return mock data on error
     return getMockPrediction(request);

@@ -29,6 +29,16 @@ export function getMockPrediction(request: StockPredictionRequest): StockPredict
       rationale: isUptrend 
         ? "Based on technical indicators and recent news, this stock is likely to see positive momentum in the short term."
         : "Recent market volatility and sector weakness suggest a potential short-term pullback for this stock.",
+      supportingPoints: [
+        "Positive earnings report with better than expected growth metrics",
+        "Technical indicators show bullish pattern with strong volume",
+        "Sector is outperforming the broader market recently"
+      ],
+      counterPoints: [
+        "Market volatility could impact all stocks regardless of fundamentals",
+        "Potential regulatory concerns in this industry",
+        "Valuation metrics are higher than sector average"
+      ],
       timestamp: new Date().toISOString()
     };
   } else {
@@ -38,6 +48,24 @@ export function getMockPrediction(request: StockPredictionRequest): StockPredict
       rationale: isUptrend 
         ? "Technical indicators show bullish patterns with strong volume and positive news sentiment."
         : "Recent resistance levels, decreased volume, and broader market concerns indicate potential weakness ahead.",
+      supportingPoints: isUptrend ? [
+        "Price is trading above key moving averages",
+        "Recent high volume on up days indicates institutional buying",
+        "Positive news and analyst upgrades"
+      ] : [
+        "Price failed to break through key resistance levels",
+        "Decreasing volume on rally attempts",
+        "Negative divergence on momentum indicators"
+      ],
+      counterPoints: isUptrend ? [
+        "Overbought conditions on RSI indicator",
+        "Resistance levels ahead could limit upside",
+        "Market sector showing signs of weakness"
+      ] : [
+        "Oversold conditions might lead to a short-term bounce",
+        "Strong support level just below current price",
+        "Overall market sentiment turning more positive"
+      ],
       timestamp: new Date().toISOString()
     };
   }

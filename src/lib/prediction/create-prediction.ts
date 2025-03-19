@@ -1,3 +1,4 @@
+
 /**
  * Handles creating new predictions
  */
@@ -8,6 +9,7 @@ import { getStockData } from '../market';
 import { Prediction, PredictionRequest } from './types';
 import { toast } from '@/hooks/use-toast';
 import { dbToPrediction } from './adapters';
+import { logError } from '../error-handling';
 
 /**
  * Create a new prediction
@@ -40,11 +42,20 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     // Calculate resolves date based on timeframe
     const resolvesAt = calculateResolvesAt(request.timeframe);
     
-    // Generate AI analysis with safe defaults if properties don't exist
+    // Generate AI analysis with supporting and counter points
     const aiAnalysis = {
-      reasoning: aiPredictionResult.reasoning || aiPredictionResult.rationale || "Based on market analysis, this prediction has a reasonable likelihood of success.",
-      supporting: aiPredictionResult.supportingPoints || ["Technical indicators suggest this direction", "Recent price action supports this view"],
-      counter: aiPredictionResult.counterPoints || ["Market volatility is a risk factor", "External events could change the trajectory"]
+      reasoning: aiPredictionResult.rationale || aiPredictionResult.reasoning || 
+                "Based on market analysis, this prediction has a reasonable likelihood of success.",
+      supporting: aiPredictionResult.supportingPoints || [
+        "Technical indicators suggest this direction", 
+        "Recent price action supports this view",
+        "Market sentiment is favorable"
+      ],
+      counter: aiPredictionResult.counterPoints || [
+        "Market volatility is a risk factor", 
+        "External events could change the trajectory",
+        "Potential for profit-taking could limit gains"
+      ]
     };
     
     // Create prediction record in database
@@ -64,6 +75,8 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
       ai_analysis: aiAnalysis
     };
     
+    console.log('Saving prediction to database:', newPredictionData);
+    
     const { data, error } = await supabase
       .from('predictions')
       .insert(newPredictionData)
@@ -72,8 +85,10 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     
     if (error) throw error;
     
+    console.log('Prediction saved successfully:', data);
     return dbToPrediction(data);
   } catch (error) {
+    logError(error, "createPrediction");
     console.error("Error creating prediction:", error);
     toast({
       variant: "destructive",
