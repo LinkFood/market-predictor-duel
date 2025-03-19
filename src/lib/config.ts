@@ -1,3 +1,4 @@
+
 // Application configuration with actual Supabase credentials
 export const config = {
   supabase: {
@@ -18,7 +19,7 @@ export const config = {
 // Feature flags
 export const FEATURES = {
   enableRealMarketData: config.polygon.enabled,
-  enableAIAnalysis: true,
+  enableAIAnalysis: true, // Ensure this is set to true
   enableHistoricalData: true,
   enableSocialSharing: false,
   devMode: false // Disable development mode

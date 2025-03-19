@@ -21,6 +21,7 @@ export async function getMarketAnalysis(ticker: string): Promise<string> {
     }
     
     // Invoke the Supabase edge function
+    console.log('Calling xai-analysis edge function');
     const { data, error } = await supabase.functions.invoke('xai-analysis', {
       body: { ticker }
     });
@@ -30,11 +31,18 @@ export async function getMarketAnalysis(ticker: string): Promise<string> {
       throw error;
     }
 
+    if (!data || !data.analysis) {
+      console.error('Invalid response from xai-analysis function:', data);
+      throw new Error('Invalid response from xai-analysis function');
+    }
+
+    console.log('Successfully received analysis from edge function');
     return data.analysis;
   } catch (error) {
     console.error('Error getting market analysis:', error);
     
     // Fall back to mock data on error
+    console.log('Falling back to mock analysis due to error');
     return getMockAnalysis(ticker);
   }
 }

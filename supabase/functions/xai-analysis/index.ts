@@ -26,6 +26,12 @@ serve(async (req) => {
     }
 
     console.log(`Processing market analysis request for ticker: ${ticker}`);
+    
+    // Check if API key exists
+    if (!XAI_API_KEY) {
+      console.error("X.ai API key is not configured");
+      throw new Error("X.ai API key is not configured");
+    }
 
     // Build the prompt for the analysis
     const analysisPrompt = `
