@@ -26,6 +26,7 @@ serve(async (req) => {
     }
 
     console.log(`Processing Polygon market data request for endpoint: ${endpoint}`);
+    console.log(`Request params:`, params);
     
     // Check if API key exists
     if (!POLYGON_API_KEY) {

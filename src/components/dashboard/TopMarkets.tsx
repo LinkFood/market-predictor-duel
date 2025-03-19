@@ -11,6 +11,14 @@ interface TopMarketsProps {
 }
 
 const TopMarkets: React.FC<TopMarketsProps> = ({ markets }) => {
+  // Format currency with commas and 2 decimal places
+  const formatCurrency = (num: number) => {
+    return num.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
   return (
     <motion.section>
       <div className="flex justify-between items-center mb-3">
@@ -30,12 +38,12 @@ const TopMarkets: React.FC<TopMarketsProps> = ({ markets }) => {
             <div>
               <p className="body-md">{market.name}</p>
               <p className={`caption ${market.change > 0 ? 'bullish' : market.change < 0 ? 'bearish' : 'neutral'}`}>
-                {market.change > 0 ? '+' : ''}{market.change.toFixed(2)} ({market.changePercent > 0 ? '+' : ''}{market.changePercent.toFixed(2)}%)
+                {market.change > 0 ? '+' : ''}{formatCurrency(market.change)} ({market.changePercent > 0 ? '+' : ''}{market.changePercent.toFixed(2)}%)
               </p>
             </div>
             
             <div className="flex items-center gap-3">
-              <p className="numeric-md">{market.value.toLocaleString()}</p>
+              <p className="numeric-md">{formatCurrency(market.value)}</p>
               <TrendIndicator direction={market.change > 0 ? 'up' : market.change < 0 ? 'down' : 'neutral'} />
             </div>
           </Link>

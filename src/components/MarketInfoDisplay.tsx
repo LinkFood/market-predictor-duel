@@ -6,6 +6,7 @@ import { useMarketData } from '@/lib/market/MarketDataProvider';
 import { ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
+import { FEATURES } from '@/lib/config';
 
 export const MarketInfoDisplay: React.FC = () => {
   const { gainers, losers, isLoading, lastUpdated, refreshData } = useMarketData();
@@ -32,7 +33,7 @@ export const MarketInfoDisplay: React.FC = () => {
         <CardTitle className="text-sm font-medium">Market Movers</CardTitle>
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="text-xs">
-            Updated: {getUpdatedTime()}
+            {FEATURES.enableRealMarketData ? 'Live Data' : 'Mock Data'}: {getUpdatedTime()}
           </Badge>
           <Button
             size="sm"
@@ -60,7 +61,7 @@ export const MarketInfoDisplay: React.FC = () => {
                     <div key={i} className="h-6 bg-gray-200 dark:bg-gray-800 rounded my-1"></div>
                   ))}
                 </div>
-              ) : (
+              ) : gainers.length > 0 ? (
                 gainers.slice(0, 3).map((stock, idx) => (
                   <li key={idx} className="flex justify-between text-sm">
                     <span>{stock.symbol}</span>
@@ -69,6 +70,8 @@ export const MarketInfoDisplay: React.FC = () => {
                     </span>
                   </li>
                 ))
+              ) : (
+                <li className="text-sm text-gray-500">No data available</li>
               )}
             </ul>
           </div>
@@ -84,7 +87,7 @@ export const MarketInfoDisplay: React.FC = () => {
                     <div key={i} className="h-6 bg-gray-200 dark:bg-gray-800 rounded my-1"></div>
                   ))}
                 </div>
-              ) : (
+              ) : losers.length > 0 ? (
                 losers.slice(0, 3).map((stock, idx) => (
                   <li key={idx} className="flex justify-between text-sm">
                     <span>{stock.symbol}</span>
@@ -93,6 +96,8 @@ export const MarketInfoDisplay: React.FC = () => {
                     </span>
                   </li>
                 ))
+              ) : (
+                <li className="text-sm text-gray-500">No data available</li>
               )}
             </ul>
           </div>

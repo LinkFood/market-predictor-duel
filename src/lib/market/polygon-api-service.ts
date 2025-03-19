@@ -7,6 +7,7 @@
 import { StockData, HistoricalData } from "./types";
 import { supabase } from "@/integrations/supabase/client";
 import { logError } from "../error-handling";
+import { recordApiSuccess, recordApiFailure } from "../api-health-monitor";
 
 /**
  * Call the Polygon API through our Supabase edge function
@@ -24,12 +25,17 @@ async function callPolygonApi(endpoint: string, params = {}) {
 
     if (error) {
       console.error('Error calling polygon-market-data function:', error);
+      recordApiFailure('polygon', error);
       throw error;
     }
+    
+    // Record successful API call
+    recordApiSuccess('polygon');
     
     return data;
   } catch (error) {
     console.error(`Error in callPolygonApi for ${endpoint}:`, error);
+    recordApiFailure('polygon', error);
     throw error;
   }
 }
