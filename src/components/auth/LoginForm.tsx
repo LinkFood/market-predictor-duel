@@ -21,15 +21,7 @@ const loginSchema = z.object({
 
 export type LoginFormData = z.infer<typeof loginSchema>;
 
-interface LoginFormProps {
-  onDevLogin: () => void;
-  devLoginLoading: boolean;
-}
-
-const LoginForm: React.FC<LoginFormProps> = ({
-  onDevLogin,
-  devLoginLoading
-}) => {
+const LoginForm: React.FC = () => {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -147,17 +139,6 @@ const LoginForm: React.FC<LoginFormProps> = ({
           ) : (
             'Sign In'
           )}
-        </Button>
-        
-        <Button 
-          type="button"
-          variant="outline" 
-          className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700 flex items-center justify-center"
-          onClick={onDevLogin}
-          disabled={devLoginLoading}
-        >
-          <span className="mr-2">🧪</span>
-          {devLoginLoading ? 'Logging in...' : 'Development Login (Skip Auth)'}
         </Button>
         
         <div className="text-center text-sm">

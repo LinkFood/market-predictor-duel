@@ -9,7 +9,7 @@ interface DevLoginButtonProps {
 }
 
 const DevLoginButton: React.FC<DevLoginButtonProps> = ({ onClick, isLoading }) => {
-  // Disabled for production use
+  // Always disable the button
   const disabled = true;
   
   return (
