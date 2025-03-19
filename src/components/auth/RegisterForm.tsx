@@ -29,15 +29,7 @@ const registerSchema = z.object({
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
-interface RegisterFormProps {
-  onDevLogin: () => void;
-  devLoginLoading: boolean;
-}
-
-const RegisterForm: React.FC<RegisterFormProps> = ({
-  onDevLogin,
-  devLoginLoading
-}) => {
+const RegisterForm: React.FC = () => {
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -203,17 +195,6 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
           ) : (
             'Create Account'
           )}
-        </Button>
-        
-        <Button 
-          type="button"
-          variant="outline" 
-          className="w-full border-amber-500 text-amber-600 hover:bg-amber-50 hover:text-amber-700 flex items-center justify-center"
-          onClick={onDevLogin}
-          disabled={devLoginLoading}
-        >
-          <span className="mr-2">🧪</span>
-          {devLoginLoading ? 'Logging in...' : 'Development Login (Skip Auth)'}
         </Button>
         
         <div className="text-center text-sm">

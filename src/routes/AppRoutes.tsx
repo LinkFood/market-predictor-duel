@@ -12,6 +12,8 @@ import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
 import Markets from "@/pages/Markets";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense, useEffect } from "react";
@@ -80,6 +82,8 @@ const AppRoutes = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Index />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         
         {/* Auth routes - redirect to app if already logged in */}
         <Route path="/login" element={
