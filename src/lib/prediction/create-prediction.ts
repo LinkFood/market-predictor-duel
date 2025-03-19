@@ -1,3 +1,4 @@
+
 /**
  * Handles creating new predictions
  */
@@ -42,7 +43,7 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     
     // Generate AI analysis with safe defaults if properties don't exist
     const aiAnalysis = {
-      reasoning: aiPredictionResult.reasoning || "Based on market analysis, this prediction has a reasonable likelihood of success.",
+      reasoning: aiPredictionResult.reasoning || aiPredictionResult.rationale || "Based on market analysis, this prediction has a reasonable likelihood of success.",
       supporting: aiPredictionResult.supportingPoints || ["Technical indicators suggest this direction", "Recent price action supports this view"],
       counter: aiPredictionResult.counterPoints || ["Market volatility is a risk factor", "External events could change the trajectory"]
     };

@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { mockMarketData, mockPredictions, currentUser, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
+import { mockMarketData, mockPredictions, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
 
 // Component imports
@@ -20,7 +20,7 @@ const Dashboard: React.FC = () => {
   const [showAlert, setShowAlert] = useState(true);
   const { containerVariants, itemVariants } = useAnimations();
   const recentPredictions = mockPredictions.slice(0, 3);
-  const userRank = mockLeaderboard.find(item => item.userId === currentUser.id)?.rank || 0;
+  const userRank = mockLeaderboard.find(item => item.userId === 'current-user-id')?.rank || 0;
   
   // Generate opportunities with smart suggestions
   const opportunities = [
@@ -82,7 +82,7 @@ const Dashboard: React.FC = () => {
         
         {/* User Stats Section */}
         <motion.div variants={itemVariants}>
-          <UserStatsSection currentUser={currentUser} userRank={userRank} />
+          <UserStatsSection userRank={userRank} />
         </motion.div>
         
         {/* AI vs Humans Battle Stats */}

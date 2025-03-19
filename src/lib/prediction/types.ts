@@ -117,4 +117,5 @@ export interface LeaderboardEntry {
   winRate?: number;
   totalPredictions?: number;
   avatarUrl?: string;
+  winRateAgainstAi?: number;
 }

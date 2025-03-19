@@ -23,6 +23,9 @@ export interface StockPredictionResponse {
   prediction: string;
   confidence: number;
   rationale: string;
+  reasoning?: string;
+  supportingPoints?: string[];
+  counterPoints?: string[];
   supportingData?: any;
   timestamp: string;
 }

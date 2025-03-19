@@ -1,4 +1,3 @@
-
 /**
  * Adapters to convert between database and application data models
  */
@@ -36,6 +35,17 @@ export function dbToPrediction(dbPrediction: any): Prediction {
     stockName: dbPrediction.target_name, // For backward compatibility
     startPrice: dbPrediction.starting_value, // For backward compatibility
     endPrice: dbPrediction.final_value, // For backward compatibility
+    
+    // Add these for backward compatibility
+    target_name: dbPrediction.target_name,
+    user_prediction: dbPrediction.user_prediction,
+    ai_prediction: dbPrediction.ai_prediction,
+    prediction_type: dbPrediction.prediction_type,
+    starting_value: dbPrediction.starting_value,
+    final_value: dbPrediction.final_value,
+    created_at: dbPrediction.created_at,
+    resolved_at: dbPrediction.resolved_at,
+    ai_confidence: dbPrediction.ai_confidence
   };
 }
 
@@ -92,6 +102,10 @@ export function dbToUserStats(dbStats: any): UserStats {
  * Convert database leaderboard record to application LeaderboardEntry model
  */
 export function dbToLeaderboardEntry(entry: any, index: number): LeaderboardEntry {
+  const winRateAgainstAi = (entry.wins_against_ai + entry.losses_against_ai) > 0
+    ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai))
+    : 0;
+    
   return {
     userId: entry.user_id,
     username: entry.profiles?.username || `User ${index + 1}`,
@@ -107,16 +121,12 @@ export function dbToLeaderboardEntry(entry: any, index: number): LeaderboardEntr
     winRate: entry.total_predictions > 0
       ? (entry.correct_predictions / entry.total_predictions)
       : 0,
-    winRateAgainstAi: (entry.wins_against_ai + entry.losses_against_ai) > 0
-      ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai))
-      : 0,
+    winRateAgainstAi: winRateAgainstAi, // Add this for backward compatibility
     rank: index + 1,
     vsAI: {
       wins: entry.wins_against_ai || 0,
       losses: entry.losses_against_ai || 0,
-      winRate: (entry.wins_against_ai + entry.losses_against_ai) > 0
-        ? (entry.wins_against_ai / (entry.wins_against_ai + entry.losses_against_ai))
-        : 0
+      winRate: winRateAgainstAi
     }
   };
 }
