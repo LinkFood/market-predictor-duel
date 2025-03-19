@@ -1,10 +1,9 @@
-
 /**
  * Handles creating new predictions
  */
 
 import { supabase } from '@/integrations/supabase/client';
-import { getStockPrediction } from '../xai-service';
+import { getStockPrediction } from '../xai';
 import { getStockData } from '../market';
 import { Prediction, PredictionRequest } from './types';
 import { toast } from '@/hooks/use-toast';
