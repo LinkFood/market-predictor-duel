@@ -8,7 +8,7 @@ import { DEV_USER } from '../dev-mode';
 import { Prediction } from './types';
 
 // Dev mode flag
-const USE_DEV_MODE = true;
+const USE_DEV_MODE = false;
 
 /**
  * Get user predictions

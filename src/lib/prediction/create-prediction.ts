@@ -11,7 +11,7 @@ import { Prediction, PredictionRequest } from './types';
 import { toast } from '@/hooks/use-toast';
 
 // Dev mode flag
-const USE_DEV_MODE = true;
+const USE_DEV_MODE = false;
 
 /**
  * Create a new prediction

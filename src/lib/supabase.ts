@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 
 // Type guard to check if SUPABASE_CONFIG exists and has required properties
@@ -53,7 +52,7 @@ if (!supabaseAnonKey || supabaseAnonKey.length < 20) {
 }
 
 // Dev mode flag
-const USE_DEV_MODE = true;
+const USE_DEV_MODE = false;
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

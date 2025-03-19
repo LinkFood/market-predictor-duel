@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from './supabase';
@@ -15,7 +14,7 @@ import {
 } from './auth-service';
 
 // Enable dev mode to skip real authentication for development
-const USE_DEV_MODE = true;
+const USE_DEV_MODE = false;
 
 // Define the context type
 type AuthContextType = {
@@ -108,13 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         toast({
           variant: "destructive",
           title: "Configuration Error",
-          description: "Supabase is not configured correctly. Using development mode.",
+          description: "Supabase is not configured correctly. Please check your configuration.",
         });
         
-        // Fall back to dev mode
-        setUser(DEV_USER);
-        setSession(DEV_SESSION);
-        fetchUserProfile(DEV_USER.id);
         setIsLoading(false);
         setIsInitialized(true);
         return;
@@ -137,15 +132,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Error getting session:', error);
         setAuthError(error as Error);
         
-        // Fall back to dev mode on error
-        setUser(DEV_USER);
-        setSession(DEV_SESSION);
-        fetchUserProfile(DEV_USER.id);
-        
         toast({
           variant: "destructive",
           title: "Authentication Error",
-          description: "Failed to get user session. Using development mode."
+          description: "Failed to get user session. Please try again."
         });
       } finally {
         setIsLoading(false);

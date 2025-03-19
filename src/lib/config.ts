@@ -1,4 +1,3 @@
-
 // Application configuration with actual Supabase credentials
 export const config = {
   supabase: {
@@ -22,7 +21,7 @@ export const FEATURES = {
   enableAIAnalysis: true,
   enableHistoricalData: true,
   enableSocialSharing: false,
-  devMode: true // Enable development mode
+  devMode: false // Disable development mode
 };
 
 // Market Data Configuration
