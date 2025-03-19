@@ -32,8 +32,8 @@ const handleStartupError = (error: Error) => {
 try {
   // Set Supabase configuration from environment variables
   window.SUPABASE_CONFIG = {
-    url: import.meta.env.VITE_SUPABASE_URL || window.SUPABASE_CONFIG?.url || "https://iphpwxputfwxsiwdmqmk.supabase.co",
-    key: import.meta.env.VITE_SUPABASE_ANON_KEY || window.SUPABASE_CONFIG?.key || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaHB3eHB1dGZ3eHNpd2RtcW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTc1OTgsImV4cCI6MjA1NzY3MzU5OH0.f3UDw6w8FGXz-SpQKlcsGFzyxCOICaUANeBJ2lCYFlE"
+    url: import.meta.env.VITE_SUPABASE_URL || window.SUPABASE_CONFIG?.url || "https://xvojivdhshgdbxrwcokx.supabase.co",
+    key: import.meta.env.VITE_SUPABASE_ANON_KEY || window.SUPABASE_CONFIG?.key || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2ppdmRoc2hnZGJ4cndjb2t4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDQxNDUsImV4cCI6MjA1NzY4MDE0NX0.G0HNXKFNUqIba27xsKY9t1KYRDL68ZHbsSgLmPQsXc4"
   };
 
   // Log configuration for debugging

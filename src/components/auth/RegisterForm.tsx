@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
-import { isSupabaseConfigured, getSupabaseConfigError } from "@/lib/supabase";
+import { isSupabaseConfigured, getSupabaseConfigError, supabase } from "@/lib/supabase";
 
 // Validation schema
 const registerSchema = z.object({
@@ -39,8 +39,25 @@ const RegisterForm: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   
   // Check if Supabase is properly configured
-  const configError = getSupabaseConfigError();
-  const [supabaseError, setSupabaseError] = useState<string | null>(configError);
+  const [supabaseError, setSupabaseError] = useState<string | null>(null);
+  
+  // Check Supabase configuration on component mount
+  useEffect(() => {
+    const configError = getSupabaseConfigError();
+    setSupabaseError(configError);
+    
+    // Test Supabase connection
+    if (!configError) {
+      supabase.auth.getSession().then(({ data, error }) => {
+        if (error) {
+          console.error('Supabase connection test error:', error.message);
+          setSupabaseError(`Connection test failed: ${error.message}`);
+        } else {
+          console.log('Supabase connection successful');
+        }
+      });
+    }
+  }, []);
   
   const { 
     register, 
@@ -66,14 +83,17 @@ const RegisterForm: React.FC = () => {
       
       // Check if Supabase is configured before attempting signup
       if (!isSupabaseConfigured()) {
-        setError('Supabase is not properly configured. Please check your configuration.');
-        console.error('Supabase configuration error:', getSupabaseConfigError());
+        const configError = getSupabaseConfigError();
+        setError(`Supabase is not properly configured: ${configError}`);
+        console.error('Supabase configuration error:', configError);
         return;
       }
       
       // Debug info
       console.log("Attempting signup with:", data.email);
       console.log("Terms agreed:", data.terms);
+      console.log("Supabase URL:", window.SUPABASE_CONFIG?.url);
+      console.log("Supabase key length:", window.SUPABASE_CONFIG?.key?.length);
       
       // Register with supabase - pass username as third argument
       const { error } = await signUp(data.email, data.password, data.username);
@@ -83,6 +103,10 @@ const RegisterForm: React.FC = () => {
         // Enhanced error message handling
         if (error.message === 'Load failed') {
           setError('Connection to authentication service failed. Please check your internet connection and try again.');
+        } else if (error.message.includes('network')) {
+          setError('Network error. Please check your internet connection and try again.');
+        } else if (error.message.includes('duplicate')) {
+          setError('An account with this email already exists. Please try logging in instead.');
         } else {
           setError(error.message || 'Failed to create account');
         }
@@ -118,6 +142,10 @@ const RegisterForm: React.FC = () => {
           <Alert variant="destructive">
             <AlertDescription>
               <span className="font-semibold">Configuration Error:</span> {supabaseError}
+              <div className="mt-2 text-xs">
+                <p>Current Supabase URL: {window.SUPABASE_CONFIG?.url || 'Not set'}</p>
+                <p>API Key is {window.SUPABASE_CONFIG?.key ? 'set' : 'not set'}</p>
+              </div>
             </AlertDescription>
           </Alert>
         )}

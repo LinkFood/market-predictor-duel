@@ -24,17 +24,9 @@ export const getSupabaseConfigError = (): string | null => {
   return null;
 };
 
-// Default Supabase configuration values (for development only)
-const defaultConfig = {
-  supabase: {
-    url: 'https://iphpwxputfwxsiwdmqmk.supabase.co',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlwaHB3eHB1dGZ3eHNpd2RtcW1rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIwOTc1OTgsImV4cCI6MjA1NzY3MzU5OH0.f3UDw6w8FGXz-SpQKlcsGFzyxCOICaUANeBJ2lCYFlE'
-  }
-};
-
-// Get Supabase config from window or fallback to default config
-const supabaseUrl = window.SUPABASE_CONFIG?.url || defaultConfig.supabase.url;
-const supabaseAnonKey = window.SUPABASE_CONFIG?.key || defaultConfig.supabase.anonKey;
+// Get Supabase config from window or fallback to hardcoded values
+const supabaseUrl = window.SUPABASE_CONFIG?.url || "https://xvojivdhshgdbxrwcokx.supabase.co";
+const supabaseAnonKey = window.SUPABASE_CONFIG?.key || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2b2ppdmRoc2hnZGJ4cndjb2t4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIxMDQxNDUsImV4cCI6MjA1NzY4MDE0NX0.G0HNXKFNUqIba27xsKY9t1KYRDL68ZHbsSgLmPQsXc4";
 
 // Validation checks
 if (!supabaseUrl || supabaseUrl === 'https://example.supabase.co') {
