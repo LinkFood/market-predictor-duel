@@ -5,6 +5,14 @@ import { supabase, isSupabaseConfigured } from './supabase';
 import { DEV_USER, DEV_SESSION } from './dev-mode';
 import LoadingScreen from '@/components/LoadingScreen';
 import { toast } from '@/hooks/use-toast';
+import { 
+  signInWithEmail, 
+  signUpWithEmail, 
+  signOut as authSignOut, 
+  getCurrentSession,
+  getUserProfile,
+  UserProfile
+} from './auth-service';
 
 // Enable dev mode to skip real authentication for development
 const USE_DEV_MODE = true;
@@ -12,12 +20,14 @@ const USE_DEV_MODE = true;
 // Define the context type
 type AuthContextType = {
   user: User | null;
+  profile: UserProfile | null;
   session: Session | null;
   isLoading: boolean;
   isInitialized: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 };
 
 // Create the context with default values
@@ -27,6 +37,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   // In dev mode, start with a user already logged in
   const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER : null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION : null);
   const [isLoading, setIsLoading] = useState(!USE_DEV_MODE);
   const [isInitialized, setIsInitialized] = useState(USE_DEV_MODE);
@@ -42,12 +53,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
+  // Fetch user profile data
+  const fetchUserProfile = async (userId: string) => {
+    if (USE_DEV_MODE) {
+      // Set default profile for dev mode
+      setProfile({
+        id: DEV_USER.id,
+        username: DEV_USER.user_metadata?.username || 'DevUser',
+        email: DEV_USER.email
+      });
+      return;
+    }
+
+    try {
+      const { profile, error } = await getUserProfile(userId);
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return;
+      }
+      if (profile) {
+        setProfile(profile);
+      }
+    } catch (error) {
+      console.error('Unexpected error fetching profile:', error);
+    }
+  };
+
+  // Public method to refresh profile data
+  const refreshProfile = async () => {
+    if (user) {
+      await fetchUserProfile(user.id);
+    }
+  };
+
   useEffect(() => {
     // If dev mode is enabled, skip actual authentication
     if (USE_DEV_MODE) {
       console.log('🧪 Development mode: Using mock authentication');
       setUser(DEV_USER);
       setSession(DEV_SESSION);
+      fetchUserProfile(DEV_USER.id);
       setIsInitialized(true);
       setIsLoading(false);
       return;
@@ -69,21 +114,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fall back to dev mode
         setUser(DEV_USER);
         setSession(DEV_SESSION);
+        fetchUserProfile(DEV_USER.id);
         setIsLoading(false);
         setIsInitialized(true);
         return;
       }
       
       try {
-        // Get session from supabase
-        const { data, error } = await supabase.auth.getSession();
+        const { success, session, user, error } = await getCurrentSession();
         
-        if (error) {
-          throw error;
+        if (!success) {
+          throw new Error(error);
         }
         
-        setSession(data.session);
-        setUser(data.session?.user ?? null);
+        setSession(session);
+        setUser(user ?? null);
+        
+        if (user) {
+          await fetchUserProfile(user.id);
+        }
       } catch (error) {
         console.error('Error getting session:', error);
         setAuthError(error as Error);
@@ -91,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Fall back to dev mode on error
         setUser(DEV_USER);
         setSession(DEV_SESSION);
+        fetchUserProfile(DEV_USER.id);
         
         toast({
           variant: "destructive",
@@ -108,11 +158,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!USE_DEV_MODE) {
       // Listen for auth changes
       const { data: authListener } = supabase.auth.onAuthStateChange(
-        (event, session) => {
+        async (event, newSession) => {
           console.log('Auth state changed:', event);
-          setSession(session);
-          setUser(session?.user ?? null);
-          setIsLoading(false);
+          setSession(newSession);
+          setUser(newSession?.user ?? null);
+          
+          if (newSession?.user) {
+            await fetchUserProfile(newSession.user.id);
+          } else {
+            setProfile(null);
+          }
         }
       );
 
@@ -130,23 +185,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🧪 Development mode: Auto signing in');
       setUser(DEV_USER);
       setSession(DEV_SESSION);
+      fetchUserProfile(DEV_USER.id);
       return { error: null };
     }
     
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { success, error, user } = await signInWithEmail(email, password);
       
-      if (error) {
+      if (!success) {
         toast({
           variant: "destructive",
           title: "Login Failed",
-          description: error.message
+          description: error || "Authentication failed"
         });
+        return { error };
       }
       
-      return { error };
-    } catch (error) {
+      // Profile will be updated through auth state change listener
+      return { error: null };
+    } catch (error: any) {
       console.error("Sign in error:", error);
       toast({
         variant: "destructive",
@@ -166,36 +224,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🧪 Development mode: Auto signing up');
       setUser(DEV_USER);
       setSession(DEV_SESSION);
+      fetchUserProfile(DEV_USER.id);
       return { error: null };
     }
     
     try {
       setIsLoading(true);
-      const { error } = await supabase.auth.signUp({ 
-        email, 
-        password,
-        options: {
-          data: {
-            username
-          }
-        }
-      });
+      const { success, error } = await signUpWithEmail(email, password, username);
       
-      if (error) {
+      if (!success) {
         toast({
           variant: "destructive",
           title: "Registration Failed",
-          description: error.message
+          description: error || "Could not create account"
         });
-      } else {
+        return { error };
+      }
+      
+      if (error && error.includes('confirmation')) {
+        // This is a success with email confirmation required
         toast({
           title: "Registration Successful",
           description: "Please check your email to confirm your account."
         });
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created successfully."
+        });
       }
       
-      return { error };
-    } catch (error) {
+      return { error: null };
+    } catch (error: any) {
       console.error("Sign up error:", error);
       toast({
         variant: "destructive",
@@ -215,6 +275,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🧪 Development mode: Signing out (temporarily)');
       setUser(null);
       setSession(null);
+      setProfile(null);
       toast({
         title: "Signed Out",
         description: "You have been signed out (development mode)."
@@ -224,7 +285,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     
     setIsLoading(true);
     try {
-      await supabase.auth.signOut();
+      const { success, error } = await authSignOut();
+      
+      if (!success) {
+        toast({
+          variant: "destructive",
+          title: "Sign Out Error",
+          description: error || "Could not sign out"
+        });
+        return;
+      }
+      
       toast({
         title: "Signed Out",
         description: "You have been successfully signed out."
@@ -249,12 +320,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Create the value object
   const value = {
     user,
+    profile,
     session,
     isLoading,
     isInitialized,
     signIn,
     signUp,
     signOut,
+    refreshProfile,
   };
 
   // Return the provider with the value

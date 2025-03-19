@@ -6,6 +6,7 @@ import Leaderboard from "@/pages/Leaderboard";
 import MakePrediction from "@/pages/MakePrediction";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
 import PredictionDetail from "@/pages/PredictionDetail";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
@@ -89,6 +90,11 @@ const AppRoutes = () => {
         <Route path="/register" element={
           <PublicOnlyRoute>
             <Register />
+          </PublicOnlyRoute>
+        } />
+        <Route path="/forgot-password" element={
+          <PublicOnlyRoute>
+            <ForgotPassword />
           </PublicOnlyRoute>
         } />
         
