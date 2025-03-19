@@ -37,8 +37,6 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
         <MarketDataTable 
           data={gainers} 
           title="Top Gainers"
-          onRefresh={onRefresh}
-          isLoading={isLoading}
         />
       </motion.div>
       
