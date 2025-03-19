@@ -6,7 +6,6 @@
 
 import { FEATURES } from '../config';
 import { getMarketAnalysis as getXAIAnalysis } from '../market-analysis-service';
-import { toast } from '@/hooks/use-toast';
 import { showErrorToast } from '../error-handling';
 
 /**
