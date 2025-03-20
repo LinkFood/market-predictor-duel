@@ -13,18 +13,21 @@ import { logError } from "../error-handling";
 /**
  * Search for stocks by keyword
  */
-export async function searchStocks(query: string): Promise<StockData[]> {
+export async function searchStocks(query: string): Promise<{ results: StockData[]; usingMockData: boolean }> {
+  let usingMockData = false;
+  
   try {
     // Check if query is empty
     if (!query.trim()) {
-      return [];
+      return { results: [], usingMockData: false };
     }
     
     // Use real market data if enabled, otherwise use mock data
     if (FEATURES.enableRealMarketData && config.polygon.enabled) {
       console.log(`🌐 Searching for stocks matching "${query}" via Polygon.io`);
       try {
-        return await searchPolygonStocks(query);
+        const results = await searchPolygonStocks(query);
+        return { results, usingMockData: false };
       } catch (error) {
         logError(error, `searchStocks:${query}`);
         console.error("Error searching stocks via Polygon API:", error);
@@ -32,7 +35,8 @@ export async function searchStocks(query: string): Promise<StockData[]> {
       }
     } else {
       console.log(`🧪 Searching mock stocks for "${query}"`);
-      return searchMockStocks(query);
+      usingMockData = true;
+      return { results: searchMockStocks(query), usingMockData };
     }
   } catch (error) {
     logError(error, `searchStocks:${query}`);
@@ -44,6 +48,7 @@ export async function searchStocks(query: string): Promise<StockData[]> {
     }
     
     console.log("Using mock data as real data was not requested");
-    return searchMockStocks(query);
+    usingMockData = true;
+    return { results: searchMockStocks(query), usingMockData };
   }
 }

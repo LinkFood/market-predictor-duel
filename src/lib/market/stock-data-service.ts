@@ -13,13 +13,16 @@ import { showErrorToast } from "../error-handling";
 /**
  * Get current stock data for a ticker
  */
-export async function getStockData(symbol: string): Promise<StockData> {
+export async function getStockData(symbol: string): Promise<{ data: StockData; usingMockData: boolean }> {
+  let usingMockData = false;
+  
   try {
     // Use real market data if enabled, otherwise use mock data
     if (FEATURES.enableRealMarketData && config.polygon.enabled) {
       console.log(`🌐 Fetching real market data for ${symbol} from Polygon.io`);
       try {
-        return await getPolygonStockData(symbol);
+        const data = await getPolygonStockData(symbol);
+        return { data, usingMockData: false };
       } catch (error) {
         console.error("Error fetching real stock data:", error);
         showErrorToast(error, "Market Data Error");
@@ -27,7 +30,8 @@ export async function getStockData(symbol: string): Promise<StockData> {
       }
     } else {
       console.log(`🧪 Using mock data for ${symbol}`);
-      return getMockStockData(symbol);
+      usingMockData = true;
+      return { data: getMockStockData(symbol), usingMockData };
     }
   } catch (error) {
     console.error("Error fetching stock data:", error);
@@ -36,6 +40,7 @@ export async function getStockData(symbol: string): Promise<StockData> {
       throw error; // Propagate error when real data is expected
     }
     console.log("Using mock data as real data was not requested");
-    return getMockStockData(symbol);
+    usingMockData = true;
+    return { data: getMockStockData(symbol), usingMockData };
   }
 }

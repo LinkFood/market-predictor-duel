@@ -3,12 +3,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Loader2, AlertCircle } from "lucide-react";
+import { Search, Loader2, AlertCircle, InfoIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { searchStocks } from "@/lib/market";
 import { FEATURES } from "@/lib/config";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import DataSourceIndicator from "./form/DataSourceIndicator";
 
 interface SearchBarProps {
   onSelectStock: (stock: any) => void;
@@ -21,6 +22,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [usingMockData, setUsingMockData] = useState(false);
 
   // Handle search
   const handleSearch = async () => {
@@ -31,10 +33,20 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
       setError(null);
       console.log('Searching for stocks:', searchQuery);
       
-      const results = await searchStocks(searchQuery);
-      console.log('Search results:', results);
+      const { results, usingMockData: isMockData } = await searchStocks(searchQuery);
+      console.log('Search results:', results, 'Using mock data:', isMockData);
+      
       setSearchResults(results);
       setShowSearchResults(true);
+      setUsingMockData(isMockData);
+      
+      if (isMockData && FEATURES.enableRealMarketData) {
+        toast({
+          title: "Using Simulated Data",
+          description: "Real market data could not be fetched. Using simulated data instead.",
+          variant: "warning"
+        });
+      }
       
       if (results.length === 0) {
         toast({
@@ -46,6 +58,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
     } catch (error) {
       console.error('Error searching stocks:', error);
       setError(error instanceof Error ? error.message : "Failed to search for stocks");
+      setUsingMockData(true);
       toast({
         variant: "destructive",
         title: "Search Error",
@@ -60,11 +73,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <label className="text-sm font-medium">Search for a stock</label>
-        <Badge variant={FEATURES.enableRealMarketData ? "default" : "outline"} className={cn(
-          "text-xs",
-          !FEATURES.enableRealMarketData && "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
-        )}>
-          {FEATURES.enableRealMarketData ? "Live Data" : "Simulated Data"}
+        <Badge 
+          variant={!usingMockData && FEATURES.enableRealMarketData ? "default" : "outline"} 
+          className={cn(
+            "text-xs",
+            (usingMockData || !FEATURES.enableRealMarketData) && "bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400"
+          )}
+        >
+          {!usingMockData && FEATURES.enableRealMarketData ? "Live Data" : "Simulated Data"}
         </Badge>
       </div>
       <div className="flex space-x-2">
@@ -103,6 +119,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
         </Alert>
       )}
       
+      {searchResults.length > 0 && (
+        <DataSourceIndicator isRealData={!usingMockData} />
+      )}
+      
       {/* Search Results */}
       {showSearchResults && searchResults.length > 0 && (
         <div className="mt-2 border rounded-md shadow-sm overflow-hidden">
@@ -112,7 +132,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
                 key={`${stock.symbol}-${index}`}
                 className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => {
-                  onSelectStock(stock);
+                  onSelectStock({...stock, usingMockData});
                   setShowSearchResults(false);
                   setSearchQuery(stock.name);
                 }}

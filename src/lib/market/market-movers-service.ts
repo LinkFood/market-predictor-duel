@@ -13,7 +13,9 @@ import { logError, showErrorToast } from "../error-handling";
 /**
  * Get top gainers and losers for the day
  */
-export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: StockData[] }> {
+export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: StockData[]; usingMockData: boolean }> {
+  let usingMockData = false;
+  
   try {
     // Use real market data if enabled, otherwise use mock data
     if (FEATURES.enableRealMarketData && config.polygon.enabled) {
@@ -26,7 +28,7 @@ export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: St
         if (realData && realData.gainers && realData.losers && 
             (realData.gainers.length > 0 || realData.losers.length > 0)) {
           console.log(`✅ Successfully fetched market movers: ${realData.gainers.length} gainers, ${realData.losers.length} losers`);
-          return realData;
+          return { ...realData, usingMockData: false };
         } else {
           const error = new Error('Empty or invalid data received from Polygon API');
           console.warn('⚠️ Empty or invalid data received from Polygon API:', realData);
@@ -41,7 +43,8 @@ export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: St
       }
     } else {
       console.log(`🧪 Using mock market movers data (real data disabled in config)`);
-      return getMockTopMovers();
+      usingMockData = true;
+      return { ...getMockTopMovers(), usingMockData };
     }
   } catch (error) {
     logError(error, 'getTopMovers');
@@ -53,6 +56,7 @@ export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: St
     }
     
     console.log("Using mock data as real data was not requested");
-    return getMockTopMovers();
+    usingMockData = true;
+    return { ...getMockTopMovers(), usingMockData };
   }
 }

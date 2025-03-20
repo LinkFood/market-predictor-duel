@@ -14,11 +14,15 @@ interface StockInfoProps {
     volume?: number;
     high52Week?: number;
     low52Week?: number;
+    usingMockData?: boolean;
   } | null;
   isRealData?: boolean;
 }
 
-const StockInfo: React.FC<StockInfoProps> = ({ stock, isRealData = FEATURES.enableRealMarketData }) => {
+const StockInfo: React.FC<StockInfoProps> = ({ 
+  stock, 
+  isRealData = stock?.usingMockData !== undefined ? !stock.usingMockData : FEATURES.enableRealMarketData 
+}) => {
   if (!stock) return null;
   
   return (

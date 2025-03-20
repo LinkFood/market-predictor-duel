@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMarketData } from '@/lib/market/MarketDataProvider';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -139,8 +139,11 @@ export const MarketInfoDisplay: React.FC = () => {
         </div>
 
         {usingMockData && (
-          <div className="px-4 py-2 text-xs text-center text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400">
-            Using simulated market data. Please check API configuration to enable real-time data.
+          <div className="px-4 py-3 text-xs flex items-center text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border-t">
+            <AlertTriangle className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
+            <span>
+              Using simulated market data. Please check API configuration to enable real-time data.
+            </span>
           </div>
         )}
       </CardContent>

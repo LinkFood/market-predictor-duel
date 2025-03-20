@@ -47,11 +47,12 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
       setErrorMessage(null);
       console.log('Fetching market movers data...');
       
-      const { gainers: newGainers, losers: newLosers } = await getTopMovers();
+      const { gainers: newGainers, losers: newLosers, usingMockData: isMockData } = await getTopMovers();
       
       console.log('Received market movers data:', { 
         gainers: newGainers.length, 
-        losers: newLosers.length 
+        losers: newLosers.length,
+        usingMockData: isMockData
       });
       
       // Only update state if we received valid data
@@ -59,7 +60,15 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
         setGainers(newGainers);
         setLosers(newLosers);
         setLastUpdated(new Date());
-        setUsingMockData(!FEATURES.enableRealMarketData);
+        setUsingMockData(isMockData);
+        
+        if (isMockData && FEATURES.enableRealMarketData) {
+          toast({
+            title: "Using Mock Data",
+            description: "Real market data could not be fetched. Using simulated data instead.",
+            variant: "warning"
+          });
+        }
       } else {
         setIsError(true);
         setErrorMessage("Received empty market data");
@@ -73,10 +82,11 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
       console.error('Error fetching market data:', error);
       setIsError(true);
       setErrorMessage(error instanceof Error ? error.message : "Unknown error fetching market data");
+      setUsingMockData(true);
       
       toast({
         title: "Market Data Error",
-        description: "Failed to fetch market data. Check your API configuration.",
+        description: "Failed to fetch market data. Using simulated data instead.",
         variant: "destructive"
       });
       
