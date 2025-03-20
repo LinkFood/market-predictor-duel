@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getStockPrediction } from '../xai';
 import { getStockData } from '../market';
 import { Prediction, PredictionRequest } from './types';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { dbToPrediction } from './adapters';
 import { logError } from '../error-handling';
 
@@ -26,8 +26,8 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     }
     
     // Get current stock data
-    const stockData = await getStockData(request.ticker);
-    console.log('Stock data retrieved:', stockData);
+    const { data: stockData, usingMockData } = await getStockData(request.ticker);
+    console.log('Stock data retrieved:', stockData, 'Using mock data:', usingMockData);
     
     // Get AI prediction
     const aiPredictionResult = await getStockPrediction({
@@ -90,11 +90,6 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
   } catch (error) {
     logError(error, "createPrediction");
     console.error("Error creating prediction:", error);
-    toast({
-      variant: "destructive",
-      title: "Error creating prediction",
-      description: "Please try again later."
-    });
     throw error;
   }
 }

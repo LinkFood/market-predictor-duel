@@ -44,7 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
         toast({
           title: "Using Simulated Data",
           description: "Real market data could not be fetched. Using simulated data instead.",
-          variant: "warning"
+          variant: "default" // Changed from "warning" to "default"
         });
       }
       

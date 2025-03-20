@@ -66,7 +66,7 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
           toast({
             title: "Using Mock Data",
             description: "Real market data could not be fetched. Using simulated data instead.",
-            variant: "warning"
+            variant: "default" // Changed from "warning" to "default"
           });
         }
       } else {

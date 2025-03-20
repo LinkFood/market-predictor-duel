@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { getStockData } from '../market';
 import { Prediction } from './types';
 import { getPredictionById } from './user-predictions';
-import { dbToPrediction, predictionToDb } from './adapters';
+import { dbToPrediction } from './adapters';
 
 /**
  * Resolve a prediction (determine the outcome)
@@ -21,7 +21,7 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
     }
     
     // Get current stock data
-    const stockData = await getStockData(prediction.ticker);
+    const { data: stockData } = await getStockData(prediction.ticker);
     
     // Determine the outcome
     let outcome: 'user_win' | 'ai_win' | 'tie';
