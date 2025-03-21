@@ -8,7 +8,7 @@ export const config = {
   polygon: {
     baseUrl: "https://api.polygon.io",
     enabled: true, // Ensure this is set to true for using real data
-    apiKey: process.env.POLYGON_API_KEY || "" // Will be set through environment variables
+    apiKey: import.meta.env.VITE_POLYGON_API_KEY || "" // Changed from process.env to import.meta.env
   },
   xai: {
     baseUrl: "https://api.x.ai/v1"
