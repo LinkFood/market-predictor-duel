@@ -8,12 +8,12 @@ import { MarketData } from "@/types";
 import { logError } from "../../error-handling";
 import { callPolygonApi } from "./polygon-base";
 
-// Map ETF tickers to their corresponding index names
+// Map ETF tickers to their actual ETF names
 const ETF_TO_INDEX_MAP = {
-  "SPY": "S&P 500",
-  "DIA": "Dow Jones",
-  "QQQ": "NASDAQ",
-  "IWM": "Russell 2000"
+  "SPY": "SPDR S&P 500 ETF",
+  "DIA": "SPDR Dow Jones Industrial Average ETF",
+  "QQQ": "Invesco QQQ Trust",
+  "IWM": "iShares Russell 2000 ETF"
 };
 
 /**
@@ -41,12 +41,12 @@ export async function getPolygonMarketIndices(): Promise<MarketData[]> {
     console.log(`Received ${data.tickers.length} ETFs from snapshot endpoint`);
     
     // Map the ETF data to our internal index format
-    const indices = Object.entries(ETF_TO_INDEX_MAP).map(([symbol, indexName]) => {
+    const indices = Object.entries(ETF_TO_INDEX_MAP).map(([symbol, etfName]) => {
       // Find the corresponding ETF in the response
       const ticker = data.tickers.find(t => t.ticker === symbol);
       
       if (!ticker) {
-        console.warn(`ETF data not found for ${indexName} (${symbol})`);
+        console.warn(`ETF data not found for ${etfName} (${symbol})`);
         return null;
       }
       
@@ -58,14 +58,14 @@ export async function getPolygonMarketIndices(): Promise<MarketData[]> {
         const changePercent = prevClose ? (change / prevClose) * 100 : 0;
         
         return {
-          name: indexName,
+          name: etfName,
           value,
           change,
           changePercent,
           symbol // Keep the ETF symbol
         };
       } catch (err) {
-        console.error(`Error processing data for ${indexName}:`, err);
+        console.error(`Error processing data for ${etfName}:`, err);
         return null;
       }
     }).filter(Boolean) as MarketData[];

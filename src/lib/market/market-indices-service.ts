@@ -9,31 +9,31 @@ import { FEATURES, config } from "../config";
 import { getPolygonMarketIndices } from "./api/polygon-indices";
 import { logError } from "../error-handling";
 
-// Default mock indices data using ETF values but with proper market index names
+// Default mock indices data with ETF names
 export const DEFAULT_INDICES: MarketData[] = [
   { 
-    name: "S&P 500", 
+    name: "SPDR S&P 500 ETF", 
     value: 523.43, 
     change: 1.25, 
     changePercent: 0.24,
     symbol: "SPY"
   },
   { 
-    name: "Dow Jones", 
+    name: "SPDR Dow Jones Industrial Average ETF", 
     value: 387.22, 
     change: -0.82, 
     changePercent: -0.21,
     symbol: "DIA"
   },
   { 
-    name: "NASDAQ", 
+    name: "Invesco QQQ Trust", 
     value: 428.67, 
     change: 2.34, 
     changePercent: 0.53,
     symbol: "QQQ"
   },
   { 
-    name: "Russell 2000", 
+    name: "iShares Russell 2000 ETF", 
     value: 214.69, 
     change: -0.52, 
     changePercent: -0.24,
