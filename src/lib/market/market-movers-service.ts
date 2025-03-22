@@ -7,7 +7,7 @@
 import { StockData } from "./types";
 import { FEATURES, config, API_ERRORS } from "../config";
 import { getMockTopMovers } from "./mock-data-utils";
-import { getPolygonMarketMovers } from "./polygon-api-service";
+import { getPolygonMarketMovers } from "./api/polygon-movers";
 import { logError, showErrorToast } from "../error-handling";
 import { toast } from "@/hooks/use-toast";
 

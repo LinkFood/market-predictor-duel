@@ -7,7 +7,7 @@
 import { StockData } from "./types";
 import { FEATURES, config } from "../config";
 import { searchMockStocks } from "./mock-data-utils";
-import { searchPolygonStocks } from "./polygon-api-service";
+import { searchPolygonStocks } from "./api/polygon-stocks";
 import { logError } from "../error-handling";
 
 /**

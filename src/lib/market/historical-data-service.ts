@@ -1,4 +1,3 @@
-
 /**
  * Historical Data Service
  * Handles fetching historical stock data
@@ -7,7 +6,7 @@
 import { HistoricalData } from "./types";
 import { FEATURES, config } from "../config";
 import { getMockHistoricalData } from "./mock-data-utils";
-import { getPolygonHistoricalData } from "./polygon-api-service";
+import { getPolygonHistoricalData } from "./api/polygon-historical";
 
 /**
  * Get historical data for a ticker
