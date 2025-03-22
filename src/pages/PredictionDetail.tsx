@@ -13,19 +13,59 @@ import { PredictionSummaryCard } from "@/components/prediction-detail/Prediction
 import { PredictionDetailsCard } from "@/components/prediction-detail/PredictionDetailsCard";
 import { MarketDataCard } from "@/components/prediction-detail/MarketDataCard";
 import { SimilarPredictionsCard } from "@/components/prediction-detail/SimilarPredictionsCard";
+import { getPredictionById } from "@/lib/prediction/user-predictions";
+import { toast } from "sonner";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const PredictionDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [timeRemaining, setTimeRemaining] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const found = mockPredictions.find(p => p.id === id);
-    if (found) {
-      // Need to adapt mockPredictions format to lib/prediction/types.Prediction format
-      // This is only needed because this is mock data in a transitional phase
-      setPrediction(found as unknown as Prediction);
-    }
+    const loadPrediction = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Try to fetch from API first
+        if (id) {
+          try {
+            const fetchedPrediction = await getPredictionById(id);
+            if (fetchedPrediction) {
+              console.log("Fetched prediction from API:", fetchedPrediction);
+              setPrediction(fetchedPrediction);
+              setIsLoading(false);
+              return;
+            }
+          } catch (apiError) {
+            console.error("Error fetching prediction from API:", apiError);
+            // Fall back to mock data
+          }
+        }
+        
+        // Fallback to mock data
+        const found = mockPredictions.find(p => p.id === id);
+        if (found) {
+          console.log("Using mock prediction:", found);
+          // Need to adapt mockPredictions format to lib/prediction/types.Prediction format
+          setPrediction(found as unknown as Prediction);
+        } else {
+          setError("Prediction not found");
+          toast.error("Prediction not found");
+        }
+      } catch (err) {
+        console.error("Error loading prediction:", err);
+        setError("Failed to load prediction");
+        toast.error("Failed to load prediction");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadPrediction();
   }, [id]);
 
   useEffect(() => {
@@ -60,12 +100,12 @@ const PredictionDetail: React.FC = () => {
     return () => clearInterval(interval);
   }, [prediction]);
 
-  if (!prediction) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="w-16 h-16 rounded-full border-4 border-indigo-100 border-t-indigo-500 animate-spin"></div>
-      </div>
-    );
+  if (isLoading) {
+    return <LoadingScreen message="Loading prediction details..." />;
+  }
+
+  if (error || !prediction) {
+    return <LoadingScreen error={error || "Prediction not found"} />;
   }
 
   const formatDate = (dateString: string) => {

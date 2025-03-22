@@ -62,10 +62,10 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
       </CardContent>
       
       <CardFooter className="flex justify-between p-4 border-t bg-slate-50 dark:bg-slate-900">
-        <Button variant="outline" onClick={() => navigate("/predictions/history")}>
+        <Button variant="outline" onClick={() => navigate("/app/predictions/history")}>
           View All Predictions
         </Button>
-        <Button onClick={() => navigate("/predict")} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700">
+        <Button onClick={() => navigate("/app/predict")} className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700">
           <TrendingUp className="mr-2 h-4 w-4" />
           Make New Prediction
         </Button>
