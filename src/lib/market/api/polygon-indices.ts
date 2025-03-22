@@ -1,7 +1,7 @@
 
 /**
  * Polygon.io Market Indices API Service
- * Handles fetching market indices data from Polygon API
+ * Handles fetching market indices data from Polygon API using ETFs as proxies
  */
 
 import { MarketData } from "@/types";

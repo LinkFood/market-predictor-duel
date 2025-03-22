@@ -9,7 +9,7 @@ import { FEATURES, config } from "../config";
 import { getPolygonMarketIndices } from "./api/polygon-indices";
 import { logError } from "../error-handling";
 
-// Default mock indices data (updated to match ETF values)
+// Default mock indices data using ETF values but with proper market index names
 export const DEFAULT_INDICES: MarketData[] = [
   { 
     name: "S&P 500", 
