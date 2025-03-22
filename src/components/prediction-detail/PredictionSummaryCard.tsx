@@ -50,7 +50,7 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
           
           <PredictionComparison prediction={prediction} />
           
-          {prediction.status === "complete" && prediction.endValue && (
+          {(prediction.status === "complete" || prediction.status === "completed") && prediction.endValue && (
             <PredictionResults 
               prediction={prediction} 
               formatDate={formatDate} 

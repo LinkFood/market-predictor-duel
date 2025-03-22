@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { mockPredictions, mockStockData } from "@/data/mockData";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 import { cn } from "@/lib/utils";
 import { PredictionHeader } from "@/components/prediction-detail/PredictionHeader";
 import { PredictionSummaryCard } from "@/components/prediction-detail/PredictionSummaryCard";
@@ -22,12 +22,14 @@ const PredictionDetail: React.FC = () => {
   useEffect(() => {
     const found = mockPredictions.find(p => p.id === id);
     if (found) {
-      setPrediction(found);
+      // Need to adapt mockPredictions format to lib/prediction/types.Prediction format
+      // This is only needed because this is mock data in a transitional phase
+      setPrediction(found as unknown as Prediction);
     }
   }, [id]);
 
   useEffect(() => {
-    if (!prediction || prediction.resolved) return;
+    if (!prediction || prediction.status === 'complete' || prediction.status === 'completed') return;
     
     const calculateTimeRemaining = () => {
       const now = new Date();
@@ -88,7 +90,7 @@ const PredictionDetail: React.FC = () => {
   };
 
   const getStatusBadge = () => {
-    if (!prediction.resolved) {
+    if (prediction.status === "pending") {
       return (
         <Badge variant="outline" className="flex items-center gap-1 font-normal bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800">
           <Clock className="h-3 w-3" />
@@ -97,13 +99,15 @@ const PredictionDetail: React.FC = () => {
       );
     }
     
-    if (prediction.status === "correct") {
-      return (
-        <Badge variant="outline" className="flex items-center gap-1 font-normal bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
-          <CheckCircle className="h-3 w-3" />
-          <span>Correct</span>
-        </Badge>
-      );
+    if (prediction.status === "complete" || prediction.status === "completed") {
+      if (prediction.outcome === "user_win") {
+        return (
+          <Badge variant="outline" className="flex items-center gap-1 font-normal bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+            <CheckCircle className="h-3 w-3" />
+            <span>Correct</span>
+          </Badge>
+        );
+      }
     }
     
     return (
