@@ -1,3 +1,4 @@
+
 /**
  * Prediction Learning System
  * Analyzes resolved predictions to improve future AI predictions
@@ -9,15 +10,18 @@ import { logError } from '../error-handling';
 // Types for learning system
 export interface PredictionPattern {
   id: string;
-  marketCondition: string;
+  group_key: string;
   timeframe: string;
-  targetType: string;
+  target_type: string;
+  prediction_type: string;
+  ai_accuracy: number;
+  user_accuracy: number;
+  confidence_adjustment: number;
+  sample_size: number;
+  market_condition?: string;
   sector?: string;
-  accuracyScore: number;
-  confidenceAdjustment: number;
-  sampleSize: number;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface MarketCondition {
@@ -128,30 +132,51 @@ async function analyzeGroup(groupKey: string, predictions: Prediction[]): Promis
     // Parse the group key to get components
     const [timeframe, targetType, predictionType] = groupKey.split('_');
     
-    // Store this pattern in the database
-    const patternData = {
-      group_key: groupKey,
-      timeframe,
-      target_type: targetType,
-      prediction_type: predictionType,
-      ai_accuracy: aiAccuracy,
-      user_accuracy: userAccuracy,
-      confidence_adjustment: confidenceAdjustment,
-      sample_size: totalPredictions,
-      created_at: new Date().toISOString(),
-    };
-    
-    // Insert or update the pattern in the database
-    const { error } = await supabase
-      .from('prediction_patterns')
-      .upsert(patternData, { 
-        onConflict: 'group_key',
-        ignoreDuplicates: false 
+    // Store this pattern using a custom RPC function or direct insert
+    try {
+      // Try using RPC function first
+      const { error } = await supabase.rpc('upsert_prediction_pattern', {
+        group_key: groupKey,
+        timeframe,
+        target_type: targetType,
+        prediction_type: predictionType,
+        ai_accuracy: aiAccuracy,
+        user_accuracy: userAccuracy,
+        confidence_adjustment: confidenceAdjustment,
+        sample_size: totalPredictions,
+        created_at: new Date().toISOString()
       });
-    
-    if (error) {
-      console.error('Error storing prediction pattern:', error);
-      return;
+      
+      if (error) {
+        throw error; // Will be caught below and fall back to direct insert
+      }
+    } catch (rpcError) {
+      console.log('RPC not available, using direct table insert:', rpcError);
+      
+      // Fall back to direct table access
+      // Using 'as any' because the table isn't in TypeScript types
+      const { error } = await supabase
+        .from('prediction_patterns')
+        .upsert({
+          group_key: groupKey,
+          timeframe,
+          target_type: targetType,
+          prediction_type: predictionType,
+          ai_accuracy: aiAccuracy,
+          user_accuracy: userAccuracy,
+          confidence_adjustment: confidenceAdjustment,
+          sample_size: totalPredictions,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        } as any, { 
+          onConflict: 'group_key',
+          ignoreDuplicates: false 
+        });
+      
+      if (error) {
+        console.error('Error storing prediction pattern:', error);
+        return;
+      }
     }
     
     console.log(`Updated prediction pattern for group ${groupKey}: AI accuracy ${aiAccuracy.toFixed(2)}, confidence adjustment ${confidenceAdjustment.toFixed(2)}`);
@@ -174,28 +199,33 @@ export async function enhancePrediction(
     // Create the group key to look up relevant patterns
     const groupKey = `${timeframe}_stock_${predictionType}`;
     
-    // Query for matching patterns
-    const { data, error } = await supabase
-      .from('prediction_patterns')
-      .select('*')
-      .eq('group_key', groupKey)
-      .single();
-    
-    if (error) {
-      // If no pattern exists yet, return the base confidence
-      console.log(`No prediction pattern found for ${groupKey}, using base confidence`);
-      return baseConfidence;
+    try {
+      // Query for matching patterns - direct access since type definitions don't include our table
+      const { data, error } = await supabase
+        .from('prediction_patterns')
+        .select('*')
+        .eq('group_key', groupKey)
+        .single() as { data: PredictionPattern | null, error: any };
+      
+      if (error || !data) {
+        // If no pattern exists yet, return the base confidence
+        console.log(`No prediction pattern found for ${groupKey}, using base confidence`);
+        return baseConfidence;
+      }
+      
+      // Apply the confidence adjustment
+      let adjustedConfidence = baseConfidence + data.confidence_adjustment;
+      
+      // Ensure confidence stays within reasonable bounds (0-100%)
+      adjustedConfidence = Math.max(0, Math.min(100, adjustedConfidence));
+      
+      console.log(`Enhanced prediction confidence for ${ticker} (${timeframe}, ${predictionType}): ${baseConfidence}% → ${adjustedConfidence}%`);
+      
+      return adjustedConfidence;
+    } catch (error) {
+      throw error;
     }
     
-    // Apply the confidence adjustment
-    let adjustedConfidence = baseConfidence + data.confidence_adjustment;
-    
-    // Ensure confidence stays within reasonable bounds (0-100%)
-    adjustedConfidence = Math.max(0, Math.min(100, adjustedConfidence));
-    
-    console.log(`Enhanced prediction confidence for ${ticker} (${timeframe}, ${predictionType}): ${baseConfidence}% → ${adjustedConfidence}%`);
-    
-    return adjustedConfidence;
   } catch (error) {
     logError(error, 'enhancePrediction');
     console.error('Error enhancing prediction:', error);

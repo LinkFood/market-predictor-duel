@@ -1,73 +1,76 @@
+
 import { useState, useEffect } from 'react';
 import { useSubscription } from './subscription-context';
+import { getTodayUsageStats } from './usage-tracking';
+import { supabase } from '@/integrations/supabase/client';
 
-interface UsageLimit {
-  showPredictionLimitModal: boolean;
-  showApiLimitModal: boolean;
-  canMakePrediction: boolean;
-  canMakeApiCall: boolean;
-  closePredictionLimitModal: () => void;
-  closeApiLimitModal: () => void;
-  trackPrediction: () => void;
-  trackApiCall: () => void;
-}
+export function useUsageLimits() {
+  const { plan, getFeatureLimit, isFeatureAvailable } = useSubscription();
+  const [predictionsToday, setPredictionsToday] = useState(0);
+  const [predictionsLimit, setPredictionsLimit] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
-/**
- * Hook for managing usage limits and triggering limit reached modals
- */
-export function useUsageLimits(): UsageLimit {
-  const { usage, updateUsage, hasPremium } = useSubscription();
-  const [showPredictionLimitModal, setShowPredictionLimitModal] = useState(false);
-  const [showApiLimitModal, setShowApiLimitModal] = useState(false);
-
-  // Check if user has reached their prediction limit
-  const canMakePrediction = hasPremium || usage.predictionsThisMonth < usage.predictionsLimit;
+  // Calculate remaining predictions
+  const remainingPredictions = Math.max(0, predictionsLimit - predictionsToday);
   
-  // Check if user has reached their API call limit
-  const canMakeApiCall = hasPremium || usage.apiCallsToday < usage.apiCallsLimit;
+  // Check if user has reached their limit
+  const hasReachedLimit = predictionsToday >= predictionsLimit;
 
-  // Track a new prediction
-  const trackPrediction = () => {
-    // Update the prediction count
-    updateUsage({
-      ...usage,
-      predictionsThisMonth: usage.predictionsThisMonth + 1
-    });
+  // Get the user's daily prediction limit based on their plan
+  useEffect(() => {
+    setPredictionsLimit(getFeatureLimit('maxDailyPredictions'));
+  }, [plan, getFeatureLimit]);
 
-    // Show modal if limit is reached exactly
-    if (usage.predictionsThisMonth + 1 >= usage.predictionsLimit && !hasPremium) {
-      setShowPredictionLimitModal(true);
+  // Fetch the user's usage for today
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        setIsLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setPredictionsToday(0);
+          return;
+        }
+        
+        const stats = await getTodayUsageStats(user.id);
+        setPredictionsToday(stats.prediction_created);
+      } catch (error) {
+        console.error('Error fetching usage:', error);
+        setPredictionsToday(0);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsage();
+  }, []);
+
+  // Function to update usage after a new prediction is made
+  const updateUsageCounts = async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        return;
+      }
+      
+      const stats = await getTodayUsageStats(user.id);
+      setPredictionsToday(stats.prediction_created);
+    } catch (error) {
+      console.error('Error updating usage counts:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Track a new API call
-  const trackApiCall = () => {
-    // Update the API call count
-    updateUsage({
-      ...usage,
-      apiCallsToday: usage.apiCallsToday + 1
-    });
-
-    // Show modal if limit is reached exactly
-    if (usage.apiCallsToday + 1 >= usage.apiCallsLimit && !hasPremium) {
-      setShowApiLimitModal(true);
-    }
-  };
-
-  // Close modals
-  const closePredictionLimitModal = () => setShowPredictionLimitModal(false);
-  const closeApiLimitModal = () => setShowApiLimitModal(false);
 
   return {
-    showPredictionLimitModal,
-    showApiLimitModal,
-    canMakePrediction,
-    canMakeApiCall,
-    closePredictionLimitModal,
-    closeApiLimitModal,
-    trackPrediction,
-    trackApiCall
+    predictionsToday,
+    predictionsLimit,
+    remainingPredictions,
+    hasReachedLimit,
+    isLoading,
+    updateUsageCounts
   };
 }
-
-export default useUsageLimits;

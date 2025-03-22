@@ -22,10 +22,13 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
   }
 
   const resolvedAtDate = prediction.resolvedAt || "";
-  const percentChange = prediction.percentChange !== undefined ? prediction.percentChange :
+  
+  // Calculate percent change if not provided
+  const percentChange = prediction.percent_change !== undefined ? prediction.percent_change :
     ((prediction.endValue - prediction.startingValue) / prediction.startingValue) * 100;
   
-  const actualResult = prediction.actualResult || 
+  // Get actual result from appropriate field
+  const actualResult = prediction.actual_result || 
     (percentChange >= 0 ? "uptrend" : "downtrend");
   
   return (

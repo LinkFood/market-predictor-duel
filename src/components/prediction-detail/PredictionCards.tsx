@@ -25,7 +25,8 @@ export const PredictionCards: React.FC<PredictionCardsProps> = ({ prediction }) 
     return actualBullish === predictionBullish;
   };
   
-  const actualResult = prediction.actualResult || 
+  // Get actual result from appropriate property (handle both new and legacy properties)
+  const actualResult = prediction.actual_result || 
     ((prediction.status === "complete" || prediction.status === "completed") && 
     prediction.endValue && prediction.startingValue &&
     prediction.endValue > prediction.startingValue ? "uptrend" : "downtrend");
