@@ -79,16 +79,30 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
     
     console.log('Saving prediction to database:', newPredictionData);
     
+    // Fix: Add additional error handling and better logging for the insert operation
     const { data, error } = await supabase
       .from('predictions')
       .insert(newPredictionData)
-      .select()
+      .select('*')
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error inserting prediction:', error);
+      throw new Error(`Failed to save prediction: ${error.message}`);
+    }
+    
+    if (!data) {
+      console.error('No data returned from insert operation');
+      throw new Error('Failed to save prediction: No data returned');
+    }
     
     console.log('Prediction saved successfully:', data);
-    return dbToPrediction(data);
+    
+    // Convert the database record to our application model
+    const prediction = dbToPrediction(data);
+    console.log('Converted prediction:', prediction);
+    
+    return prediction;
   } catch (error) {
     logError(error, "createPrediction");
     console.error("Error creating prediction:", error);

@@ -3,11 +3,12 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { createPrediction } from "@/lib/prediction";
 import { getStockData } from "@/lib/market";
+import { Prediction } from "@/lib/prediction/types";
 
 // Types
 export type PredictionType = 'trend' | 'price';
 
-export const usePredictionForm = (onPredictionMade: (prediction: any) => void) => {
+export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => void) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,31 +91,43 @@ export const usePredictionForm = (onPredictionMade: (prediction: any) => void) =
       };
       
       console.log('Submitting prediction:', predictionRequest);
-      const newPrediction = await createPrediction(predictionRequest);
-      console.log('Prediction created:', newPrediction);
       
-      toast({
-        title: "Prediction Submitted",
-        description: `Your prediction for ${selectedStock.name} has been submitted successfully.`
-      });
-      
-      // Reset form
-      setSelectedStock(null);
-      setTrendPrediction(null);
-      setPricePrediction('');
-      
-      // Notify parent
-      onPredictionMade(newPrediction);
-    } catch (error) {
+      // Add more detailed error handling and logging
+      try {
+        const newPrediction = await createPrediction(predictionRequest);
+        console.log('Prediction created successfully:', newPrediction);
+        
+        if (!newPrediction || !newPrediction.id) {
+          throw new Error('Invalid prediction response');
+        }
+        
+        toast({
+          title: "Prediction Submitted",
+          description: `Your prediction for ${selectedStock.name} has been submitted successfully.`
+        });
+        
+        // Reset form
+        setSelectedStock(null);
+        setTrendPrediction(null);
+        setPricePrediction('');
+        
+        // Notify parent
+        onPredictionMade(newPrediction);
+      } catch (error: any) {
+        console.error('Error in createPrediction:', error);
+        throw new Error(`Prediction creation failed: ${error.message || 'Unknown error'}`);
+      }
+    } catch (error: any) {
       console.error('Error creating prediction:', error);
-      setError("Failed to submit your prediction. Please try again.");
+      setError(`Failed to submit your prediction: ${error.message || 'Please try again.'}`);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to submit your prediction. Please try again."
+        description: `Failed to submit your prediction: ${error.message || 'Please try again.'}`
       });
     } finally {
       setIsLoading(false);
+      setConfirmDialogOpen(false);
     }
   };
 
