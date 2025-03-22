@@ -13,12 +13,19 @@ interface AIAnalysisSectionProps {
 const AIAnalysisSection: React.FC<AIAnalysisSectionProps> = ({ prediction }) => {
   console.log("Rendering AI Analysis section with:", prediction?.aiAnalysis);
   
-  if (!prediction.aiAnalysis) {
-    console.warn("Missing aiAnalysis in prediction object");
+  // Add extra validation for the aiAnalysis object and its properties
+  if (!prediction.aiAnalysis || 
+      !prediction.aiAnalysis.supporting || 
+      !prediction.aiAnalysis.counter ||
+      !Array.isArray(prediction.aiAnalysis.supporting) ||
+      !Array.isArray(prediction.aiAnalysis.counter)) {
+    console.warn("Missing or invalid aiAnalysis in prediction object", prediction);
+    
+    // Create a default aiAnalysis object to prevent UI errors
     prediction.aiAnalysis = {
-      reasoning: "Analysis based on current market conditions.",
-      supporting: ["Technical indicators are favorable", "Market sentiment aligns with this direction", "Recent price action supports this view"],
-      counter: ["Market volatility is a risk factor", "External events could change the outcome", "Profit-taking could limit gains"]
+      reasoning: prediction.aiAnalysis?.reasoning || "Analysis based on current market conditions.",
+      supporting: Array.isArray(prediction.aiAnalysis?.supporting) ? prediction.aiAnalysis.supporting : ["Technical indicators are favorable", "Market sentiment aligns with this direction", "Recent price action supports this view"],
+      counter: Array.isArray(prediction.aiAnalysis?.counter) ? prediction.aiAnalysis.counter : ["Market volatility is a risk factor", "External events could change the outcome", "Profit-taking could limit gains"]
     };
   }
   

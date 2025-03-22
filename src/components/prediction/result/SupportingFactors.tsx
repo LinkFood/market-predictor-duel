@@ -15,11 +15,13 @@ type SupportingFactorsComponent = React.FC<SupportingFactorsProps> & {
 // Define the component with the correct typing for static Icon property
 const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
   // Ensure supporting points exist with fallbacks
-  const supportingPoints = prediction?.aiAnalysis?.supporting || [
-    "Technical indicators suggest positive movement",
-    "Recent market trends favor this direction",
-    "Price action shows strength in this timeframe"
-  ];
+  const supportingPoints = Array.isArray(prediction?.aiAnalysis?.supporting) && prediction.aiAnalysis.supporting.length > 0
+    ? prediction.aiAnalysis.supporting
+    : [
+        "Technical indicators suggest positive movement",
+        "Recent market trends favor this direction",
+        "Price action shows strength in this timeframe"
+      ];
 
   console.log("Rendering supporting factors with points:", supportingPoints);
 

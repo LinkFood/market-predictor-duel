@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle, Server, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Prediction } from "@/types";
 import { FEATURES } from "@/lib/config";
+import { getPredictionById } from "@/lib/prediction/user-predictions";
 
 // Refactored components
 import {
@@ -25,6 +26,39 @@ const MakePrediction: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [showApiTest, setShowApiTest] = useState(false);
   
+  // Effect to refresh prediction data after analysis is complete
+  useEffect(() => {
+    // If we have a prediction ID and we're in the analyzing stage, set up a timer to fetch the latest data
+    if (prediction?.id && predictionStep === "analyzing") {
+      const timer = setTimeout(async () => {
+        try {
+          // Fetch the latest prediction data from the server
+          console.log("Fetching latest prediction data for ID:", prediction.id);
+          const updatedPrediction = await getPredictionById(prediction.id);
+          
+          if (updatedPrediction) {
+            console.log("Received updated prediction:", updatedPrediction);
+            setPrediction(updatedPrediction);
+            setPredictionStep("result");
+            toast({
+              title: "Success",
+              description: "Prediction analyzed successfully!"
+            });
+          } else {
+            console.error("Failed to fetch updated prediction");
+            setError("Failed to retrieve prediction analysis. Please try again.");
+          }
+        } catch (error) {
+          console.error('Error fetching updated prediction:', error);
+          setError("Failed to retrieve prediction analysis. Please try again.");
+          setPredictionStep("form");
+        }
+      }, 3000); // Still keep 3 seconds for animation
+      
+      return () => clearTimeout(timer);
+    }
+  }, [prediction?.id, predictionStep, toast]);
+  
   const handlePredictionMade = (newPrediction: Prediction) => {
     try {
       console.log('Prediction made:', newPrediction);
@@ -32,14 +66,7 @@ const MakePrediction: React.FC = () => {
       setPredictionStep("analyzing");
       setError(null);
       
-      // Simulating API request time
-      setTimeout(() => {
-        setPredictionStep("result");
-        toast({
-          title: "Success",
-          description: "Prediction analyzed successfully!"
-        });
-      }, 3000);
+      // The useEffect above will handle fetching the latest data and transitioning to result
     } catch (error) {
       console.error('Error handling prediction:', error);
       setError("Failed to process prediction. Please try again.");
@@ -48,7 +75,8 @@ const MakePrediction: React.FC = () => {
   };
 
   const handleAnalysisComplete = () => {
-    setPredictionStep("result");
+    // This is now handled by the useEffect
+    console.log("Analysis animation complete");
   };
 
   const handleNewPrediction = () => {
