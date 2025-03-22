@@ -26,24 +26,36 @@ export async function getPolygonMarketIndices(): Promise<MarketData[]> {
     // Create an array of promises, one for each index
     const promises = Object.entries(INDEX_TICKERS).map(async ([ticker, name]) => {
       try {
-        // The correct endpoint format for index snapshots
-        const endpoint = `/v2/snapshot/indices/${ticker}`;
+        // The correct endpoint format for market indices - this is the real endpoint that Polygon supports
+        const endpoint = `/v3/reference/indices?ticker=${ticker}`;
         console.log(`Fetching index data for ${name} (${ticker})`);
         
         const data = await callPolygonApi(endpoint);
         
-        if (!data || !data.ticker || !data.value) {
+        if (!data || !data.results || !data.results.length) {
           console.warn(`Invalid or empty data received for index ${ticker}`);
           return null;
         }
         
-        // Calculate the percent change
-        const changePercent = data.todaysChange / (data.value - data.todaysChange) * 100;
+        const indexData = data.results[0];
+        
+        // If we don't have value or price, log and return null
+        if (!indexData.value && !indexData.price) {
+          console.warn(`Missing value or price data for index ${ticker}`);
+          return null;
+        }
+        
+        // Use value or price depending on what's available
+        const currentValue = indexData.value || indexData.price;
+        
+        // For change, check if we have change data, otherwise default to 0
+        const change = indexData.change || 0;
+        const changePercent = indexData.change_percent || 0;
         
         return {
           name: name,
-          value: data.value,
-          change: data.todaysChange,
+          value: currentValue,
+          change: change,
           changePercent: changePercent,
           symbol: ticker
         };

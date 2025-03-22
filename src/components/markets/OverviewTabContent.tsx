@@ -12,6 +12,7 @@ interface OverviewTabContentProps {
   marketIndices: MarketData[];
   marketIndicesLoading?: boolean;
   marketIndicesError?: boolean;
+  marketIndicesErrorMessage?: string | null;
   marketIndicesUsingMockData?: boolean;
   marketIndicesLastUpdated?: Date | null;
   onRefreshIndices?: () => Promise<void>;
@@ -26,6 +27,7 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
   marketIndices,
   marketIndicesLoading = false,
   marketIndicesError = false,
+  marketIndicesErrorMessage = null,
   marketIndicesUsingMockData = false,
   marketIndicesLastUpdated = null,
   onRefreshIndices,
@@ -43,6 +45,7 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
           marketIndices={marketIndices} 
           isLoading={marketIndicesLoading}
           isError={marketIndicesError}
+          errorMessage={marketIndicesErrorMessage}
           usingMockData={marketIndicesUsingMockData}
           lastUpdated={marketIndicesLastUpdated}
           onRefresh={onRefreshIndices}

@@ -9,6 +9,7 @@ export const useMarketIndices = () => {
   const [marketIndices, setMarketIndices] = useState<MarketData[]>(DEFAULT_INDICES);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);
 
@@ -16,6 +17,7 @@ export const useMarketIndices = () => {
     try {
       setIsLoading(true);
       setIsError(false);
+      setErrorMessage(null);
       console.log('Fetching market indices data...');
       
       const { data, usingMockData: isMockData } = await getMarketIndices();
@@ -34,6 +36,7 @@ export const useMarketIndices = () => {
         }
       } else {
         setIsError(true);
+        setErrorMessage("Received empty market indices data");
         toast({
           title: "Market Indices Warning",
           description: "Received empty market indices data. Using latest available data.",
@@ -43,6 +46,7 @@ export const useMarketIndices = () => {
     } catch (error) {
       console.error('Error fetching market indices:', error);
       setIsError(true);
+      setErrorMessage(error.message || "Unknown error");
       
       toast({
         title: "Market Indices Error",
@@ -70,6 +74,7 @@ export const useMarketIndices = () => {
     marketIndices,
     isLoading,
     isError,
+    errorMessage,
     lastUpdated,
     usingMockData,
     refreshData: fetchMarketIndices

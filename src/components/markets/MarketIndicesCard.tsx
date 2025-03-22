@@ -12,6 +12,7 @@ interface MarketIndicesCardProps {
   marketIndices: MarketData[];
   isLoading?: boolean;
   isError?: boolean;
+  errorMessage?: string | null;
   usingMockData?: boolean;
   lastUpdated?: Date | null;
   onRefresh?: () => Promise<void>;
@@ -21,6 +22,7 @@ const MarketIndicesCard: React.FC<MarketIndicesCardProps> = ({
   marketIndices,
   isLoading = false,
   isError = false,
+  errorMessage = null,
   usingMockData = false,
   lastUpdated = null,
   onRefresh
@@ -78,7 +80,7 @@ const MarketIndicesCard: React.FC<MarketIndicesCardProps> = ({
         {isError && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-sm flex items-center">
             <AlertTriangle className="h-4 w-4 mr-2" />
-            Unable to fetch market indices data. Showing fallback data.
+            {errorMessage || "Unable to fetch market indices data. Showing fallback data."}
           </div>
         )}
         

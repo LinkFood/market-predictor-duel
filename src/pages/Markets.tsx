@@ -16,6 +16,7 @@ const Markets: React.FC = () => {
     marketIndices, 
     isLoading: indicesLoading, 
     isError: indicesError, 
+    errorMessage: indicesErrorMessage,
     lastUpdated: indicesLastUpdated,
     usingMockData: indicesUsingMockData,
     refreshData: refreshIndicesData
@@ -99,6 +100,7 @@ const Markets: React.FC = () => {
             marketIndices={marketIndices}
             marketIndicesLoading={indicesLoading}
             marketIndicesError={indicesError}
+            marketIndicesErrorMessage={indicesErrorMessage}
             marketIndicesUsingMockData={indicesUsingMockData}
             marketIndicesLastUpdated={indicesLastUpdated}
             onRefreshIndices={handleRefreshIndices}
