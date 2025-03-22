@@ -1,10 +1,11 @@
 
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Loader2, CheckCircle, XCircle, InfoIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { testXaiApiConnection } from '@/lib/xai/prediction-service';
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 const ApiConnectionTest = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +20,7 @@ const ApiConnectionTest = () => {
     try {
       setIsLoading(true);
       setError(null);
-      console.log("Testing X.ai API connection...");
+      console.log("Testing API connection...");
       
       const testResult = await testXaiApiConnection();
       console.log("Test result:", testResult);
@@ -36,9 +37,9 @@ const ApiConnectionTest = () => {
   return (
     <Card className="shadow-md">
       <CardHeader>
-        <CardTitle>X.ai API Connection Test</CardTitle>
+        <CardTitle>AI API Connection Test</CardTitle>
         <CardDescription>
-          Test the connection to the X.ai API to ensure predictions can be generated
+          Test the connection to the AI API to ensure predictions can be generated
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -68,13 +69,34 @@ const ApiConnectionTest = () => {
               <span className="font-medium">Message:</span> {result.message}
             </div>
             
+            {!result.success && (
+              <Alert className="mt-2 bg-amber-50 text-amber-800 border-amber-200">
+                <InfoIcon className="h-4 w-4" />
+                <AlertTitle>Troubleshooting Tips</AlertTitle>
+                <AlertDescription className="text-sm mt-2">
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Check that your API key is correctly set in Supabase secrets</li>
+                    <li>Verify that your API key has the necessary permissions</li>
+                    <li>If using X.ai, ensure your account has access to the requested model</li>
+                    <li>The application will fall back to mock data if the API is unavailable</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {result.details && (
-              <div className="mt-2">
-                <div className="font-medium mb-1">Details:</div>
-                <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded text-sm overflow-auto max-h-48">
-                  <pre className="whitespace-pre-wrap">{JSON.stringify(result.details, null, 2)}</pre>
-                </div>
-              </div>
+              <Accordion type="single" collapsible className="mt-2">
+                <AccordionItem value="details">
+                  <AccordionTrigger className="text-sm font-medium">
+                    Technical Details
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded text-sm overflow-auto max-h-48">
+                      <pre className="whitespace-pre-wrap">{JSON.stringify(result.details, null, 2)}</pre>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             )}
           </div>
         )}
@@ -91,7 +113,7 @@ const ApiConnectionTest = () => {
               Testing Connection...
             </>
           ) : (
-            "Test X.ai API Connection"
+            "Test AI API Connection"
           )}
         </Button>
       </CardFooter>

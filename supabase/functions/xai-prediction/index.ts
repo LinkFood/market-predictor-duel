@@ -2,9 +2,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const XAI_API_KEY = Deno.env.get('XAI_API_KEY');
+const API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
-const MODEL_NAME = "x1"; // Default model
+const OPENAI_BASE_URL = "https://api.openai.com/v1";
+const API_PROVIDER = "openai"; // Use "openai" instead of "xai" because X.ai model might not be available
+
+// Set the base URL and model based on the provider
+const BASE_URL = API_PROVIDER === "xai" ? XAI_BASE_URL : OPENAI_BASE_URL;
+const MODEL_NAME = API_PROVIDER === "xai" ? "x1" : "gpt-4o-mini"; // Use OpenAI's gpt-4o-mini model
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // ms
@@ -33,7 +38,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_R
         return fetchWithRetry(url, options, retries - 1);
       }
       
-      throw new Error(`X.ai API error: ${response.status} - ${errorText}`);
+      throw new Error(`API error: ${response.status} - ${errorText}`);
     }
     
     return response;
@@ -135,16 +140,16 @@ function extractFallbackPrediction(content: string, predictionType: string) {
 
 // Run API connectivity test
 async function testApiConnection() {
-  if (!XAI_API_KEY) {
-    console.error("Missing X.ai API key");
+  if (!API_KEY) {
+    console.error("Missing API key");
     return { success: false, error: "API key not configured" };
   }
   
   try {
-    const testResponse = await fetch(`${XAI_BASE_URL}/models`, {
+    const testResponse = await fetch(`${BASE_URL}/models`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${XAI_API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       }
     });
@@ -179,6 +184,7 @@ serve(async (req) => {
   try {
     // Log request start
     console.log("Processing prediction request");
+    console.log(`Using ${API_PROVIDER} with model ${MODEL_NAME}`);
     
     // Run API test if requested
     if (req.url.includes('test=true')) {
@@ -208,9 +214,9 @@ serve(async (req) => {
     validateInput(ticker, timeframe, predictionType);
     
     // Check if API key exists
-    if (!XAI_API_KEY) {
-      console.error("X.ai API key is not configured");
-      throw new Error("X.ai API key is not configured");
+    if (!API_KEY) {
+      console.error("API key is not configured");
+      throw new Error("API key is not configured");
     }
 
     // Build the prompt for the prediction
@@ -235,8 +241,8 @@ serve(async (req) => {
       - counterPoints (array of 3 strings)
     `;
 
-    // Call X.ai API with retry logic
-    console.log("Calling X.ai API for prediction");
+    // Call API with retry logic
+    console.log(`Calling ${API_PROVIDER} API for prediction using model ${MODEL_NAME}`);
     const apiPayload = {
       model: MODEL_NAME,
       messages: [
@@ -254,24 +260,24 @@ serve(async (req) => {
     
     console.log("API payload:", JSON.stringify(apiPayload));
     
-    const response = await fetchWithRetry(`${XAI_BASE_URL}/chat/completions`, {
+    const response = await fetchWithRetry(`${BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${XAI_API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
       },
       body: JSON.stringify(apiPayload),
     });
 
     const data = await response.json();
-    console.log("Successfully received response from X.ai");
+    console.log(`Successfully received response from ${API_PROVIDER}`);
     
     // Extract the content from the response
     const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
-      console.error("No content in X.ai response:", JSON.stringify(data));
-      throw new Error("No content in X.ai response");
+      console.error(`No content in ${API_PROVIDER} response:`, JSON.stringify(data));
+      throw new Error(`No content in ${API_PROVIDER} response`);
     }
     
     // Parse the JSON response with enhanced validation
@@ -289,7 +295,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error in xai-prediction function:", error.message, error.stack);
+    console.error("Error in prediction function:", error.message, error.stack);
     
     // Return error response
     return new Response(

@@ -4,6 +4,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const XAI_API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
+const OPENAI_BASE_URL = "https://api.openai.com/v1";
+const API_PROVIDER = "openai"; // Use "openai" instead of "xai" because X.ai model might not be available
 
 // CORS headers
 const corsHeaders = {
@@ -18,15 +20,15 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Testing X.ai API connection");
+    console.log("Testing API connection");
     
     // Verify API key is configured
     if (!XAI_API_KEY) {
-      console.error("X.ai API key is not configured");
+      console.error("API key is not configured");
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "X.ai API key is not configured in environment variables" 
+          error: "API key is not configured in environment variables" 
         }),
         { 
           status: 500,
@@ -37,12 +39,16 @@ serve(async (req) => {
         }
       );
     }
+
+    // Define base URL and model based on the provider
+    const baseUrl = API_PROVIDER === "xai" ? XAI_BASE_URL : OPENAI_BASE_URL;
+    const modelName = API_PROVIDER === "xai" ? "x1" : "gpt-4o-mini"; // Use OpenAI's gpt-4o-mini model which is more likely to be available
     
-    // Test models endpoint
-    console.log("Testing models endpoint");
+    // Test models endpoint - this works for both X.ai and OpenAI
+    console.log(`Testing models endpoint for ${API_PROVIDER}`);
     let modelsResponse;
     try {
-      modelsResponse = await fetch(`${XAI_BASE_URL}/models`, {
+      modelsResponse = await fetch(`${baseUrl}/models`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${XAI_API_KEY}`,
@@ -60,15 +66,15 @@ serve(async (req) => {
     }
     
     // Test chat completions endpoint with a simple prompt
-    console.log("Testing chat completions endpoint");
-    const chatResponse = await fetch(`${XAI_BASE_URL}/chat/completions`, {
+    console.log(`Testing chat completions endpoint for ${API_PROVIDER}`);
+    const chatResponse = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${XAI_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "x1",
+        model: modelName,
         messages: [
           { role: "system", content: "You are a helpful assistant." },
           { role: "user", content: "Say hello!" }
@@ -83,13 +89,59 @@ serve(async (req) => {
     console.log(`Chat API response status: ${chatStatus}`);
     console.log(`Chat API response: ${chatData}`);
     
+    // Handle specific error cases
+    if (chatStatus === 401) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: "Authentication failed. Please check your API key.",
+          details: {
+            error: "Unauthorized - The API key provided is invalid",
+            status: chatStatus
+          }
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+    
+    if (chatStatus === 404 && chatData.includes("model")) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: `The model "${modelName}" was not found. Your account may not have access to this model.`,
+          details: {
+            error: "Model not found or not accessible",
+            model: modelName,
+            provider: API_PROVIDER,
+            status: chatStatus
+          }
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+    
     // Build comprehensive test results
     const testResults = {
       success: chatStatus === 200,
+      message: chatStatus === 200 
+        ? "API connection successful"
+        : `Connection test failed with status ${chatStatus}`,
       apiKey: {
         provided: !!XAI_API_KEY,
         truncated: XAI_API_KEY ? `${XAI_API_KEY.substring(0, 5)}...` : null
       },
+      provider: API_PROVIDER,
+      model: modelName,
       endpoints: {
         models: {
           status: modelsResponse?.status,
@@ -114,12 +166,12 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error testing X.ai API:", error);
+    console.error("Error testing API:", error);
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message || "An error occurred testing the X.ai API",
+        error: error.message || "An error occurred testing the API",
         timestamp: new Date().toISOString()
       }),
       { 
