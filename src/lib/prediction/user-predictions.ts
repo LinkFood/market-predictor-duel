@@ -1,3 +1,4 @@
+
 /**
  * Handles fetching and managing user predictions
  */
@@ -13,11 +14,18 @@ export async function getUserPredictions(status?: 'pending' | 'complete' | 'comp
   try {
     // Get current user
     const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
+    if (userError) {
+      console.error("User auth error:", userError);
+      throw userError;
+    }
+    
     if (!userData.user) {
-      throw new Error("User not authenticated");
+      console.log("No authenticated user found, returning empty predictions array");
+      return [];
     }
 
+    console.log(`Fetching predictions for user: ${userData.user.id}`);
+    
     // Build query to fetch predictions
     let query = supabase
       .from('predictions')
@@ -32,7 +40,17 @@ export async function getUserPredictions(status?: 'pending' | 'complete' | 'comp
     
     const { data, error } = await query;
     
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase query error:", error);
+      throw error;
+    }
+    
+    if (!data || data.length === 0) {
+      console.log("No predictions found for user");
+      return [];
+    }
+    
+    console.log(`Found ${data.length} predictions for user`);
     
     // Convert database records to application model
     return data.map(dbToPrediction);
@@ -53,7 +71,15 @@ export async function getPredictionById(id: string): Promise<Prediction | null> 
       .eq('id', id)
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error fetching prediction by ID:", error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.log(`No prediction found with ID: ${id}`);
+      return null;
+    }
     
     return dbToPrediction(data);
   } catch (error) {

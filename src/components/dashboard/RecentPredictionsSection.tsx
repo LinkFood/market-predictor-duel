@@ -10,6 +10,9 @@ interface RecentPredictionsSectionProps {
 }
 
 const RecentPredictionsSection: React.FC<RecentPredictionsSectionProps> = ({ predictions }) => {
+  // Ensure predictions is always an array, even if it's undefined or null
+  const safePredictions = Array.isArray(predictions) ? predictions : [];
+  
   return (
     <motion.section>
       <div className="flex justify-between items-center mb-3">
@@ -20,7 +23,7 @@ const RecentPredictionsSection: React.FC<RecentPredictionsSectionProps> = ({ pre
       </div>
       
       <div className="space-y-2">
-        {predictions.length === 0 ? (
+        {safePredictions.length === 0 ? (
           <div className="glass-card-subtle p-6 flex flex-col items-center justify-center text-center">
             <AlertCircle className="h-8 w-8 text-[hsl(var(--muted-foreground))] mb-2" />
             <p className="body-md mb-1">No predictions yet</p>
@@ -35,7 +38,7 @@ const RecentPredictionsSection: React.FC<RecentPredictionsSectionProps> = ({ pre
             </Link>
           </div>
         ) : (
-          predictions.map((prediction) => (
+          safePredictions.map((prediction) => (
             <Link 
               key={prediction.id}
               to={`/app/predictions/${prediction.id}`}
@@ -49,11 +52,11 @@ const RecentPredictionsSection: React.FC<RecentPredictionsSectionProps> = ({ pre
                       ? 'bg-[hsl(var(--error-muted))]' 
                       : 'bg-[hsl(var(--warning-muted))]'
                 }`}>
-                  <span className="body-sm font-medium">{prediction.targetName.slice(0, 4)}</span>
+                  <span className="body-sm font-medium">{prediction.targetName?.slice(0, 4) || prediction.ticker?.slice(0, 4) || '?'}</span>
                 </div>
                 
                 <div>
-                  <p className="body-md">{prediction.targetName}</p>
+                  <p className="body-md">{prediction.targetName || prediction.ticker || 'Unknown'}</p>
                   <p className="caption text-[hsl(var(--muted-foreground))]">
                     {prediction.userPrediction} • {prediction.timeframe}
                   </p>
