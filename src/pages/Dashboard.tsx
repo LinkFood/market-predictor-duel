@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { mockMarketData, mockGlobalStats } from "@/data/mockData";
+import { mockGlobalStats } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
 import { getUserPredictions, getUserStats, getLeaderboard } from "@/lib/prediction";
 import { Prediction, LeaderboardEntry } from "@/lib/prediction/types";
@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
         
         {/* Market Overview */}
         <motion.div variants={itemVariants}>
-          <TopMarkets markets={mockMarketData} />
+          <TopMarkets />
         </motion.div>
         
         {/* Market Opportunities */}
