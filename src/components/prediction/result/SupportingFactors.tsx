@@ -7,7 +7,10 @@ interface SupportingFactorsProps {
   prediction: Prediction;
 }
 
-const SupportingFactors: React.FC<SupportingFactorsProps> = ({ prediction }) => {
+// Define the component with proper typing for static Icon property
+const SupportingFactors: React.FC<SupportingFactorsProps> & {
+  Icon: () => JSX.Element;
+} = ({ prediction }) => {
   // Ensure supporting points exist with fallbacks
   const supportingPoints = prediction?.aiAnalysis?.supporting || [
     "Technical indicators suggest positive movement",
@@ -33,7 +36,7 @@ const SupportingFactors: React.FC<SupportingFactorsProps> = ({ prediction }) => 
   );
 };
 
-// Export the icon separately for reuse
+// Define the Icon property separately
 SupportingFactors.Icon = () => <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />;
 
 export default SupportingFactors;

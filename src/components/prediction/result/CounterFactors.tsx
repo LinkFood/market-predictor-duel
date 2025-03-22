@@ -7,7 +7,10 @@ interface CounterFactorsProps {
   prediction: Prediction;
 }
 
-const CounterFactors: React.FC<CounterFactorsProps> = ({ prediction }) => {
+// Define the component with proper typing for static Icon property
+const CounterFactors: React.FC<CounterFactorsProps> & {
+  Icon: () => JSX.Element;
+} = ({ prediction }) => {
   // Ensure counter points exist with fallbacks
   const counterPoints = prediction?.aiAnalysis?.counter || [
     "Market volatility could impact performance",
@@ -33,7 +36,7 @@ const CounterFactors: React.FC<CounterFactorsProps> = ({ prediction }) => {
   );
 };
 
-// Export the icon separately for reuse
+// Define the Icon property separately
 CounterFactors.Icon = () => <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />;
 
 export default CounterFactors;

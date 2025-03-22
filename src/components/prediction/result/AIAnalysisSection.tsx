@@ -3,8 +3,8 @@ import React from "react";
 import { Brain } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Prediction } from "@/types";
-import { SupportingFactors } from "./SupportingFactors";
-import { CounterFactors } from "./CounterFactors";
+import SupportingFactors from "./SupportingFactors";
+import CounterFactors from "./CounterFactors";
 
 interface AIAnalysisSectionProps {
   prediction: Prediction;

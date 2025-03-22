@@ -1,4 +1,5 @@
 
+// Export all components with consistent naming
 export { default as PredictionResult } from './PredictionResult';
 export { default as PredictionComparison } from './PredictionComparison';
 export { default as SupportingFactors } from './SupportingFactors';

@@ -7,9 +7,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FEATURES } from "@/lib/config";
 import { Prediction } from "@/types";
-import { PredictionComparison } from "./PredictionComparison";
-import { AIAnalysisSection } from "./AIAnalysisSection";
-import { NextStepsSection } from "./NextStepsSection";
+import PredictionComparison from "./PredictionComparison";
+import AIAnalysisSection from "./AIAnalysisSection";
+import NextStepsSection from "./NextStepsSection";
 
 interface PredictionResultProps {
   prediction: Prediction | null;
