@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useMarketData } from '@/lib/market/MarketDataProvider';
-import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, RefreshCw, AlertTriangle, Info, AlertCircle } from 'lucide-react';
 import { Button } from './ui/button';
 import { cn } from '@/lib/utils';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { FEATURES } from '@/lib/config';
 
 export const MarketInfoDisplay: React.FC = () => {
   const { 
@@ -41,6 +42,11 @@ export const MarketInfoDisplay: React.FC = () => {
     return price.toFixed(2);
   };
   
+  // Determine if API key is likely missing
+  const apiKeyMissing = isError && (errorMessage?.includes('API key') || 
+                                     errorMessage?.includes('api key') || 
+                                     usingMockData && FEATURES.enableRealMarketData);
+  
   return (
     <Card className="shadow-sm border-0">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
@@ -68,7 +74,16 @@ export const MarketInfoDisplay: React.FC = () => {
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        {isError && (
+        {apiKeyMissing && (
+          <Alert variant="destructive" className="mb-0 rounded-none">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>API Configuration Error</AlertTitle>
+            <AlertDescription>
+              Polygon API key is missing or invalid. Please check your Supabase secrets configuration.
+            </AlertDescription>
+          </Alert>
+        )}
+        {isError && !apiKeyMissing && (
           <Alert variant="destructive" className="mb-0 rounded-none">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
@@ -142,7 +157,12 @@ export const MarketInfoDisplay: React.FC = () => {
           <div className="px-4 py-3 text-xs flex items-center text-amber-700 bg-amber-50 dark:bg-amber-900/20 dark:text-amber-400 border-t">
             <AlertTriangle className="h-3.5 w-3.5 mr-1.5 flex-shrink-0" />
             <span>
-              Using simulated market data. Please check API configuration to enable real-time data.
+              Using simulated market data. 
+              {FEATURES.enableRealMarketData ? (
+                <strong className="ml-1">Please check API configuration to enable real-time data.</strong>
+              ) : (
+                <span className="ml-1">Real-time data is disabled in configuration.</span>
+              )}
             </span>
           </div>
         )}

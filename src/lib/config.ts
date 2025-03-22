@@ -40,7 +40,7 @@ export const API_ERRORS = {
   AUTHENTICATION_ERROR: "Authentication error. Please log in again.",
   SERVER_ERROR: "Server error. Please try again later.",
   NOT_FOUND: "Resource not found. Please check your request.",
-  POLYGON_ERROR: "Error loading market data. The API key may be invalid or missing."
+  POLYGON_ERROR: "Error loading market data. Make sure the Polygon API key is correctly set in Supabase secrets and is valid."
 };
 
 // Logging configuration

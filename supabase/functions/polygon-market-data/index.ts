@@ -29,11 +29,26 @@ serve(async (req) => {
     console.log(`Processing Polygon market data request for endpoint: ${endpoint}`);
     console.log(`Request params:`, params);
     
-    // Check if API key exists
+    // Check if API key exists and log detailed information about it
     if (!POLYGON_API_KEY) {
-      console.error("Polygon API key is not configured");
-      throw new Error("Polygon API key is not configured");
+      console.error("Polygon API key is not configured in environment variables");
+      return new Response(
+        JSON.stringify({ 
+          error: "API_KEY_MISSING",
+          message: "Polygon API key is not configured in environment variables",
+          details: "Please check Supabase secrets configuration"
+        }),
+        { 
+          status: 500,
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
+    
+    console.log(`Polygon API key found. Length: ${POLYGON_API_KEY.length}`);
 
     // Build the URL with parameters
     let url = `${POLYGON_BASE_URL}${endpoint}`;
@@ -61,6 +76,26 @@ serve(async (req) => {
       
       clearTimeout(timeoutId);
       const status = response.status;
+      
+      // Handle API key errors specifically
+      if (status === 401 || status === 403) {
+        console.error(`Polygon API authentication error (${status}): Invalid or expired API key`);
+        return new Response(
+          JSON.stringify({ 
+            error: "API_KEY_INVALID",
+            message: "Invalid or expired Polygon API key",
+            status: status,
+            endpoint
+          }),
+          { 
+            status: status,
+            headers: { 
+              ...corsHeaders,
+              'Content-Type': 'application/json' 
+            } 
+          }
+        );
+      }
       
       if (!response.ok) {
         const errorData = await response.text();
