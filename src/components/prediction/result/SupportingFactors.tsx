@@ -14,6 +14,8 @@ type SupportingFactorsComponent = React.FC<SupportingFactorsProps> & {
 
 // Define the component with the correct typing for static Icon property
 const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
+  console.log("SupportingFactors rendering with prediction:", prediction);
+  
   // Ensure supporting points exist with fallbacks
   const supportingPoints = Array.isArray(prediction?.aiAnalysis?.supporting) && prediction.aiAnalysis.supporting.length > 0
     ? prediction.aiAnalysis.supporting
@@ -23,7 +25,7 @@ const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
         "Price action shows strength in this timeframe"
       ];
 
-  console.log("Rendering supporting factors with points:", supportingPoints);
+  console.log("Using supporting points:", supportingPoints);
 
   return (
     <div className="divide-y">

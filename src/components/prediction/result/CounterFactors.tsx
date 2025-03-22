@@ -14,6 +14,8 @@ type CounterFactorsComponent = React.FC<CounterFactorsProps> & {
 
 // Define the component with the correct typing for static Icon property
 const CounterFactors: CounterFactorsComponent = ({ prediction }) => {
+  console.log("CounterFactors rendering with prediction:", prediction);
+  
   // Ensure counter points exist with fallbacks and handle missing or invalid data
   const counterPoints = Array.isArray(prediction?.aiAnalysis?.counter) && prediction.aiAnalysis.counter.length > 0
     ? prediction.aiAnalysis.counter
@@ -23,7 +25,7 @@ const CounterFactors: CounterFactorsComponent = ({ prediction }) => {
         "Historical resistance levels may prove challenging"
       ];
 
-  console.log("Rendering counter factors with points:", counterPoints);
+  console.log("Using counter points:", counterPoints);
 
   return (
     <div className="divide-y">
