@@ -7,6 +7,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
 import AILearningInitializer from "./components/AILearningInitializer";
+import { SubscriptionProvider } from "./lib/subscription/subscription-context";
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -53,11 +54,13 @@ function App() {
     <ErrorBoundary>
       <BrowserRouter>
         <AuthProvider>
-          <MarketDataProvider>
-            <AILearningInitializer />
-            <AppRoutes />
-            <Toaster />
-          </MarketDataProvider>
+          <SubscriptionProvider>
+            <MarketDataProvider>
+              <AILearningInitializer />
+              <AppRoutes />
+              <Toaster />
+            </MarketDataProvider>
+          </SubscriptionProvider>
         </AuthProvider>
       </BrowserRouter>
     </ErrorBoundary>

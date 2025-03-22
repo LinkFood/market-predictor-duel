@@ -14,6 +14,7 @@ import ProfileStats from "@/components/profile/ProfileStats";
 import PerformanceHistory from "@/components/profile/PerformanceHistory";
 import PredictionsTab from "@/components/profile/PredictionsTab";
 import BadgesTab from "@/components/profile/BadgesTab";
+import SubscriptionTab from "@/components/profile/SubscriptionTab";
 import SettingsTab, { ProfileFormData } from "@/components/profile/SettingsTab";
 
 interface UserProfile {
@@ -145,9 +146,10 @@ const Profile: React.FC = () => {
       <PerformanceHistory />
 
       <Tabs defaultValue="predictions">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="predictions">Predictions</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
@@ -157,6 +159,10 @@ const Profile: React.FC = () => {
 
         <TabsContent value="badges" className="space-y-4 pt-4">
           <BadgesTab badges={[]} isLoading={isLoading} />
+        </TabsContent>
+        
+        <TabsContent value="subscription" className="space-y-4 pt-4">
+          <SubscriptionTab isLoading={isLoading} />
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-4 pt-4">
