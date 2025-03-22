@@ -2,9 +2,10 @@
 import React from "react";
 import { motion } from "framer-motion";
 import MarketIndicesCard from "./MarketIndicesCard";
-import MarketInfoDisplay from "@/components/MarketInfoDisplay";
+import MarketSentimentDisplay from "./MarketSentimentDisplay";
 import MarketDataTable from "@/components/MarketDataTable";
 import { MarketData } from "@/types";
+import { useMarketSentiment } from "@/hooks/useMarketSentiment";
 
 interface OverviewTabContentProps {
   gainers: MarketData[];
@@ -35,6 +36,17 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
   isLoading,
   itemVariants
 }) => {
+  // Use the sentiment hook (passing gainers and losers to calculate sentiment)
+  const { 
+    sentiment, 
+    isLoading: sentimentLoading, 
+    isError: sentimentError,
+    errorMessage: sentimentErrorMessage,
+    lastUpdated: sentimentLastUpdated,
+    usingMockData: sentimentUsingMockData,
+    refreshData: refreshSentiment
+  } = useMarketSentiment(gainers, losers);
+
   return (
     <>
       <motion.div 
@@ -50,7 +62,15 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
           lastUpdated={marketIndicesLastUpdated}
           onRefresh={onRefreshIndices}
         />
-        <MarketInfoDisplay />
+        <MarketSentimentDisplay 
+          sentiment={sentiment}
+          isLoading={sentimentLoading}
+          isError={sentimentError}
+          errorMessage={sentimentErrorMessage}
+          lastUpdated={sentimentLastUpdated}
+          usingMockData={sentimentUsingMockData}
+          onRefresh={refreshSentiment}
+        />
       </motion.div>
       
       <motion.div variants={itemVariants}>
