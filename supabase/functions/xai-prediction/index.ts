@@ -4,11 +4,170 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const XAI_API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
+const MODEL_NAME = "x1"; // Default model
+
+const MAX_RETRIES = 2;
+const RETRY_DELAY = 1000; // ms
 
 // CORS headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+// Sleep function for retry delay
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// API request with retry logic
+async function fetchWithRetry(url: string, options: RequestInit, retries = MAX_RETRIES) {
+  try {
+    const response = await fetch(url, options);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`API error (${response.status}): ${errorText}`);
+      
+      if (retries > 0 && (response.status === 429 || response.status >= 500)) {
+        console.log(`Retrying... (${retries} attempts left)`);
+        await sleep(RETRY_DELAY);
+        return fetchWithRetry(url, options, retries - 1);
+      }
+      
+      throw new Error(`X.ai API error: ${response.status} - ${errorText}`);
+    }
+    
+    return response;
+  } catch (error) {
+    if (retries > 0 && error.message.includes('network')) {
+      console.log(`Network error, retrying... (${retries} attempts left)`);
+      await sleep(RETRY_DELAY);
+      return fetchWithRetry(url, options, retries - 1);
+    }
+    throw error;
+  }
+}
+
+// Validate the input parameters
+function validateInput(ticker: string, timeframe: string, predictionType: string) {
+  if (!ticker) {
+    throw new Error("Missing required parameter: ticker");
+  }
+  
+  if (!timeframe || !['1d', '1w', '1m', '3m'].includes(timeframe)) {
+    throw new Error(`Invalid timeframe: ${timeframe}`);
+  }
+  
+  if (!predictionType || !['trend', 'price'].includes(predictionType)) {
+    throw new Error(`Invalid prediction type: ${predictionType}`);
+  }
+}
+
+// Parse and validate the prediction result
+function validatePredictionResult(content: string, predictionType: string) {
+  try {
+    // First, try to extract JSON if wrapped in code blocks or text
+    const jsonMatch = content.match(/```(?:json)?\s*({[\s\S]*?})\s*```/) || 
+                      content.match(/{[\s\S]*?}/);
+                      
+    const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
+    const predictionData = JSON.parse(jsonStr);
+    
+    // Validate the prediction structure
+    if (!predictionData.prediction) {
+      throw new Error("Missing prediction in parsed data");
+    }
+    
+    // Normalize trend predictions
+    if (predictionType === 'trend') {
+      if (!['uptrend', 'downtrend'].includes(predictionData.prediction.toLowerCase())) {
+        predictionData.prediction = predictionData.prediction.toLowerCase().includes('up') || 
+                                  predictionData.prediction.toLowerCase().includes('bull') ? 
+                                  'uptrend' : 'downtrend';
+      }
+    }
+    
+    // Ensure all required fields are present
+    predictionData.confidence = predictionData.confidence || 80;
+    predictionData.rationale = predictionData.rationale || predictionData.reasoning || 
+                              "Based on market analysis, the AI has made this prediction.";
+    predictionData.supportingPoints = predictionData.supportingPoints || [];
+    predictionData.counterPoints = predictionData.counterPoints || [];
+    
+    return predictionData;
+  } catch (parseError) {
+    console.error("Failed to parse JSON response:", parseError);
+    console.log("Raw content:", content);
+    
+    // If JSON parsing fails, attempt to extract information with regex
+    return extractFallbackPrediction(content, predictionType);
+  }
+}
+
+// Extract prediction from non-JSON response
+function extractFallbackPrediction(content: string, predictionType: string) {
+  console.log("Using fallback prediction extraction");
+  
+  const prediction = predictionType === 'trend' ? 
+    (content.match(/prediction[:\s]+(uptrend|downtrend)/i)?.[1] || 
+     (content.toLowerCase().includes('uptrend') || content.toLowerCase().includes('bullish')) ? 'uptrend' : 'downtrend') :
+    content.match(/prediction[:\s]+\$?(\d+(\.\d+)?)/i)?.[1] || "0.00";
+    
+  const confidence = parseInt(content.match(/confidence[:\s]+(\d+)/i)?.[1] || "80");
+  const rationale = content.match(/rationale[:\s]+(.*?)(\n|$)/i)?.[1] || "Based on market analysis.";
+  
+  // Create a structured prediction if parsing failed
+  return {
+    prediction: predictionType === 'trend' ? prediction : `$${prediction}`,
+    confidence: isNaN(confidence) ? 80 : confidence,
+    rationale,
+    supportingPoints: [
+      "Technical indicators suggest this direction",
+      "Recent price action supports this view",
+      "Market sentiment aligns with this prediction"
+    ],
+    counterPoints: [
+      "Market volatility is a risk factor",
+      "External economic events could impact this prediction",
+      "Sector-specific challenges may arise"
+    ]
+  };
+}
+
+// Run API connectivity test
+async function testApiConnection() {
+  if (!XAI_API_KEY) {
+    console.error("Missing X.ai API key");
+    return { success: false, error: "API key not configured" };
+  }
+  
+  try {
+    const testResponse = await fetch(`${XAI_BASE_URL}/models`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${XAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!testResponse.ok) {
+      const errorText = await testResponse.text();
+      console.error(`API test failed (${testResponse.status}): ${errorText}`);
+      return { 
+        success: false, 
+        status: testResponse.status,
+        error: errorText
+      };
+    }
+    
+    const models = await testResponse.json();
+    return { 
+      success: true, 
+      availableModels: models 
+    };
+  } catch (error) {
+    console.error("API test error:", error.message);
+    return { success: false, error: error.message };
+  }
 }
 
 serve(async (req) => {
@@ -18,14 +177,35 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body
-    const { ticker, timeframe, predictionType, currentPrice } = await req.json();
+    // Log request start
+    console.log("Processing prediction request");
     
-    if (!ticker) {
-      throw new Error("Missing required parameter: ticker");
+    // Run API test if requested
+    if (req.url.includes('test=true')) {
+      console.log("Running API connectivity test");
+      const testResult = await testApiConnection();
+      console.log("Test result:", JSON.stringify(testResult));
+      
+      return new Response(
+        JSON.stringify(testResult),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
-
-    console.log(`Processing prediction request for ticker: ${ticker}, type: ${predictionType}, timeframe: ${timeframe}`);
+    
+    // Parse request body
+    const requestData = await req.json();
+    const { ticker, timeframe, predictionType, currentPrice } = requestData;
+    
+    // Log request details
+    console.log(`Request details: ticker=${ticker}, type=${predictionType}, timeframe=${timeframe}, price=${currentPrice}`);
+    
+    // Validate input parameters
+    validateInput(ticker, timeframe, predictionType);
     
     // Check if API key exists
     if (!XAI_API_KEY) {
@@ -55,104 +235,48 @@ serve(async (req) => {
       - counterPoints (array of 3 strings)
     `;
 
-    // Call X.ai API
+    // Call X.ai API with retry logic
     console.log("Calling X.ai API for prediction");
-    const response = await fetch(`${XAI_BASE_URL}/chat/completions`, {
+    const apiPayload = {
+      model: MODEL_NAME,
+      messages: [
+        {
+          role: "system",
+          content: "You are a financial analyst specialized in stock market predictions. Provide concise, accurate predictions based on market data. Always respond in the exact JSON format requested by the user."
+        },
+        {
+          role: "user",
+          content: predictionPrompt
+        }
+      ],
+      temperature: 0.2
+    };
+    
+    console.log("API payload:", JSON.stringify(apiPayload));
+    
+    const response = await fetchWithRetry(`${XAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${XAI_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: "x1",
-        messages: [
-          {
-            role: "system",
-            content: "You are a financial analyst specialized in stock market predictions. Provide concise, accurate predictions based on market data. Always respond in the exact JSON format requested by the user."
-          },
-          {
-            role: "user",
-            content: predictionPrompt
-          }
-        ],
-        temperature: 0.2
-      }),
+      body: JSON.stringify(apiPayload),
     });
-
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error(`X.ai API error (${response.status}): ${errorData}`);
-      throw new Error(`X.ai API error: ${response.status}`);
-    }
 
     const data = await response.json();
     console.log("Successfully received response from X.ai");
     
     // Extract the content from the response
-    const content = data.choices[0]?.message?.content;
+    const content = data.choices?.[0]?.message?.content;
     
     if (!content) {
+      console.error("No content in X.ai response:", JSON.stringify(data));
       throw new Error("No content in X.ai response");
     }
     
-    // Try to parse the JSON response
-    let predictionData;
-    try {
-      // First, try to extract JSON if wrapped in code blocks or text
-      const jsonMatch = content.match(/```(?:json)?\s*({[\s\S]*?})\s*```/) || 
-                        content.match(/{[\s\S]*?}/);
-                        
-      const jsonStr = jsonMatch ? jsonMatch[1] || jsonMatch[0] : content;
-      predictionData = JSON.parse(jsonStr);
-      
-      // Validate the prediction structure
-      if (!predictionData.prediction) {
-        throw new Error("Missing prediction in parsed data");
-      }
-      
-      console.log("Successfully parsed prediction:", predictionData);
-    } catch (parseError) {
-      console.error("Failed to parse JSON response:", parseError);
-      console.log("Raw content:", content);
-      
-      // If JSON parsing fails, attempt to extract information with regex
-      const prediction = predictionType === 'trend' ? 
-        (content.match(/prediction[:\s]+(uptrend|downtrend)/i)?.[1] || 
-         (content.toLowerCase().includes('uptrend') || content.toLowerCase().includes('bullish')) ? 'uptrend' : 'downtrend') :
-        content.match(/prediction[:\s]+\$?(\d+(\.\d+)?)/i)?.[1] || "$0.00";
-        
-      const confidence = parseInt(content.match(/confidence[:\s]+(\d+)/i)?.[1] || "80");
-      const rationale = content.match(/rationale[:\s]+(.*?)(\n|$)/i)?.[1] || "Based on market analysis.";
-      
-      // Create a structured prediction if parsing failed
-      predictionData = {
-        prediction: predictionType === 'trend' ? prediction : `$${prediction}`,
-        confidence: isNaN(confidence) ? 80 : confidence,
-        rationale,
-        supportingPoints: [
-          "Technical indicators suggest this direction",
-          "Recent price action supports this view",
-          "Market sentiment aligns with this prediction"
-        ],
-        counterPoints: [
-          "Market volatility is a risk factor",
-          "External economic events could impact this prediction",
-          "Sector-specific challenges may arise"
-        ]
-      };
-      
-      console.log("Created fallback prediction:", predictionData);
-    }
-    
-    // Ensure prediction format is correct
-    if (predictionType === 'trend') {
-      // Normalize trend predictions to be either 'uptrend' or 'downtrend'
-      if (!['uptrend', 'downtrend'].includes(predictionData.prediction.toLowerCase())) {
-        predictionData.prediction = predictionData.prediction.toLowerCase().includes('up') || 
-                                  predictionData.prediction.toLowerCase().includes('bull') ? 
-                                  'uptrend' : 'downtrend';
-      }
-    }
+    // Parse the JSON response with enhanced validation
+    const predictionData = validatePredictionResult(content, predictionType);
+    console.log("Successfully processed prediction:", JSON.stringify(predictionData));
     
     // Return the prediction data
     return new Response(
@@ -165,12 +289,14 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error in xai-prediction function:", error.message);
+    console.error("Error in xai-prediction function:", error.message, error.stack);
     
     // Return error response
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An error occurred processing your request" 
+        error: error.message || "An error occurred processing your request",
+        timestamp: new Date().toISOString(),
+        stack: error.stack
       }),
       { 
         status: 500,
