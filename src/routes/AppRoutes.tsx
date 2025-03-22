@@ -4,6 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Leaderboard from "@/pages/Leaderboard";
 import MakePrediction from "@/pages/MakePrediction";
+import PredictionsHistory from "@/pages/PredictionsHistory"; // Import the new component
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -115,7 +116,7 @@ const AppRoutes = () => {
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="predict" element={<MakePrediction />} />
           <Route path="markets" element={<Markets />} />
-          <Route path="predictions/history" element={<Dashboard />} /> {/* Replace with actual history component */}
+          <Route path="predictions/history" element={<PredictionsHistory />} /> {/* Update with actual component */}
           <Route path="predictions/:id" element={<PredictionDetail />} />
           <Route path="profile" element={<Profile />} />
         </Route>

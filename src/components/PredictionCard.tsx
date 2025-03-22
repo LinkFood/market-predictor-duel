@@ -2,21 +2,23 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   Clock, Trophy, AlertCircle, 
-  TrendingUp, TrendingDown, ArrowRight, DollarSign
+  TrendingUp, TrendingDown, ArrowRight, DollarSign, RotateCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Prediction } from "@/lib/prediction/types";
+import { resolvePrediction } from "@/lib/prediction/resolve-prediction";
 
 interface PredictionCardProps {
   prediction: Prediction;
   compact?: boolean;
+  onResolve?: () => void;
 }
 
-const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = false }) => {
+const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = false, onResolve }) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -104,6 +106,24 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
     }
   };
 
+  const handleResolvePrediction = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      await resolvePrediction(prediction.id);
+      if (onResolve) {
+        onResolve();
+      }
+    } catch (error) {
+      console.error("Error resolving prediction:", error);
+    }
+  };
+
+  // Check if prediction is past resolution date but still pending
+  const isPastDueDate = prediction.status === "pending" && 
+    new Date(prediction.resolvesAt) < new Date();
+
   return (
     <Card className={cn("h-full", compact ? "overflow-hidden" : "")}>
       <CardHeader className={compact ? "p-3 pb-2" : "pb-2"}>
@@ -137,6 +157,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         
         <div className="mt-2 text-xs text-muted-foreground space-y-1">
           <div>Created: {formatDate(prediction.createdAt)}</div>
+          <div>Resolves: {formatDate(prediction.resolvesAt)}</div>
           {(prediction.status === "completed" || prediction.status === "complete") && prediction.resolvedAt && (
             <div>Resolved: {formatDate(prediction.resolvedAt)}</div>
           )}
@@ -167,8 +188,20 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         )}
       </CardContent>
       
-      {!compact && (
-        <CardFooter className={compact ? "p-3 pt-0" : ""}>
+      <CardFooter className={compact ? "p-3 pt-0" : ""}>
+        <div className="w-full">
+          {isPastDueDate && (
+            <Button 
+              variant="outline" 
+              className="w-full mb-2 bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 hover:text-amber-800" 
+              onClick={handleResolvePrediction}
+              size={compact ? "sm" : "default"}
+            >
+              <RotateCw className="h-4 w-4 mr-2" />
+              Resolve Now
+            </Button>
+          )}
+          
           <Button 
             variant="outline" 
             className="w-full" 
@@ -177,8 +210,8 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
           >
             <Link to={`/app/predictions/${prediction.id}`}>View Details</Link>
           </Button>
-        </CardFooter>
-      )}
+        </div>
+      </CardFooter>
     </Card>
   );
 };

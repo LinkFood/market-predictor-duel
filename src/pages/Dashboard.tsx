@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { mockMarketData, mockGlobalStats } from "@/data/mockData";
+import { mockGlobalStats } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
 import { getUserPredictions, getUserStats, getLeaderboard } from "@/lib/prediction";
 import { Prediction, LeaderboardEntry } from "@/lib/prediction/types";
@@ -29,28 +29,39 @@ const Dashboard: React.FC = () => {
   const [recentPredictions, setRecentPredictions] = useState<Prediction[]>([]);
   const [userRank, setUserRank] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   
   // Fetch real user data
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        console.log("Dashboard: Fetching user predictions");
+        
+        // Get current user
+        const { data: userData } = await supabase.auth.getUser();
+        if (!userData || !userData.user) {
+          console.log("Dashboard: No user found, skipping prediction fetch");
+          return;
+        }
         
         // Get user predictions
         const predictions = await getUserPredictions();
+        console.log("Dashboard: Received predictions:", predictions);
         setRecentPredictions(predictions.slice(0, 3));
         
         // Get leaderboard to determine user rank
         const leaderboard = await getLeaderboard();
         
-        // Get current user
-        const { data: userData } = await supabase.auth.getUser();
         if (userData && userData.user) {
           const currentUserRank = leaderboard.find(item => item.userId === userData.user.id)?.rank || 0;
           setUserRank(currentUserRank);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
+        setError("Could not load your data. Please try again later.");
         toast({
           title: "Error loading data",
           description: "Could not load your data. Please try again later.",
@@ -134,7 +145,7 @@ const Dashboard: React.FC = () => {
         
         {/* Market Overview */}
         <motion.div variants={itemVariants}>
-          <TopMarkets markets={mockMarketData} />
+          <TopMarkets />
         </motion.div>
         
         {/* Market Opportunities */}

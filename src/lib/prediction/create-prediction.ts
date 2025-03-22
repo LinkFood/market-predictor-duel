@@ -1,3 +1,4 @@
+
 /**
  * Handles creating new predictions
  */
@@ -119,6 +120,9 @@ function calculateResolvesAt(timeframe: string): string {
       break;
     case '1w':
       resolveDate.setDate(now.getDate() + 7);
+      break;
+    case '2w':
+      resolveDate.setDate(now.getDate() + 14);
       break;
     case '1m':
       resolveDate.setMonth(now.getMonth() + 1);

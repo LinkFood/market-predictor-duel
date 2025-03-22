@@ -5,7 +5,7 @@ import { ArrowLeft, AlertCircle, Server, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Prediction } from "@/lib/prediction/types"; // Updated import path
+import { Prediction } from "@/lib/prediction/types";
 import { FEATURES } from "@/lib/config";
 import { getPredictionById } from "@/lib/prediction/user-predictions";
 
@@ -87,14 +87,19 @@ const MakePrediction: React.FC = () => {
 
   const handleSavePrediction = () => {
     try {
+      // Since the prediction is already saved to the database when it's created,
+      // we just need to redirect the user to the predictions history
       toast({
         title: "Prediction Saved",
         description: "Your prediction has been recorded. Good luck!"
       });
-      navigate("/");
+      
+      // FIX: Navigate to the correct app route for predictions history
+      navigate("/app/predictions/history");
+      console.log("Navigating to /app/predictions/history");
     } catch (error) {
-      console.error('Error saving prediction:', error);
-      setError("Failed to save prediction. Please try again.");
+      console.error('Error navigating after prediction:', error);
+      setError("Something went wrong. Please try again.");
     }
   };
   
@@ -165,7 +170,7 @@ const MakePrediction: React.FC = () => {
             <AnalyzingProgress onComplete={handleAnalysisComplete} />
           )}
           
-          {predictionStep === "result" && (
+          {predictionStep === "result" && prediction && (
             <PredictionResult 
               prediction={prediction}
               onNewPrediction={handleNewPrediction}

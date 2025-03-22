@@ -20,6 +20,7 @@ const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({ timeframe, setTim
           <SelectItem value="1w">1 Week</SelectItem>
           <SelectItem value="2w">2 Weeks</SelectItem>
           <SelectItem value="1m">1 Month</SelectItem>
+          <SelectItem value="3m">3 Months</SelectItem>
         </SelectContent>
       </Select>
     </div>

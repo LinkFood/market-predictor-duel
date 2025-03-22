@@ -16,7 +16,7 @@ export function validateInput(ticker: string, timeframe: string, predictionType:
     throw new Error("Missing required parameter: ticker");
   }
   
-  if (!timeframe || !['1d', '1w', '1m', '3m'].includes(timeframe)) {
+  if (!timeframe || !['1d', '1w', '2w', '1m', '3m'].includes(timeframe)) {
     throw new Error(`Invalid timeframe: ${timeframe}`);
   }
   
