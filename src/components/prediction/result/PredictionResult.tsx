@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { FEATURES } from "@/lib/config";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 import PredictionComparison from "./PredictionComparison";
 import AIAnalysisSection from "./AIAnalysisSection";
 import NextStepsSection from "./NextStepsSection";

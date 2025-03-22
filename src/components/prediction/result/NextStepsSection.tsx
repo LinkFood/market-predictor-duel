@@ -3,7 +3,7 @@ import React from "react";
 import { Clock, Timer, Share2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 
 interface NextStepsSectionProps {
   prediction: Prediction;

@@ -5,7 +5,7 @@ import { ArrowLeft, AlertCircle, Server, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 import { FEATURES } from "@/lib/config";
 import { getPredictionById } from "@/lib/prediction/user-predictions";
 

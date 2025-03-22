@@ -3,7 +3,7 @@ import React from "react";
 import { ArrowUp, ArrowDown, BadgeCheck, BellRing } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 
 interface PredictionComparisonProps {
   prediction: Prediction;

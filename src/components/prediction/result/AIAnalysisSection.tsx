@@ -2,7 +2,7 @@
 import React from "react";
 import { Brain } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 import SupportingFactors from "./SupportingFactors";
 import CounterFactors from "./CounterFactors";
 

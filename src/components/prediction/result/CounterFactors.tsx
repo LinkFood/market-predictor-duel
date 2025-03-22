@@ -1,7 +1,7 @@
 
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types"; // Updated import path
 
 interface CounterFactorsProps {
   prediction: Prediction;
