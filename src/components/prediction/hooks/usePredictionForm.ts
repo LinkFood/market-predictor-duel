@@ -47,6 +47,34 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
 
   // Handle opening confirmation dialog
   const handleOpenConfirmDialog = () => {
+    // Validate the form before opening the dialog
+    if (!selectedStock) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a stock"
+      });
+      return;
+    }
+
+    if (predictionType === 'trend' && !trendPrediction) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please select a trend direction"
+      });
+      return;
+    }
+
+    if (predictionType === 'price' && !pricePrediction) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please enter a price prediction"
+      });
+      return;
+    }
+
     setConfirmDialogOpen(true);
   };
 
@@ -92,7 +120,6 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
       
       console.log('Submitting prediction:', predictionRequest);
       
-      // Add more detailed error handling and logging
       try {
         const newPrediction = await createPrediction(predictionRequest);
         console.log('Prediction created successfully:', newPrediction);
@@ -132,9 +159,9 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
   };
 
   // Determine if form is valid for submission
-  const isFormValid = !(!selectedStock || 
-    (predictionType === 'trend' && !trendPrediction) || 
-    (predictionType === 'price' && !pricePrediction));
+  const isFormValid = Boolean(selectedStock && 
+    ((predictionType === 'trend' && trendPrediction) || 
+     (predictionType === 'price' && pricePrediction)));
 
   return {
     isLoading,
