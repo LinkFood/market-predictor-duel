@@ -2,7 +2,7 @@
 // Main components
 export { default as PredictionForm } from './PredictionForm';
 export { default as AnalyzingProgress } from './AnalyzingProgress';
-export { default as PredictionResult } from './PredictionResult';
+export { default as PredictionResult } from './result/PredictionResult';
 export { default as PredictionSidebar } from './PredictionSidebar';
 export { default as PredictionFormContent } from './PredictionFormContent';
 export { default as ApiConnectionTest } from './ApiConnectionTest';
@@ -23,3 +23,4 @@ export { default as ConfirmPredictionDialog } from './ConfirmPredictionDialog';
 
 // Form components
 export * from './form';
+
