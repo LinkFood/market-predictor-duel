@@ -12,8 +12,15 @@ import MarketTabContent from "@/components/markets/MarketTabContent";
 
 const Markets: React.FC = () => {
   const { gainers, losers, isLoading, lastUpdated, refreshData } = useMarketData();
+  const { 
+    marketIndices, 
+    isLoading: indicesLoading, 
+    isError: indicesError, 
+    lastUpdated: indicesLastUpdated,
+    usingMockData: indicesUsingMockData,
+    refreshData: refreshIndicesData
+  } = useMarketIndices();
   const [selectedTab, setSelectedTab] = useState<"overview" | "stocks" | "crypto">("overview");
-  const marketIndices = useMarketIndices();
   const { containerVariants, itemVariants } = useAnimations();
   const { width } = useWindowSize();
   const isMobile = width < 768;
@@ -23,6 +30,14 @@ const Markets: React.FC = () => {
       await refreshData();
     } catch (error) {
       showErrorToast(error, "Error refreshing market data");
+    }
+  };
+
+  const handleRefreshIndices = async () => {
+    try {
+      await refreshIndicesData();
+    } catch (error) {
+      showErrorToast(error, "Error refreshing market indices");
     }
   };
 
@@ -82,6 +97,11 @@ const Markets: React.FC = () => {
             gainers={mappedGainers}
             losers={mappedLosers}
             marketIndices={marketIndices}
+            marketIndicesLoading={indicesLoading}
+            marketIndicesError={indicesError}
+            marketIndicesUsingMockData={indicesUsingMockData}
+            marketIndicesLastUpdated={indicesLastUpdated}
+            onRefreshIndices={handleRefreshIndices}
             onRefresh={handleRefresh}
             isLoading={isLoading}
             itemVariants={itemVariants}

@@ -10,3 +10,5 @@ export * from "./stock-data-service";
 export * from "./historical-data-service";
 export * from "./search-service";
 export * from "./market-movers-service";
+export * from "./market-indices-service";
+

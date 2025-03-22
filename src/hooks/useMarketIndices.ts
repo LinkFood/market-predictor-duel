@@ -1,43 +1,77 @@
 
 import { useState, useEffect } from 'react';
 import { MarketData } from '@/types';
+import { getMarketIndices, DEFAULT_INDICES } from '@/lib/market/market-indices-service';
+import { useToast } from '@/hooks/use-toast';
 
 export const useMarketIndices = () => {
-  const [marketIndices, setMarketIndices] = useState<MarketData[]>([]);
+  const { toast } = useToast();
+  const [marketIndices, setMarketIndices] = useState<MarketData[]>(DEFAULT_INDICES);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [usingMockData, setUsingMockData] = useState(false);
 
-  useEffect(() => {
-    // Create mock market indices data
-    const mockIndices = [
-      { 
-        name: "S&P 500", 
-        value: 5234.32, 
-        change: 12.45, 
-        changePercent: 0.24,
-      },
-      { 
-        name: "Dow Jones", 
-        value: 38721.78, 
-        change: -82.12, 
-        changePercent: -0.21,
-      },
-      { 
-        name: "NASDAQ", 
-        value: 16432.67, 
-        change: 87.34, 
-        changePercent: 0.53,
-      },
-      { 
-        name: "Russell 2000", 
-        value: 2146.89, 
-        change: -5.23, 
-        changePercent: -0.24,
+  const fetchMarketIndices = async () => {
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      console.log('Fetching market indices data...');
+      
+      const { data, usingMockData: isMockData } = await getMarketIndices();
+      
+      if (data && data.length > 0) {
+        setMarketIndices(data);
+        setLastUpdated(new Date());
+        setUsingMockData(isMockData);
+        
+        if (isMockData) {
+          console.log('Using mock market indices data');
+        } else {
+          console.log('Successfully fetched real market indices data');
+        }
+      } else {
+        setIsError(true);
+        toast({
+          title: "Market Indices Warning",
+          description: "Received empty market indices data. Using latest available data.",
+          variant: "default"
+        });
       }
-    ];
+    } catch (error) {
+      console.error('Error fetching market indices:', error);
+      setIsError(true);
+      
+      toast({
+        title: "Market Indices Error",
+        description: "Failed to fetch market indices data. Using simulated data instead.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Fetch on mount
+  useEffect(() => {
+    fetchMarketIndices();
     
-    setMarketIndices(mockIndices);
+    // Refresh every 60 seconds
+    const interval = setInterval(() => {
+      fetchMarketIndices();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
 
-  return marketIndices;
+  return {
+    marketIndices,
+    isLoading,
+    isError,
+    lastUpdated,
+    usingMockData,
+    refreshData: fetchMarketIndices
+  };
 };
 
 export default useMarketIndices;

@@ -10,6 +10,11 @@ interface OverviewTabContentProps {
   gainers: MarketData[];
   losers: MarketData[];
   marketIndices: MarketData[];
+  marketIndicesLoading?: boolean;
+  marketIndicesError?: boolean;
+  marketIndicesUsingMockData?: boolean;
+  marketIndicesLastUpdated?: Date | null;
+  onRefreshIndices?: () => Promise<void>;
   onRefresh: () => Promise<void>;
   isLoading: boolean;
   itemVariants: any;
@@ -19,6 +24,11 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
   gainers,
   losers,
   marketIndices,
+  marketIndicesLoading = false,
+  marketIndicesError = false,
+  marketIndicesUsingMockData = false,
+  marketIndicesLastUpdated = null,
+  onRefreshIndices,
   onRefresh,
   isLoading,
   itemVariants
@@ -29,7 +39,14 @@ const OverviewTabContent: React.FC<OverviewTabContentProps> = ({
         variants={itemVariants} 
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        <MarketIndicesCard marketIndices={marketIndices} />
+        <MarketIndicesCard 
+          marketIndices={marketIndices} 
+          isLoading={marketIndicesLoading}
+          isError={marketIndicesError}
+          usingMockData={marketIndicesUsingMockData}
+          lastUpdated={marketIndicesLastUpdated}
+          onRefresh={onRefreshIndices}
+        />
         <MarketInfoDisplay />
       </motion.div>
       
