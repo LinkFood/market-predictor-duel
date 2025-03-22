@@ -1,6 +1,8 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 interface PredictionsTabProps {
   isLoading: boolean;
@@ -19,7 +21,12 @@ const PredictionsTab: React.FC<PredictionsTabProps> = ({ isLoading }) => {
             <div className="h-6 w-6 animate-spin rounded-full border-2 border-t-transparent border-indigo-600"></div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Recent predictions will be displayed here.</p>
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-4">View your prediction history and results</p>
+            <Link to="/app/predictions/history">
+              <Button variant="outline">View All Predictions</Button>
+            </Link>
+          </div>
         )}
       </CardContent>
     </Card>

@@ -94,8 +94,9 @@ const MakePrediction: React.FC = () => {
         description: "Your prediction has been recorded. Good luck!"
       });
       
-      // Navigate to predictions history
-      navigate("/predictions/history");
+      // FIX: Navigate to the correct app route for predictions history
+      navigate("/app/predictions/history");
+      console.log("Navigating to /app/predictions/history");
     } catch (error) {
       console.error('Error navigating after prediction:', error);
       setError("Something went wrong. Please try again.");
