@@ -38,7 +38,7 @@ const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
           }`}>
             {idx + 1}
           </div>
-          <p className="text-sm leading-relaxed">{point}</p>
+          <p className="text-sm leading-relaxed text-slate-800 dark:text-slate-200">{point}</p>
         </div>
       ))}
     </div>
