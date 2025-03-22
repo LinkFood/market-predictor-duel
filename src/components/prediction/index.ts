@@ -9,9 +9,11 @@ export { default as PredictionFormContent } from './PredictionFormContent';
 // Hooks
 export { usePredictionForm } from './hooks/usePredictionForm';
 export type { PredictionType } from './hooks/usePredictionForm';
+export { useSearchStocks } from './hooks/useSearchStocks';
 
 // Sub-components
 export { default as SearchBar } from './SearchBar';
+export { default as SearchResults } from './SearchResults';
 export { default as StockInfo } from './StockInfo';
 export { default as TrendPrediction } from './TrendPrediction';
 export { default as PricePrediction } from './PricePrediction';
