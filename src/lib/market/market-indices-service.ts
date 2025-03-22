@@ -9,35 +9,35 @@ import { FEATURES, config } from "../config";
 import { getPolygonMarketIndices } from "./api/polygon-indices";
 import { logError } from "../error-handling";
 
-// Default mock indices data
+// Default mock indices data (updated to match ETF values)
 export const DEFAULT_INDICES: MarketData[] = [
   { 
     name: "S&P 500", 
-    value: 5234.32, 
-    change: 12.45, 
+    value: 523.43, 
+    change: 1.25, 
     changePercent: 0.24,
-    symbol: "SPX"
+    symbol: "SPY"
   },
   { 
     name: "Dow Jones", 
-    value: 38721.78, 
-    change: -82.12, 
+    value: 387.22, 
+    change: -0.82, 
     changePercent: -0.21,
-    symbol: "DJI"
+    symbol: "DIA"
   },
   { 
     name: "NASDAQ", 
-    value: 16432.67, 
-    change: 87.34, 
+    value: 428.67, 
+    change: 2.34, 
     changePercent: 0.53,
-    symbol: "COMP"
+    symbol: "QQQ"
   },
   { 
     name: "Russell 2000", 
-    value: 2146.89, 
-    change: -5.23, 
+    value: 214.69, 
+    change: -0.52, 
     changePercent: -0.24,
-    symbol: "RUT"
+    symbol: "IWM"
   }
 ];
 
@@ -50,7 +50,7 @@ export async function getMarketIndices(): Promise<{ data: MarketData[]; usingMoc
   try {
     // Use real market data if enabled, otherwise use mock data
     if (FEATURES.enableRealMarketData && config.polygon.enabled) {
-      console.log(`🌐 Fetching real market indices data from Polygon.io`);
+      console.log(`🌐 Fetching real market indices data via ETF proxies from Polygon.io`);
       try {
         const data = await getPolygonMarketIndices();
         console.log("Received market indices data:", data);
