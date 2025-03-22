@@ -124,13 +124,14 @@ serve(async (req) => {
         throw new Error("Empty response from Polygon API");
       }
       
-      // Special validation for indices endpoint
-      if (endpoint.includes('/markets/indices')) {
+      // Validate response based on the endpoint
+      // For tickers endpoint (used by our popular tickers approach)
+      if (endpoint.includes('/tickers') && params && params.tickers) {
         if (!data.tickers || !Array.isArray(data.tickers)) {
-          console.error("Invalid response format for indices snapshot:", endpoint, data);
-          throw new Error("Invalid response format for indices data");
+          console.error("Invalid response format for tickers snapshot:", endpoint, data);
+          throw new Error("Invalid response format for tickers data");
         }
-        console.log(`Received indices snapshot data with ${data.tickers.length} results`);
+        console.log(`Received tickers snapshot data with ${data.tickers.length} results`);
       }
       // For market movers endpoints, validate the tickers array
       else if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
@@ -139,6 +140,14 @@ serve(async (req) => {
           throw new Error("Invalid response format for market movers");
         }
         console.log(`Received ${data.tickers.length} tickers from ${endpoint}`);
+      }
+      // For indices endpoint
+      else if (endpoint.includes('/markets/indices')) {
+        if (!data.tickers || !Array.isArray(data.tickers)) {
+          console.error("Invalid response format for indices snapshot:", endpoint, data);
+          throw new Error("Invalid response format for indices data");
+        }
+        console.log(`Received indices snapshot data with ${data.tickers.length} results`);
       }
       
       console.log(`Successfully received data from Polygon API for ${endpoint}`);
@@ -149,7 +158,8 @@ serve(async (req) => {
         _meta: {
           source: 'polygon',
           timestamp: new Date().toISOString(),
-          endpoint
+          endpoint,
+          requestParams: params
         }
       };
       
