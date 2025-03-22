@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { testXaiApiConnection } from '@/lib/xai/prediction-service';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 const ApiConnectionTest = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,10 +38,19 @@ const ApiConnectionTest = () => {
   return (
     <Card className="shadow-md">
       <CardHeader>
-        <CardTitle>AI API Connection Test</CardTitle>
-        <CardDescription>
-          Test the connection to the AI API to ensure predictions can be generated
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>X.ai API Connection Test</CardTitle>
+            <CardDescription>
+              Test the connection to the X.ai API to ensure predictions can be generated
+            </CardDescription>
+          </div>
+          {result?.details?.provider && (
+            <Badge variant={result.success ? "success" : "destructive"} className="ml-2">
+              {result.details.provider.toUpperCase()}
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         {error && (
@@ -65,6 +75,13 @@ const ApiConnectionTest = () => {
                 </span>
               )}
             </div>
+            
+            {result.details?.model && (
+              <div>
+                <span className="font-medium">Model:</span> {result.details.model}
+              </div>
+            )}
+            
             <div>
               <span className="font-medium">Message:</span> {result.message}
             </div>
@@ -75,9 +92,9 @@ const ApiConnectionTest = () => {
                 <AlertTitle>Troubleshooting Tips</AlertTitle>
                 <AlertDescription className="text-sm mt-2">
                   <ul className="list-disc pl-5 space-y-1">
-                    <li>Check that your API key is correctly set in Supabase secrets</li>
+                    <li>Check that your X.ai API key is correctly set in Supabase secrets</li>
                     <li>Verify that your API key has the necessary permissions</li>
-                    <li>If using X.ai, ensure your account has access to the requested model</li>
+                    <li>Ensure your X.ai account has access to the requested model (grok-2-latest)</li>
                     <li>The application will fall back to mock data if the API is unavailable</li>
                   </ul>
                 </AlertDescription>
@@ -113,7 +130,7 @@ const ApiConnectionTest = () => {
               Testing Connection...
             </>
           ) : (
-            "Test AI API Connection"
+            "Test X.ai API Connection"
           )}
         </Button>
       </CardFooter>

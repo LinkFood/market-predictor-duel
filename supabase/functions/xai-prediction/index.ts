@@ -4,12 +4,8 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
-const OPENAI_BASE_URL = "https://api.openai.com/v1";
-const API_PROVIDER = "openai"; // Use "openai" instead of "xai" because X.ai model might not be available
-
-// Set the base URL and model based on the provider
-const BASE_URL = API_PROVIDER === "xai" ? XAI_BASE_URL : OPENAI_BASE_URL;
-const MODEL_NAME = API_PROVIDER === "xai" ? "x1" : "gpt-4o-mini"; // Use OpenAI's gpt-4o-mini model
+const API_PROVIDER = "xai"; // Use X.ai as the provider
+const MODEL_NAME = "grok-2-latest"; // Use the correct X.ai model name
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY = 1000; // ms
@@ -146,7 +142,7 @@ async function testApiConnection() {
   }
   
   try {
-    const testResponse = await fetch(`${BASE_URL}/models`, {
+    const testResponse = await fetch(`${XAI_BASE_URL}/models`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
@@ -260,7 +256,7 @@ serve(async (req) => {
     
     console.log("API payload:", JSON.stringify(apiPayload));
     
-    const response = await fetchWithRetry(`${BASE_URL}/chat/completions`, {
+    const response = await fetchWithRetry(`${XAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

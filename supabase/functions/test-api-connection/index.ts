@@ -4,8 +4,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const XAI_API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
-const OPENAI_BASE_URL = "https://api.openai.com/v1";
-const API_PROVIDER = "openai"; // Use "openai" instead of "xai" because X.ai model might not be available
+const API_PROVIDER = "xai"; // Set to "xai" to use X.ai
 
 // CORS headers
 const corsHeaders = {
@@ -40,15 +39,14 @@ serve(async (req) => {
       );
     }
 
-    // Define base URL and model based on the provider
-    const baseUrl = API_PROVIDER === "xai" ? XAI_BASE_URL : OPENAI_BASE_URL;
-    const modelName = API_PROVIDER === "xai" ? "x1" : "gpt-4o-mini"; // Use OpenAI's gpt-4o-mini model which is more likely to be available
+    // X.ai specific model name
+    const modelName = "grok-2-latest";
     
-    // Test models endpoint - this works for both X.ai and OpenAI
+    // Test models endpoint
     console.log(`Testing models endpoint for ${API_PROVIDER}`);
     let modelsResponse;
     try {
-      modelsResponse = await fetch(`${baseUrl}/models`, {
+      modelsResponse = await fetch(`${XAI_BASE_URL}/models`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${XAI_API_KEY}`,
@@ -67,7 +65,7 @@ serve(async (req) => {
     
     // Test chat completions endpoint with a simple prompt
     console.log(`Testing chat completions endpoint for ${API_PROVIDER}`);
-    const chatResponse = await fetch(`${baseUrl}/chat/completions`, {
+    const chatResponse = await fetch(`${XAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${XAI_API_KEY}`,
@@ -76,10 +74,10 @@ serve(async (req) => {
       body: JSON.stringify({
         model: modelName,
         messages: [
-          { role: "system", content: "You are a helpful assistant." },
+          { role: "system", content: "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy." },
           { role: "user", content: "Say hello!" }
         ],
-        max_tokens: 50
+        temperature: 0
       }),
     });
     
