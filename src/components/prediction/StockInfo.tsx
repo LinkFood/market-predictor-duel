@@ -25,6 +25,18 @@ const StockInfo: React.FC<StockInfoProps> = ({
 }) => {
   if (!stock) return null;
   
+  // Safely format price with fallback
+  const formatPrice = (price: number | undefined) => {
+    if (price === undefined || price === null) return "N/A";
+    return price.toFixed(2);
+  };
+  
+  // Safely format percentage with fallback
+  const formatPercent = (percent: number | undefined) => {
+    if (percent === undefined || percent === null) return "N/A";
+    return `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
+  };
+  
   return (
     <div className="p-4 border rounded-md bg-gray-50 dark:bg-gray-900">
       <div className="flex justify-between items-center">
@@ -34,11 +46,11 @@ const StockInfo: React.FC<StockInfoProps> = ({
         </div>
         <div className={cn(
           "text-lg font-bold",
-          stock.changePercent >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+          (stock.changePercent || 0) >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
         )}>
-          ${stock.price.toFixed(2)}
+          ${formatPrice(stock.price)}
           <div className="text-sm">
-            {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
+            {formatPercent(stock.changePercent)}
           </div>
         </div>
       </div>
@@ -46,23 +58,23 @@ const StockInfo: React.FC<StockInfoProps> = ({
       {/* Additional stock details shown when using real market data */}
       {isRealData && (
         <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-          {stock.volume && (
+          {stock.volume !== undefined && (
             <div>
               <span className="text-gray-500">Volume:</span> {stock.volume.toLocaleString()}
             </div>
           )}
-          {stock.marketCap && (
+          {stock.marketCap !== undefined && (
             <div>
               <span className="text-gray-500">Market Cap:</span> ${(stock.marketCap / 1000000000).toFixed(2)}B
             </div>
           )}
-          {stock.high52Week && stock.low52Week && (
+          {stock.high52Week !== undefined && stock.low52Week !== undefined && (
             <div className="col-span-2 flex space-x-4">
               <div>
-                <span className="text-gray-500">52W High:</span> ${stock.high52Week.toFixed(2)}
+                <span className="text-gray-500">52W High:</span> ${formatPrice(stock.high52Week)}
               </div>
               <div>
-                <span className="text-gray-500">52W Low:</span> ${stock.low52Week.toFixed(2)}
+                <span className="text-gray-500">52W Low:</span> ${formatPrice(stock.low52Week)}
               </div>
             </div>
           )}

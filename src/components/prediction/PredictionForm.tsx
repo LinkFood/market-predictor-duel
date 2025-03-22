@@ -25,6 +25,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<any | null>(null);
+  const [usingMockData, setUsingMockData] = useState(false);
   const [predictionType, setPredictionType] = useState<PredictionType>('trend');
   const [timeframe, setTimeframe] = useState('1d');
   const [trendPrediction, setTrendPrediction] = useState<'uptrend' | 'downtrend' | null>(null);
@@ -39,7 +40,10 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
       console.log('Selected stock:', stock);
       const stockDetails = await getStockData(stock.symbol);
       console.log('Retrieved stock details:', stockDetails);
-      setSelectedStock(stockDetails);
+      
+      // Extract the data property and store usingMockData separately
+      setSelectedStock(stockDetails.data);
+      setUsingMockData(stockDetails.usingMockData);
     } catch (error) {
       console.error('Error fetching stock details:', error);
       setError("Failed to load stock details. Please try again.");
@@ -144,7 +148,7 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
       <DataSourceIndicator />
       
       {/* Selected Stock Info */}
-      {selectedStock && <StockInfo stock={selectedStock} />}
+      {selectedStock && <StockInfo stock={selectedStock} isRealData={!usingMockData} />}
       
       {/* Prediction Type Tabs */}
       {selectedStock && (
