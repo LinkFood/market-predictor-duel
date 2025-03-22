@@ -1,25 +1,79 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Zap, Users, Lightbulb } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { 
-  Card, 
-  CardContent
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { GlobalStats } from "@/types";
+import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
 
-interface GlobalBattleStatsProps {
-  stats: GlobalStats;
+interface GlobalStats {
+  humanWins: number;
+  aiWins: number;
+  ties: number;
+  totalPredictions: number;
 }
 
-const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
+const GlobalBattleStats: React.FC = () => {
   const navigate = useNavigate();
+  const [stats, setStats] = useState<GlobalStats>({
+    humanWins: 0,
+    aiWins: 0,
+    ties: 0,
+    totalPredictions: 0
+  });
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchGlobalStats = async () => {
+      try {
+        // Fetch global prediction stats from the database
+        const { data, error } = await supabase
+          .from('predictions')
+          .select('outcome')
+          .in('status', ['complete', 'completed']);
+        
+        if (error) throw error;
+        
+        // Calculate stats from the data
+        let humanWins = 0;
+        let aiWins = 0;
+        let ties = 0;
+        
+        data.forEach(prediction => {
+          if (prediction.outcome === 'user_win') humanWins++;
+          else if (prediction.outcome === 'ai_win') aiWins++;
+          else if (prediction.outcome === 'tie') ties++;
+        });
+        
+        setStats({
+          humanWins,
+          aiWins,
+          ties,
+          totalPredictions: data.length
+        });
+      } catch (error) {
+        console.error("Error fetching global stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchGlobalStats();
+  }, []);
   
   // Calculate AI vs human win rate for the progress bar
   const totalBattles = stats.humanWins + stats.aiWins;
-  const humanWinPercentage = Math.round((stats.humanWins / totalBattles) * 100);
+  const humanWinPercentage = totalBattles > 0 
+    ? Math.round((stats.humanWins / totalBattles) * 100) 
+    : 50; // Default to 50% if no data
+  
+  if (loading) {
+    return (
+      <div className="text-white bg-gradient-to-br from-primary/90 to-primary-foreground/20 rounded-2xl backdrop-blur-md p-6 animate-pulse">
+        <div className="h-40 bg-white/10 rounded-lg"></div>
+      </div>
+    );
+  }
   
   return (
     <div className="text-white bg-gradient-to-br from-primary/90 to-primary-foreground/20 rounded-2xl backdrop-blur-md">
@@ -33,8 +87,10 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
             <p className="mb-2 text-sm">
               Humans are currently {stats.humanWins > stats.aiWins ? (
                 <span className="font-bold text-emerald-300">winning</span>
-              ) : (
+              ) : stats.humanWins < stats.aiWins ? (
                 <span className="font-bold text-red-300">losing</span>
+              ) : (
+                <span className="font-bold text-yellow-300">tied</span>
               )} against the AI!
             </p>
             

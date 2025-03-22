@@ -1,4 +1,3 @@
-
 /**
  * Mock Data Utilities
  * Helper functions for generating and managing mock market data
@@ -6,6 +5,7 @@
 
 import { mockStockData } from "@/data/mockData";
 import { StockData, HistoricalData } from "./types";
+import { POPULAR_TICKERS } from "./data/popular-tickers";
 
 /**
  * Generate a mock stock data object based on symbol or name search
@@ -120,19 +120,46 @@ export function searchMockStocks(query: string): StockData[] {
 }
 
 /**
- * Get mock top gainers and losers
+ * Get mock top movers using the popular tickers list
  */
 export function getMockTopMovers(): { gainers: StockData[]; losers: StockData[] } {
-  const sortedStocks = [...mockStockData]
-    .map(stock => ({
-      symbol: stock.symbol || stock.name.substring(0, 4).toUpperCase(),
-      name: stock.name,
-      price: stock.value,
-      change: stock.value * (stock.changePercent / 100),
-      changePercent: stock.changePercent,
+  const popularStocks = POPULAR_TICKERS.map(symbol => {
+    // Try to find the stock in mockStockData first
+    const mockStock = mockStockData.find(stock => 
+      stock.symbol === symbol || 
+      (stock.symbol && stock.symbol.toLowerCase() === symbol.toLowerCase())
+    );
+    
+    if (mockStock) {
+      return {
+        symbol,
+        name: mockStock.name,
+        price: mockStock.value,
+        change: mockStock.value * (mockStock.changePercent / 100),
+        changePercent: mockStock.changePercent,
+        volume: Math.floor(Math.random() * 10000000),
+        datetime: new Date().toISOString()
+      };
+    }
+    
+    // Generate random data for this ticker if not found in mock data
+    const basePrice = 50 + Math.random() * 150; // Random price between 50 and 200
+    const changePercent = (Math.random() * 10) * (Math.random() > 0.5 ? 1 : -1); // Random change -10% to +10%
+    const change = basePrice * (changePercent / 100);
+    
+    return {
+      symbol,
+      name: `${symbol} Inc.`, // Simple name based on symbol
+      price: basePrice,
+      change,
+      changePercent,
+      volume: Math.floor(Math.random() * 10000000),
       datetime: new Date().toISOString()
-    }))
-    .sort((a, b) => b.changePercent - a.changePercent);
+    };
+  });
+  
+  // Sort by percent change to find gainers and losers
+  const sortedStocks = [...popularStocks].sort((a, b) => b.changePercent - a.changePercent);
   
   return {
     gainers: sortedStocks.slice(0, 5),

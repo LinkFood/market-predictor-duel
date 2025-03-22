@@ -3,13 +3,14 @@
  * Handles resolving predictions and determining outcomes
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import { getStockData } from '../market';
 import { Prediction } from './types';
 import { getPredictionById } from './user-predictions';
+import { dbToPrediction } from './adapters';
 
 /**
  * Resolve a prediction (determine the outcome)
- * Note: In a real application, this would likely be handled by a backend job
  */
 export async function resolvePrediction(id: string): Promise<Prediction> {
   try {
@@ -20,7 +21,7 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
     }
     
     // Get current stock data
-    const stockData = await getStockData(prediction.ticker);
+    const { data: stockData } = await getStockData(prediction.ticker);
     
     // Determine the outcome
     let outcome: 'user_win' | 'ai_win' | 'tie';
@@ -71,30 +72,31 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
       }
     }
     
-    // Update the prediction - using "complete" to match the type
-    const updatedPrediction: Prediction = {
-      ...prediction,
+    // Calculate percent change
+    const percentChange = ((stockData.price - prediction.startingValue) / prediction.startingValue) * 100;
+    
+    // Create update data object
+    const updateData = {
       status: 'complete',
-      endPrice: stockData.price,
+      final_value: stockData.price,
+      percent_change: percentChange,
+      actual_result: stockData.change >= 0 ? 'uptrend' : 'downtrend',
       outcome,
       points,
-      resolvedAt: new Date().toISOString()
+      resolved_at: new Date().toISOString()
     };
     
-    /* In a real implementation, we would update in Supabase
+    // Update the prediction in Supabase
     const { data, error } = await supabase
       .from('predictions')
-      .update(updatedPrediction)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
     
     if (error) throw error;
     
-    return data;
-    */
-    
-    return updatedPrediction;
+    return dbToPrediction(data);
   } catch (error) {
     console.error("Error resolving prediction:", error);
     throw error;

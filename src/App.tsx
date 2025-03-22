@@ -17,6 +17,8 @@ function App() {
   useEffect(() => {
     const initApp = async () => {
       try {
+        console.log("App initialization started");
+        
         // Check if important configurations are available
         if (!window.SUPABASE_CONFIG?.url || !window.SUPABASE_CONFIG?.key) {
           console.warn("Supabase configuration is missing or incomplete");
@@ -26,6 +28,7 @@ function App() {
         // Simulate initial loading
         await new Promise(resolve => setTimeout(resolve, 800));
         
+        console.log("App initialization completed");
         setIsLoading(false);
       } catch (error) {
         console.error("App initialization error:", error);

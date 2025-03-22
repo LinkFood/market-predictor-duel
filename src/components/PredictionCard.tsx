@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Clock, CheckCircle, XCircle, Trophy, AlertCircle, 
+  Clock, Trophy, AlertCircle, 
   TrendingUp, TrendingDown, ArrowRight, DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -77,7 +77,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
     }
   };
 
-  const renderPredictionValue = (value: string, type: 'price' | 'trend') => {
+  const renderPredictionValue = (value: string, type: string) => {
     if (type === 'price') {
       return (
         <div className="flex items-center gap-1">
@@ -110,7 +110,7 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
         <div className="flex justify-between items-start">
           <div>
             <CardTitle className={cn("line-clamp-1", compact ? "text-base" : "text-lg")}>
-              {prediction.targetName || prediction.stockName}
+              {prediction.targetName}
             </CardTitle>
             <CardDescription>
               {prediction.ticker} • {getTimeframeText(prediction.timeframe)}
@@ -142,18 +142,18 @@ const PredictionCard: React.FC<PredictionCardProps> = ({ prediction, compact = f
           )}
         </div>
         
-        {(prediction.status === "completed" || prediction.status === "complete") && (prediction.endPrice || prediction.endValue) && (
+        {(prediction.status === "completed" || prediction.status === "complete") && prediction.endValue && (
           <div className="mt-2 pt-2 border-t">
             <div className="text-xs text-muted-foreground mb-1">Final Price:</div>
             <div className="font-medium flex items-center gap-1">
               <DollarSign className="h-4 w-4" />
-              {(prediction.endPrice || prediction.endValue)?.toFixed(2)}
+              {Number(prediction.endValue).toFixed(2)}
               <span className={cn(
                 "text-xs",
-                (prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "text-green-600" : "text-red-600"
+                Number(prediction.startingValue) < Number(prediction.endValue) ? "text-green-600" : "text-red-600"
               )}>
-                ({(prediction.startPrice || prediction.startingValue) < (prediction.endPrice || prediction.endValue) ? "+" : ""}
-                {(((prediction.endPrice || prediction.endValue) - (prediction.startPrice || prediction.startingValue)) / (prediction.startPrice || prediction.startingValue) * 100).toFixed(2)}%)
+                ({Number(prediction.startingValue) < Number(prediction.endValue) ? "+" : ""}
+                {(((Number(prediction.endValue) - Number(prediction.startingValue)) / Number(prediction.startingValue)) * 100).toFixed(2)}%)
               </span>
             </div>
             

@@ -6,10 +6,14 @@ import Leaderboard from "@/pages/Leaderboard";
 import MakePrediction from "@/pages/MakePrediction";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
+import ForgotPassword from "@/pages/ForgotPassword";
 import PredictionDetail from "@/pages/PredictionDetail";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Index from "@/pages/Index";
+import Markets from "@/pages/Markets";
+import Terms from "@/pages/Terms";
+import Privacy from "@/pages/Privacy";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense, useEffect } from "react";
@@ -37,7 +41,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-// Public only route (redirects to dashboard if logged in)
+// Public only route (redirects to app if logged in)
 const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isInitialized } = useAuth();
   
@@ -52,7 +56,8 @@ const PublicOnlyRoute = ({ children }: { children: React.ReactNode }) => {
   }
   
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    // Fixed: redirect to /app instead of /dashboard
+    return <Navigate to="/app" replace />;
   }
   
   return <>{children}</>;
@@ -77,6 +82,8 @@ const AppRoutes = () => {
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<Index />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
         
         {/* Auth routes - redirect to app if already logged in */}
         <Route path="/login" element={
@@ -89,6 +96,14 @@ const AppRoutes = () => {
             <Register />
           </PublicOnlyRoute>
         } />
+        <Route path="/forgot-password" element={
+          <PublicOnlyRoute>
+            <ForgotPassword />
+          </PublicOnlyRoute>
+        } />
+        
+        {/* Legacy route support - redirect /dashboard to /app */}
+        <Route path="/dashboard" element={<Navigate to="/app" replace />} />
         
         {/* App routes with new modern mobile layout */}
         <Route path="/app" element={
@@ -99,6 +114,7 @@ const AppRoutes = () => {
           <Route index element={<Dashboard />} />
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="predict" element={<MakePrediction />} />
+          <Route path="markets" element={<Markets />} />
           <Route path="predictions/history" element={<Dashboard />} /> {/* Replace with actual history component */}
           <Route path="predictions/:id" element={<PredictionDetail />} />
           <Route path="profile" element={<Profile />} />
