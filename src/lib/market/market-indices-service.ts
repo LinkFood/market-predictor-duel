@@ -63,7 +63,9 @@ export async function getMarketIndices(): Promise<{ data: MarketData[]; usingMoc
         }
       } catch (error) {
         console.error("Error fetching real market indices data:", error);
-        throw error; // Rethrow so we don't silently fall back
+        // Fall back to mock data on error
+        usingMockData = true;
+        return { data: DEFAULT_INDICES, usingMockData };
       }
     } else {
       console.log(`🧪 Using mock market indices data`);

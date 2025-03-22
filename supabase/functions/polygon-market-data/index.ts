@@ -125,12 +125,12 @@ serve(async (req) => {
       }
       
       // Special validation for indices endpoint
-      if (endpoint.includes('/reference/indices')) {
-        if (!data.results || !Array.isArray(data.results)) {
-          console.error("Invalid response format for indices:", endpoint, data);
+      if (endpoint.includes('/markets/indices')) {
+        if (!data.tickers || !Array.isArray(data.tickers)) {
+          console.error("Invalid response format for indices snapshot:", endpoint, data);
           throw new Error("Invalid response format for indices data");
         }
-        console.log(`Received indices data with ${data.results.length} results`);
+        console.log(`Received indices snapshot data with ${data.tickers.length} results`);
       }
       // For market movers endpoints, validate the tickers array
       else if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {

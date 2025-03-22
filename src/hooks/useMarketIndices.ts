@@ -31,6 +31,11 @@ export const useMarketIndices = () => {
         
         if (isMockData) {
           console.log('Using mock market indices data');
+          toast({
+            title: "Market Indices",
+            description: "Using simulated market data. Live data unavailable.",
+            variant: "default"
+          });
         } else {
           console.log('Successfully fetched real market indices data');
         }
