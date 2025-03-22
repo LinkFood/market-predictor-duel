@@ -2,7 +2,7 @@
 export type PredictionTimeframe = "1d" | "1w" | "1m";
 export type PredictionCategory = "market" | "sector" | "stock";
 export type PredictionDirection = "bullish" | "bearish" | "uptrend" | "downtrend";
-export type PredictionStatus = "pending" | "correct" | "incorrect";
+export type PredictionStatus = "pending" | "complete" | "completed" | "cancelled";
 export type PredictionWinner = "user" | "ai" | "both" | "neither";
 
 // Using properties from both old and new prediction models to ensure compatibility
@@ -40,7 +40,7 @@ export interface Prediction {
   startingValue: number;
   createdAt: string;
   resolvesAt: string;
-  resolved: boolean;
+  status: PredictionStatus;
   finalValue?: number;
   endValue?: number;
   percentChange?: number;
@@ -49,7 +49,6 @@ export interface Prediction {
   actual_result?: string;
   winner?: PredictionWinner;
   resolvedAt?: string;
-  status?: "pending" | "complete" | "completed" | "cancelled";
   outcome?: "user_win" | "ai_win" | "tie";
   points?: number;
   

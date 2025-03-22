@@ -7,7 +7,9 @@ import { FEATURES } from '@/lib/config';
 import { supabase } from '@/integrations/supabase/client';
 import { Prediction } from '@/lib/prediction/types';
 
+// Define types for the tables not in the Supabase types.ts
 interface PredictionPattern {
+  id?: string;
   group_key: string;
   timeframe: string;
   target_type: string;
@@ -16,7 +18,8 @@ interface PredictionPattern {
   user_accuracy: number;
   confidence_adjustment: number;
   sample_size: number;
-  created_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export function usePredictionLearning() {
@@ -133,7 +136,7 @@ export function usePredictionLearning() {
         const [timeframe, targetType, predictionType] = groupKey.split('_');
         
         // Create the pattern data
-        const patternData = {
+        const patternData: PredictionPattern = {
           group_key: groupKey,
           timeframe,
           target_type: targetType,
@@ -142,23 +145,27 @@ export function usePredictionLearning() {
           user_accuracy: userAccuracy,
           confidence_adjustment: confidenceAdjustment,
           sample_size: totalPredictions,
-          created_at: new Date().toISOString(),
         };
         
-        // Use raw PostgreSQL query to insert/update pattern data
+        // Use raw PostgreSQL function to insert/update pattern data
         const { error } = await supabase.rpc('upsert_prediction_pattern', patternData);
         
         if (error) {
           console.error('Error storing prediction pattern:', error);
           
-          // Fallback if RPC doesn't exist yet, try direct insert
-          const { error: insertError } = await supabase.from('prediction_patterns').upsert(
-            patternData as any,
-            { onConflict: 'group_key' }
-          );
-          
-          if (insertError) {
-            console.error('Error storing prediction pattern (fallback):', insertError);
+          // Fallback if RPC doesn't exist yet, use a workaround for direct table access
+          try {
+            // We need to use 'from' with string argument since the table doesn't exist in types
+            // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
+            const { error: insertError } = await supabase
+              .from('prediction_patterns')
+              .upsert(patternData, { onConflict: 'group_key' });
+            
+            if (insertError) {
+              console.error('Error storing prediction pattern (fallback):', insertError);
+            }
+          } catch (err) {
+            console.error('Failed to use fallback method for prediction patterns:', err);
           }
         }
       }

@@ -1,104 +1,137 @@
 
 /**
- * Feature definitions for subscription plans
+ * Subscription plan features configuration
  */
 
+// Define subscription plans
+export enum SubscriptionPlan {
+  FREE = 'free',
+  BASIC = 'basic',
+  PRO = 'pro'
+}
+
+// Define feature types
 export interface PlanFeatures {
-  // Core prediction features
-  maxDailyPredictions: number;       // Maximum number of predictions per day
-  historyRetentionDays: number;      // How many days of prediction history to retain
-  enableAIInsights: boolean;         // Access to AI insights
-  enableDetailedAnalysis: boolean;   // Access to detailed analysis
-  enableAdvancedCharts: boolean;     // Access to advanced chart features
+  // Prediction-related limits
+  maxDailyPredictions: number;
+  maxMonthlyPredictions: number;
   
-  // Special features
-  enableSectorAnalysis: boolean;     // Access to sector-specific analysis
-  enableAlerts: boolean;             // Enable price and prediction alerts
-  enableCustomTimeframes: boolean;   // Allow custom prediction timeframes
-  enableBatchPredictions: boolean;   // Allow making predictions for multiple assets at once
-  prioritySupport: boolean;          // Priority customer support
+  // AI features
+  aiAnalysisAccess: boolean;
+  aiPatternRecognition: boolean;
   
-  // API access
-  apiAccess: boolean;                // Access to prediction API
-  apiRequestsPerDay: number;         // Maximum API requests per day
+  // API limits
+  maxDailyApiCalls: number;
   
-  // Learning features
-  enableLearningSystem: boolean;     // Access to AI learning system insights
-  enableCustomLearning: boolean;     // Allow customizing AI learning parameters
+  // Data access
+  historicalDataAccess: boolean;
+  realTimeData: boolean;
+  
+  // Additional features
+  prioritySupport: boolean;
+  customAlerts: boolean;
 }
 
-// Free plan features
-export const FREE_PLAN_FEATURES: PlanFeatures = {
-  // Core prediction features
-  maxDailyPredictions: 3,
-  historyRetentionDays: 7,
-  enableAIInsights: true,
-  enableDetailedAnalysis: false,
-  enableAdvancedCharts: false,
+// Define features for each plan
+const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
+  [SubscriptionPlan.FREE]: {
+    maxDailyPredictions: 5,
+    maxMonthlyPredictions: 100,
+    aiAnalysisAccess: false,
+    aiPatternRecognition: false,
+    maxDailyApiCalls: 50,
+    historicalDataAccess: false,
+    realTimeData: false,
+    prioritySupport: false,
+    customAlerts: false
+  },
   
-  // Special features
-  enableSectorAnalysis: false,
-  enableAlerts: false,
-  enableCustomTimeframes: false,
-  enableBatchPredictions: false,
-  prioritySupport: false,
+  [SubscriptionPlan.BASIC]: {
+    maxDailyPredictions: 20,
+    maxMonthlyPredictions: 500,
+    aiAnalysisAccess: true,
+    aiPatternRecognition: false,
+    maxDailyApiCalls: 200,
+    historicalDataAccess: true,
+    realTimeData: false,
+    prioritySupport: false,
+    customAlerts: true
+  },
   
-  // API access
-  apiAccess: false,
-  apiRequestsPerDay: 0,
-  
-  // Learning features
-  enableLearningSystem: true,
-  enableCustomLearning: false
+  [SubscriptionPlan.PRO]: {
+    maxDailyPredictions: 100,
+    maxMonthlyPredictions: 3000,
+    aiAnalysisAccess: true,
+    aiPatternRecognition: true,
+    maxDailyApiCalls: 1000,
+    historicalDataAccess: true,
+    realTimeData: true,
+    prioritySupport: true,
+    customAlerts: true
+  }
 };
 
-// Premium plan features
-export const PREMIUM_PLAN_FEATURES: PlanFeatures = {
-  // Core prediction features
-  maxDailyPredictions: 100,
-  historyRetentionDays: 365,
-  enableAIInsights: true,
-  enableDetailedAnalysis: true,
-  enableAdvancedCharts: true,
-  
-  // Special features
-  enableSectorAnalysis: true,
-  enableAlerts: true,
-  enableCustomTimeframes: true,
-  enableBatchPredictions: true,
-  prioritySupport: true,
-  
-  // API access
-  apiAccess: true,
-  apiRequestsPerDay: 100,
-  
-  // Learning features
-  enableLearningSystem: true,
-  enableCustomLearning: true
-};
-
-// Helper type guard to check if a feature value is a boolean
-export function isFeatureBoolean(value: boolean | number): value is boolean {
-  return typeof value === 'boolean';
+// Function to get features for a specific plan
+export function getPlanFeatures(plan: SubscriptionPlan): PlanFeatures {
+  return PLAN_FEATURES[plan];
 }
 
-// Helper to get feature value based on plan
-export function getFeatureValue(feature: keyof PlanFeatures, plan: 'free' | 'premium'): boolean | number {
-  if (plan === 'premium') {
-    return PREMIUM_PLAN_FEATURES[feature];
-  } else {
-    return FREE_PLAN_FEATURES[feature];
+// Helper function to check if a feature is a boolean type
+export function isFeatureBoolean(feature: keyof PlanFeatures): boolean {
+  return typeof PLAN_FEATURES[SubscriptionPlan.FREE][feature] === 'boolean';
+}
+
+// Helper function to check if a feature is a numeric limit
+export function isFeatureNumeric(feature: keyof PlanFeatures): boolean {
+  return typeof PLAN_FEATURES[SubscriptionPlan.FREE][feature] === 'number';
+}
+
+// Format plan price for display
+export function formatPlanPrice(plan: SubscriptionPlan): string {
+  switch (plan) {
+    case SubscriptionPlan.FREE:
+      return 'Free';
+    case SubscriptionPlan.BASIC:
+      return '$9.99/month';
+    case SubscriptionPlan.PRO:
+      return '$29.99/month';
+    default:
+      return 'Unknown';
   }
 }
 
-// Helper to check if a boolean feature is enabled for a plan
-export function isFeatureEnabled(feature: keyof PlanFeatures, plan: 'free' | 'premium'): boolean {
-  const value = getFeatureValue(feature, plan);
-  return isFeatureBoolean(value) ? value : false;
+// Get the feature descriptions for UI display
+export function getFeatureDescription(feature: keyof PlanFeatures): string {
+  const descriptions: Record<keyof PlanFeatures, string> = {
+    maxDailyPredictions: 'Daily prediction limit',
+    maxMonthlyPredictions: 'Monthly prediction limit',
+    aiAnalysisAccess: 'AI analysis & insights',
+    aiPatternRecognition: 'AI pattern recognition',
+    maxDailyApiCalls: 'Daily API calls',
+    historicalDataAccess: 'Historical data access',
+    realTimeData: 'Real-time market data',
+    prioritySupport: 'Priority support',
+    customAlerts: 'Custom market alerts'
+  };
+  
+  return descriptions[feature] || feature;
 }
 
-// Helper to get the numeric limit for a feature
-export function getFeatureLimit(feature: keyof PlanFeatures, plan: 'free' | 'premium'): number {
-  const value = getFeatureValue(feature, plan);
-  return typeof value === 'number' ? value : 0;
+// Get comparison table data for the subscription plan comparison
+export function getPlanComparisonData(): { feature: string, free: string | number | boolean, basic: string | number | boolean, pro: string | number | boolean }[] {
+  const comparisonData = [];
+  
+  // Add all features to the comparison data
+  const featureKeys = Object.keys(PLAN_FEATURES[SubscriptionPlan.FREE]) as (keyof PlanFeatures)[];
+  
+  for (const feature of featureKeys) {
+    comparisonData.push({
+      feature: getFeatureDescription(feature),
+      free: PLAN_FEATURES[SubscriptionPlan.FREE][feature],
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC][feature],
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO][feature]
+    });
+  }
+  
+  return comparisonData;
 }

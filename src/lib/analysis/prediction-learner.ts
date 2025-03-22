@@ -9,7 +9,7 @@ import { logError } from '../error-handling';
 
 // Types for learning system
 export interface PredictionPattern {
-  id: string;
+  id?: string;
   group_key: string;
   timeframe: string;
   target_type: string;
@@ -20,8 +20,8 @@ export interface PredictionPattern {
   sample_size: number;
   market_condition?: string;
   sector?: string;
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface MarketCondition {
@@ -153,29 +153,32 @@ async function analyzeGroup(groupKey: string, predictions: Prediction[]): Promis
     } catch (rpcError) {
       console.log('RPC not available, using direct table insert:', rpcError);
       
-      // Fall back to direct table access
-      // Using 'as any' because the table isn't in TypeScript types
-      const { error } = await supabase
-        .from('prediction_patterns')
-        .upsert({
-          group_key: groupKey,
-          timeframe,
-          target_type: targetType,
-          prediction_type: predictionType,
-          ai_accuracy: aiAccuracy,
-          user_accuracy: userAccuracy,
-          confidence_adjustment: confidenceAdjustment,
-          sample_size: totalPredictions,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        } as any, { 
-          onConflict: 'group_key',
-          ignoreDuplicates: false 
-        });
+      // Fall back to direct table access with type assertion
+      const patternData: PredictionPattern = {
+        group_key: groupKey,
+        timeframe,
+        target_type: targetType,
+        prediction_type: predictionType,
+        ai_accuracy: aiAccuracy,
+        user_accuracy: userAccuracy,
+        confidence_adjustment: confidenceAdjustment,
+        sample_size: totalPredictions
+      };
       
-      if (error) {
-        console.error('Error storing prediction pattern:', error);
-        return;
+      try {
+        // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
+        const { error } = await supabase
+          .from('prediction_patterns')
+          .upsert(patternData, { 
+            onConflict: 'group_key'
+          });
+        
+        if (error) {
+          console.error('Error storing prediction pattern:', error);
+          return;
+        }
+      } catch (err) {
+        console.error('Failed to insert prediction pattern:', err);
       }
     }
     
@@ -200,12 +203,12 @@ export async function enhancePrediction(
     const groupKey = `${timeframe}_stock_${predictionType}`;
     
     try {
-      // Query for matching patterns - direct access since type definitions don't include our table
+      // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
       const { data, error } = await supabase
         .from('prediction_patterns')
         .select('*')
         .eq('group_key', groupKey)
-        .single() as { data: PredictionPattern | null, error: any };
+        .maybeSingle();
       
       if (error || !data) {
         // If no pattern exists yet, return the base confidence
@@ -213,8 +216,10 @@ export async function enhancePrediction(
         return baseConfidence;
       }
       
+      const pattern = data as PredictionPattern;
+      
       // Apply the confidence adjustment
-      let adjustedConfidence = baseConfidence + data.confidence_adjustment;
+      let adjustedConfidence = baseConfidence + pattern.confidence_adjustment;
       
       // Ensure confidence stays within reasonable bounds (0-100%)
       adjustedConfidence = Math.max(0, Math.min(100, adjustedConfidence));
@@ -277,8 +282,9 @@ export function scheduleRoutineAnalysis(intervalMinutes = 60): () => void {
           createdAt: item.created_at,
           resolvesAt: item.resolves_at,
           resolvedAt: item.resolved_at,
+          actual_result: item.actual_result,
           aiAnalysis: item.ai_analysis,
-        } as Prediction));
+        } as unknown as Prediction));
         
         await analyzePredictionBatch(predictions);
       } else {

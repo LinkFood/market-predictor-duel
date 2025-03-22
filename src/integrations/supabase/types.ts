@@ -9,6 +9,48 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      prediction_patterns: {
+        Row: {
+          ai_accuracy: number
+          confidence_adjustment: number
+          created_at: string | null
+          group_key: string
+          id: string
+          prediction_type: string
+          sample_size: number
+          target_type: string
+          timeframe: string
+          updated_at: string | null
+          user_accuracy: number
+        }
+        Insert: {
+          ai_accuracy: number
+          confidence_adjustment: number
+          created_at?: string | null
+          group_key: string
+          id?: string
+          prediction_type: string
+          sample_size: number
+          target_type: string
+          timeframe: string
+          updated_at?: string | null
+          user_accuracy: number
+        }
+        Update: {
+          ai_accuracy?: number
+          confidence_adjustment?: number
+          created_at?: string | null
+          group_key?: string
+          id?: string
+          prediction_type?: string
+          sample_size?: number
+          target_type?: string
+          timeframe?: string
+          updated_at?: string | null
+          user_accuracy?: number
+        }
+        Relationships: []
+      }
       predictions: {
         Row: {
           actual_result: string | null
@@ -102,6 +144,69 @@ export type Database = {
           id?: string
           updated_at?: string | null
           username?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancellation_date: string | null
+          expires_at: string | null
+          id: string
+          payment_id: string | null
+          payment_provider: string | null
+          plan: string
+          started_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          cancellation_date?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_provider?: string | null
+          plan?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          cancellation_date?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_provider?: string | null
+          plan?: string
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      usage_events: {
+        Row: {
+          details: Json | null
+          event_date: string | null
+          event_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          details?: Json | null
+          event_date?: string | null
+          event_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          details?: Json | null
+          event_date?: string | null
+          event_type?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
