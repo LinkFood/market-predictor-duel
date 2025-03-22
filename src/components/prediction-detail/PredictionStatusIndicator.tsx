@@ -3,7 +3,7 @@ import React from "react";
 import { Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 
 interface PredictionStatusIndicatorProps {
   prediction: Prediction;
