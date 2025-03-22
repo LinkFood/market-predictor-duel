@@ -13,10 +13,12 @@ export interface StockPredictionRequest {
 export interface StockPredictionResponse {
   prediction: string;
   confidence: number;
+  originalConfidence?: number; // Original confidence before learning enhancement
   rationale: string;
   reasoning?: string;
   supportingPoints?: string[];
   counterPoints?: string[];
   supportingData?: any;
   timestamp: string;
+  learningApplied?: boolean; // Indicates if the learning system enhanced this prediction
 }

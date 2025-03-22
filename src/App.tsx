@@ -6,6 +6,7 @@ import { MarketDataProvider } from "./lib/market/MarketDataProvider";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
+import AILearningInitializer from "./components/AILearningInitializer";
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -53,6 +54,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <MarketDataProvider>
+            <AILearningInitializer />
             <AppRoutes />
             <Toaster />
           </MarketDataProvider>

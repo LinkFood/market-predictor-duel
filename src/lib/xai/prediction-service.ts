@@ -9,6 +9,7 @@ import { StockPredictionRequest, StockPredictionResponse } from './types';
 import { getMockPrediction } from './mock-data';
 import { supabase } from '@/integrations/supabase/client';
 import { logError, showErrorToast } from '../error-handling';
+import { enhancePrediction } from '../analysis/prediction-learner';
 
 // Number of retries for API calls
 const MAX_RETRIES = 2;
@@ -115,9 +116,20 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
           ];
         }
         
+        // Enhance the prediction confidence using our learning system
+        const enhancedConfidence = await enhancePrediction(
+          request.ticker,
+          request.timeframe,
+          request.predictionType,
+          confidence
+        );
+        
+        console.log(`Enhanced confidence for ${request.ticker}: ${confidence} → ${enhancedConfidence}`);
+        
         return {
           prediction: data.prediction,
-          confidence: confidence,
+          confidence: enhancedConfidence,
+          originalConfidence: confidence, // Store original for comparison
           rationale: data.rationale || data.reasoning || "Based on market analysis, the AI has made this prediction.",
           supportingPoints: supporting,
           counterPoints: counter,

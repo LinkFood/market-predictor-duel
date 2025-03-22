@@ -18,6 +18,7 @@ import TopMarkets from "@/components/dashboard/TopMarkets";
 import PredictionOpportunities from "@/components/dashboard/PredictionOpportunities";
 import RecentPredictionsSection from "@/components/dashboard/RecentPredictionsSection";
 import CommunityStats from "@/components/dashboard/CommunityStats";
+import AIPredictionInsights from "@/components/dashboard/AIPredictionInsights";
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
@@ -149,6 +150,11 @@ const Dashboard: React.FC = () => {
         {/* Community Stats */}
         <motion.div variants={itemVariants}>
           <CommunityStats />
+        </motion.div>
+        
+        {/* AI Learning Insights */}
+        <motion.div variants={itemVariants}>
+          <AIPredictionInsights />
         </motion.div>
       </motion.div>
 
