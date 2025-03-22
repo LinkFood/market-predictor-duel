@@ -8,7 +8,7 @@
 export type { StockPredictionRequest, StockPredictionResponse } from './types';
 
 // Export main functionality
-export { getStockPrediction } from './prediction-service';
+export { getStockPrediction, testXaiApiConnection } from './prediction-service';
 export { evaluatePrediction } from './evaluation';
 export { getMarketAnalysis } from '../market-analysis-service';
 
