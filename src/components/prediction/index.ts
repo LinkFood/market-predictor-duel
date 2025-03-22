@@ -5,6 +5,7 @@ export { default as AnalyzingProgress } from './AnalyzingProgress';
 export { default as PredictionResult } from './PredictionResult';
 export { default as PredictionSidebar } from './PredictionSidebar';
 export { default as PredictionFormContent } from './PredictionFormContent';
+export { default as ApiConnectionTest } from './ApiConnectionTest';
 
 // Hooks
 export { usePredictionForm } from './hooks/usePredictionForm';

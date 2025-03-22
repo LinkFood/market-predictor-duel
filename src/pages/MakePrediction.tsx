@@ -12,7 +12,8 @@ import {
   PredictionForm,
   AnalyzingProgress,
   PredictionResult,
-  PredictionSidebar
+  PredictionSidebar,
+  ApiConnectionTest
 } from "@/components/prediction";
 
 const MakePrediction: React.FC = () => {
@@ -21,6 +22,7 @@ const MakePrediction: React.FC = () => {
   const [predictionStep, setPredictionStep] = useState<"form" | "analyzing" | "result">("form");
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showApiTest, setShowApiTest] = useState(false);
   
   const handlePredictionMade = (newPrediction: Prediction) => {
     try {
@@ -91,12 +93,27 @@ const MakePrediction: React.FC = () => {
       </div>
 
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Make a Prediction</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold tracking-tight">Make a Prediction</h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setShowApiTest(!showApiTest)}
+          >
+            {showApiTest ? "Hide API Test" : "Test X.ai API"}
+          </Button>
+        </div>
         <p className="text-muted-foreground max-w-2xl">
           Predict market movements and compete against our AI. Win points for correct predictions 
           and climb up the leaderboard!
         </p>
       </div>
+
+      {showApiTest && (
+        <div className="mb-6">
+          <ApiConnectionTest />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
