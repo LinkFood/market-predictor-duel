@@ -53,6 +53,7 @@ export async function getMarketIndices(): Promise<{ data: MarketData[]; usingMoc
       console.log(`🌐 Fetching real market indices data from Polygon.io`);
       try {
         const data = await getPolygonMarketIndices();
+        console.log("Received market indices data:", data);
         if (data && data.length > 0) {
           return { data, usingMockData: false };
         } else {
@@ -73,13 +74,8 @@ export async function getMarketIndices(): Promise<{ data: MarketData[]; usingMoc
     logError(error, 'getMarketIndices');
     console.error("❌ Error fetching market indices:", error);
     
-    // Only fall back to mock data if real data is not supposed to be used
-    if (!FEATURES.enableRealMarketData || !config.polygon.enabled) {
-      console.log("Using mock data as real data was not requested");
-      usingMockData = true;
-      return { data: DEFAULT_INDICES, usingMockData };
-    }
-    
-    throw error; // Propagate error when real data is expected
+    // Fall back to mock data
+    usingMockData = true;
+    return { data: DEFAULT_INDICES, usingMockData };
   }
 }

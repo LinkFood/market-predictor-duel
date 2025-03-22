@@ -124,8 +124,17 @@ serve(async (req) => {
         throw new Error("Empty response from Polygon API");
       }
       
+      // Special handling for index endpoints
+      if (endpoint.includes('/indices/')) {
+        // Check if we got the expected data format for indices
+        if (!data.ticker || data.value === undefined) {
+          console.error("Invalid response format for index:", endpoint, data);
+          throw new Error("Invalid response format for index data");
+        }
+        console.log(`Received index data for ${data.ticker}`);
+      }
       // For market movers endpoints, validate the tickers array
-      if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
+      else if (endpoint.includes('/gainers') || endpoint.includes('/losers')) {
         if (!data.tickers || !Array.isArray(data.tickers)) {
           console.error("Invalid response format for market movers:", data);
           throw new Error("Invalid response format for market movers");

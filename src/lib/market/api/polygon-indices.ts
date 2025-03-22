@@ -26,7 +26,8 @@ export async function getPolygonMarketIndices(): Promise<MarketData[]> {
     // Create an array of promises, one for each index
     const promises = Object.entries(INDEX_TICKERS).map(async ([ticker, name]) => {
       try {
-        const endpoint = `/v2/snapshot/locale/us/markets/indices/${ticker}`;
+        // The correct endpoint format for index snapshots
+        const endpoint = `/v2/snapshot/indices/${ticker}`;
         console.log(`Fetching index data for ${name} (${ticker})`);
         
         const data = await callPolygonApi(endpoint);

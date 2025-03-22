@@ -20,6 +20,8 @@ export const useMarketIndices = () => {
       
       const { data, usingMockData: isMockData } = await getMarketIndices();
       
+      console.log('Market indices data received:', data, 'Using mock data:', isMockData);
+      
       if (data && data.length > 0) {
         setMarketIndices(data);
         setLastUpdated(new Date());
