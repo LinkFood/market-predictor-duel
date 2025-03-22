@@ -1,130 +1,95 @@
 
-/**
- * Mock data utilities for X.ai service
- */
-
 import { StockPredictionRequest, StockPredictionResponse } from './types';
 
 /**
- * Generate a mock prediction for testing
+ * Get a mock prediction for testing without using the real API
  */
 export function getMockPrediction(request: StockPredictionRequest): StockPredictionResponse {
-  console.log('Using mock prediction for', request.ticker);
+  // Add randomness to make it seem more realistic
+  const confidenceScore = Math.floor(Math.random() * 20) + 70; // 70-90
+  const isPriceUp = Math.random() > 0.45; // Slightly higher chance of uptrend to avoid seeming too pessimistic
   
-  // For demo purposes, we'll make the prediction somewhat random but biased toward uptrend
-  const isUptrend = Math.random() > 0.4;
-  const confidence = Math.floor(Math.random() * 30) + 65; // 65-95 range
+  // For price predictions, generate a reasonable fictional price
+  const mockPrice = request.predictionType === 'price' ? 
+    (request.currentPrice || 100) * (isPriceUp ? (1 + Math.random() * 0.1) : (1 - Math.random() * 0.1)) : null;
   
-  // Get the ticker symbol for more realistic predictions
+  // Define the ticker symbol and current price for more tailored mocks
   const ticker = request.ticker.toUpperCase();
+  const currentPrice = request.currentPrice || 100;
   
-  // Create custom supporting and counter points based on the timeframe
-  const timeframeText = getTimeframeText(request.timeframe);
+  // Define the timeframe reference
+  const timeframeText = request.timeframe === '1d' ? 'next day' : 
+                        request.timeframe === '1w' ? 'next week' : 
+                        request.timeframe === '1m' ? 'next month' : 'coming period';
   
-  if (request.predictionType === 'price') {
-    const currentPrice = request.currentPrice || 100;
-    const changePercent = isUptrend 
-      ? (Math.random() * 5) + 1 // 1-6% increase
-      : (Math.random() * 4) - 4; // 0-4% decrease
-    
-    const newPrice = currentPrice * (1 + (changePercent / 100));
-    
-    return {
-      prediction: `$${newPrice.toFixed(2)}`,
-      confidence,
-      rationale: isUptrend 
-        ? `Based on technical indicators and recent news, ${ticker} is likely to see positive momentum in the ${timeframeText}.`
-        : `Recent market volatility and sector weakness suggest a potential ${timeframeText} pullback for ${ticker}.`,
-      supportingPoints: getCustomSupportingPoints(ticker, isUptrend, request.timeframe),
-      counterPoints: getCustomCounterPoints(ticker, isUptrend, request.timeframe),
-      timestamp: new Date().toISOString()
-    };
-  } else {
-    return {
-      prediction: isUptrend ? 'uptrend' : 'downtrend',
-      confidence,
-      rationale: isUptrend 
-        ? `Technical indicators for ${ticker} show bullish patterns with strong volume and positive news sentiment over the ${timeframeText}.`
-        : `${ticker} shows recent resistance levels, decreased volume, and broader market concerns indicating potential weakness in the ${timeframeText}.`,
-      supportingPoints: getCustomSupportingPoints(ticker, isUptrend, request.timeframe),
-      counterPoints: getCustomCounterPoints(ticker, isUptrend, request.timeframe),
-      timestamp: new Date().toISOString()
-    };
-  }
+  // Generate custom supporting and counter points based on the prediction direction
+  const trendKeyword = isPriceUp ? 'uptrend' : 'downtrend';
+  const direction = isPriceUp ? 'upward' : 'downward';
+  
+  // Create a structured mock prediction
+  const prediction: StockPredictionResponse = {
+    prediction: request.predictionType === 'trend' ? trendKeyword : `$${mockPrice?.toFixed(2) || '0.00'}`,
+    confidence: confidenceScore,
+    rationale: `Based on analysis of ${ticker}'s recent performance and market conditions, an ${direction} movement is expected over the ${timeframeText}. Technical indicators, trading volumes, and overall market sentiment suggest this prediction has a confidence level of ${confidenceScore}%.`,
+    timestamp: new Date().toISOString(),
+    supportingPoints: [
+      isPriceUp ? 
+        `${ticker} has shown strong momentum in recent trading sessions` : 
+        `${ticker} has been encountering resistance at current price levels`,
+      isPriceUp ? 
+        `Positive earnings outlook and strong fundamental indicators` : 
+        `Recent sector rotation away from ${ticker}'s industry`,
+      isPriceUp ? 
+        `Favorable market conditions and increased institutional buying` : 
+        `Technical indicators show overbought conditions`
+    ],
+    counterPoints: [
+      isPriceUp ? 
+        `Potential market volatility could limit upside` : 
+        `The stock may find support at key technical levels`,
+      isPriceUp ? 
+        `Profit-taking could occur after recent gains` : 
+        `Oversold conditions may trigger a technical bounce`,
+      isPriceUp ? 
+        `Sector-wide challenges could impact performance` : 
+        `Recent insider buying suggests company confidence`
+    ]
+  };
+  
+  return prediction;
 }
 
 /**
- * Generate mock analysis for testing
+ * Get mock market analysis for a stock
  */
 export function getMockAnalysis(ticker: string): string {
-  ticker = ticker.toUpperCase();
-  return `
-    Market Analysis for ${ticker}:
-    
-    Technical Indicators:
-    - ${ticker} is trading ${Math.random() > 0.5 ? 'above' : 'below'} its 50-day and 200-day moving averages, indicating a ${Math.random() > 0.5 ? 'bullish' : 'bearish'} trend.
-    - RSI is at ${Math.floor(Math.random() * 40) + 30}, suggesting ${Math.random() > 0.5 ? 'momentum without being overbought' : 'potential for reversal'}.
-    - MACD shows a recent ${Math.random() > 0.5 ? 'bullish' : 'bearish'} crossover, signaling potential ${Math.random() > 0.5 ? 'upward' : 'downward'} movement.
-    
-    Fundamental Analysis:
-    - Recent earnings ${Math.random() > 0.7 ? 'exceeded' : 'missed'} expectations by ${Math.floor(Math.random() * 15) + 1}%.
-    - P/E ratio is ${Math.random() > 0.5 ? 'favorable' : 'concerning'} compared to industry average.
-    - Company ${Math.random() > 0.6 ? 'announced expansion into new markets' : 'facing challenges in core business segments'}.
-    
-    Market Sentiment:
-    - Institutional investors have ${Math.random() > 0.5 ? 'increased' : 'decreased'} their positions by ${(Math.random() * 5 + 1).toFixed(1)}% in the last quarter.
-    - Analyst consensus has ${Math.random() > 0.6 ? 'upgraded from "hold" to "buy"' : 'maintained "hold" rating'} in recent weeks.
-    - Social media sentiment analysis shows ${Math.random() > 0.5 ? 'increasing positive' : 'mixed'} mentions.
-    
-    Risks:
-    - Industry regulatory changes may impact operations.
-    - ${Math.random() > 0.5 ? 'Rising' : 'Falling'} interest rates could affect growth projections.
-    - ${Math.random() > 0.7 ? 'Increased competition in core markets' : 'Supply chain disruptions may affect production'}.
-  `;
-}
+  const analysis = `
+# Market Analysis for ${ticker}
 
-// Helper functions for realistic mock data
+## Technical Analysis
+- The stock is currently trading ${Math.random() > 0.5 ? 'above' : 'below'} its 50-day moving average
+- RSI is at ${Math.floor(Math.random() * 40) + 30}, indicating ${Math.random() > 0.5 ? 'neutral momentum' : 'potential reversal'}
+- MACD shows a ${Math.random() > 0.5 ? 'bullish' : 'bearish'} crossover pattern
+- Volume has been ${Math.random() > 0.5 ? 'increasing' : 'decreasing'} on ${Math.random() > 0.5 ? 'up' : 'down'} days
 
-function getTimeframeText(timeframe: string): string {
-  switch (timeframe) {
-    case '1d': return 'next day';
-    case '1w': return 'next week';
-    case '1m': return 'next month';
-    case '3m': return 'next quarter';
-    default: return 'short term';
-  }
-}
+## Fundamental Factors
+- Latest quarterly earnings ${Math.random() > 0.6 ? 'exceeded' : 'missed'} expectations by ${Math.floor(Math.random() * 10) + 1}%
+- P/E ratio of ${Math.floor(Math.random() * 25) + 10} compared to industry average of ${Math.floor(Math.random() * 20) + 15}
+- Revenue growth of ${Math.floor(Math.random() * 15) + 1}% year-over-year
+- Free cash flow has ${Math.random() > 0.5 ? 'improved' : 'declined'} by ${Math.floor(Math.random() * 10) + 1}% 
 
-function getCustomSupportingPoints(ticker: string, isUptrend: boolean, timeframe: string): string[] {
-  const timeframeText = getTimeframeText(timeframe);
-  
-  if (isUptrend) {
-    return [
-      `${ticker}'s recent ${Math.random() > 0.5 ? 'earnings beat' : 'positive analyst ratings'} suggests strong fundamentals`,
-      `Technical indicators show a ${timeframe === '1d' ? 'short-term' : 'sustained'} bullish pattern with increasing volume`,
-      `${ticker}'s sector has outperformed the broader market by ${(Math.random() * 5 + 2).toFixed(1)}% ${timeframe === '1d' ? 'today' : 'recently'}`
-    ];
-  } else {
-    return [
-      `${ticker} has encountered ${Math.random() > 0.5 ? 'resistance at key price levels' : 'declining momentum indicators'}`,
-      `Volume patterns suggest ${Math.random() > 0.5 ? 'distribution' : 'decreased institutional interest'} in recent sessions`,
-      `The broader ${Math.random() > 0.5 ? 'sector' : 'market'} is showing signs of ${timeframe === '1d' ? 'short-term' : 'prolonged'} weakness`
-    ];
-  }
-}
+## Market Sentiment
+- Institutional ownership has ${Math.random() > 0.5 ? 'increased' : 'decreased'} by ${Math.floor(Math.random() * 5) + 1}% in the last quarter
+- Analyst ratings: ${Math.floor(Math.random() * 3) + 3} Buy, ${Math.floor(Math.random() * 3) + 2} Hold, ${Math.floor(Math.random() * 2)} Sell
+- Short interest is at ${Math.floor(Math.random() * 10) + 1}% of float
+- Options market indicates ${Math.random() > 0.5 ? 'bullish' : 'bearish'} sentiment based on put/call ratio
 
-function getCustomCounterPoints(ticker: string, isUptrend: boolean, timeframe: string): string[] {
-  if (isUptrend) {
-    return [
-      `${ticker}'s RSI of ${Math.floor(Math.random() * 15) + 75} indicates potentially overbought conditions`,
-      `Resistance at $${(Math.random() * 20 + 100).toFixed(2)} could limit further gains`,
-      `Broader market ${Math.random() > 0.5 ? 'volatility' : 'uncertainty'} might impact even strong performers`
-    ];
-  } else {
-    return [
-      `${ticker} is approaching support at $${(Math.random() * 20 + 80).toFixed(2)} which may trigger a bounce`,
-      `RSI of ${Math.floor(Math.random() * 15) + 25} suggests oversold conditions in the near term`,
-      `Any positive news could trigger a ${Math.random() > 0.5 ? 'short squeeze' : 'rapid recovery'} due to negative sentiment`
-    ];
-  }
+## Risk Factors
+- Market volatility due to macroeconomic conditions
+- Sector competition intensifying 
+- Regulatory changes could impact operations
+- Supply chain challenges in the industry
+`;
+
+  return analysis;
 }

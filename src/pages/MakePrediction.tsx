@@ -1,11 +1,12 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, AlertCircle } from "lucide-react";
+import { ArrowLeft, AlertCircle, Server, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { Prediction } from "@/types";
+import { FEATURES } from "@/lib/config";
 
 // Refactored components
 import {
@@ -33,6 +34,7 @@ const MakePrediction: React.FC = () => {
       
       // Simulating API request time
       setTimeout(() => {
+        setPredictionStep("result");
         toast({
           title: "Success",
           description: "Prediction analyzed successfully!"
@@ -95,13 +97,23 @@ const MakePrediction: React.FC = () => {
       <div className="flex flex-col space-y-2">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight">Make a Prediction</h1>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setShowApiTest(!showApiTest)}
-          >
-            {showApiTest ? "Hide API Test" : "Test X.ai API"}
-          </Button>
+          {FEATURES.devMode && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowApiTest(!showApiTest)}
+              className="flex items-center gap-1.5"
+            >
+              {showApiTest ? (
+                <>Hide API Test</>
+              ) : (
+                <>
+                  <Server className="h-3.5 w-3.5" />
+                  Test X.ai API
+                </>
+              )}
+            </Button>
+          )}
         </div>
         <p className="text-muted-foreground max-w-2xl">
           Predict market movements and compete against our AI. Win points for correct predictions 

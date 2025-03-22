@@ -2,7 +2,7 @@
 import React from "react";
 import { 
   ArrowUp, ArrowDown, Brain, BadgeCheck, BellRing,
-  Timer, Share2, Clock, ChevronRight
+  Timer, Share2, Clock, ChevronRight, Lightbulb, AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -152,11 +152,63 @@ const PredictionResult: React.FC<PredictionResultProps> = ({
 
           {/* AI Analysis */}
           {prediction.aiAnalysis && FEATURES.enableAIAnalysis && (
-            <AIAnalysisSection 
-              prediction={prediction}
-              supportingPoints={supportingPoints}
-              counterPoints={counterPoints}
-            />
+            <div>
+              <h3 className="font-semibold text-lg mb-4 flex items-center">
+                <Brain className="mr-2 h-5 w-5 text-indigo-500" />
+                AI Analysis
+              </h3>
+              
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg mb-6">
+                <p className="italic text-slate-700 dark:text-slate-300">
+                  "{prediction.aiAnalysis.reasoning}"
+                </p>
+              </div>
+
+              <Tabs defaultValue="supporting" className="w-full">
+                <TabsList className="w-full">
+                  <TabsTrigger value="supporting" className="flex-1">
+                    <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                    Supporting Factors
+                  </TabsTrigger>
+                  <TabsTrigger value="counter" className="flex-1">
+                    <AlertTriangle className="h-4 w-4 mr-2 text-amber-500" />
+                    Counter Factors
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="supporting" className="mt-4 border rounded-lg p-0 bg-white dark:bg-slate-950 overflow-hidden">
+                  <div className="divide-y">
+                    {supportingPoints.map((point, idx) => (
+                      <div key={idx} className="p-3.5 flex items-start gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <div className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 font-semibold text-xs ${
+                          prediction.aiPrediction === "uptrend" 
+                            ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
+                            : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <p className="text-sm leading-relaxed">{point}</p>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent value="counter" className="mt-4 border rounded-lg p-0 bg-white dark:bg-slate-950 overflow-hidden">
+                  <div className="divide-y">
+                    {counterPoints.map((point, idx) => (
+                      <div key={idx} className="p-3.5 flex items-start gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <div className={`h-6 w-6 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 font-semibold text-xs ${
+                          prediction.aiPrediction === "uptrend" 
+                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" 
+                            : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <p className="text-sm leading-relaxed">{point}</p>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
           
           {/* What happens next */}
@@ -192,72 +244,6 @@ const PredictionResult: React.FC<PredictionResultProps> = ({
         </Button>
       </CardFooter>
     </Card>
-  );
-};
-
-const AIAnalysisSection: React.FC<{ 
-  prediction: Prediction;
-  supportingPoints: string[];
-  counterPoints: string[];
-}> = ({ prediction, supportingPoints, counterPoints }) => {
-  return (
-    <div>
-      <h3 className="font-semibold text-lg mb-4 flex items-center">
-        <Brain className="mr-2 h-5 w-5 text-indigo-500" />
-        AI Analysis
-      </h3>
-      
-      <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg mb-6">
-        <p className="italic text-slate-700 dark:text-slate-300">
-          "{prediction.aiAnalysis.reasoning}"
-        </p>
-      </div>
-
-      <Tabs defaultValue="supporting" className="w-full">
-        <TabsList className="w-full">
-          <TabsTrigger value="supporting" className="flex-1">
-            <ArrowUp className={`h-4 w-4 mr-2 ${prediction?.aiPrediction === "uptrend" ? "text-emerald-500" : "text-red-500"}`} />
-            Supporting Factors
-          </TabsTrigger>
-          <TabsTrigger value="counter" className="flex-1">
-            <ArrowDown className={`h-4 w-4 mr-2 ${prediction?.aiPrediction === "uptrend" ? "text-red-500" : "text-emerald-500"}`} />
-            Counter Factors
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="supporting" className="mt-4 border rounded-lg p-4 bg-white dark:bg-slate-950">
-          <div className="space-y-3">
-            {supportingPoints.map((point, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <div className={`h-6 w-6 rounded-full ${
-                  prediction.aiPrediction === "uptrend" 
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" 
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                } flex items-center justify-center flex-shrink-0 mt-0.5 font-semibold text-xs`}>
-                  {idx + 1}
-                </div>
-                <p className="text-sm leading-relaxed">{point}</p>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-        <TabsContent value="counter" className="mt-4 border rounded-lg p-4 bg-white dark:bg-slate-950">
-          <div className="space-y-3">
-            {counterPoints.map((point, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <div className={`h-6 w-6 rounded-full ${
-                  prediction?.aiPrediction === "uptrend" 
-                    ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" 
-                    : "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
-                } flex items-center justify-center flex-shrink-0 mt-0.5 font-semibold text-xs`}>
-                  {idx + 1}
-                </div>
-                <p className="text-sm leading-relaxed">{point}</p>
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
   );
 };
 

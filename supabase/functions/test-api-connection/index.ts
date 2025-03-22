@@ -2,9 +2,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const XAI_API_KEY = Deno.env.get('XAI_API_KEY');
+const API_KEY = Deno.env.get('XAI_API_KEY');
 const XAI_BASE_URL = "https://api.x.ai/v1";
-const API_PROVIDER = "xai"; // Set to "xai" to use X.ai
+const API_PROVIDER = "xai";
+const MODEL_NAME = "grok-2-latest";
 
 // CORS headers
 const corsHeaders = {
@@ -19,18 +20,21 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Testing API connection");
+    console.log("Running API connectivity test for", API_PROVIDER);
     
-    // Verify API key is configured
-    if (!XAI_API_KEY) {
-      console.error("API key is not configured");
+    if (!API_KEY) {
+      console.error("Missing API key");
       return new Response(
-        JSON.stringify({ 
-          success: false, 
-          error: "API key is not configured in environment variables" 
+        JSON.stringify({
+          success: false,
+          message: "API key not configured", 
+          details: {
+            provider: API_PROVIDER,
+            error: "API_KEY environment variable is not set",
+            timestamp: new Date().toISOString()
+          }
         }),
         { 
-          status: 500,
           headers: { 
             ...corsHeaders,
             'Content-Type': 'application/json' 
@@ -38,124 +42,91 @@ serve(async (req) => {
         }
       );
     }
-
-    // X.ai specific model name
-    const modelName = "grok-2-latest";
     
-    // Test models endpoint
-    console.log(`Testing models endpoint for ${API_PROVIDER}`);
-    let modelsResponse;
-    try {
-      modelsResponse = await fetch(`${XAI_BASE_URL}/models`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${XAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        }
-      });
+    console.log(`Testing ${API_PROVIDER} connectivity with model ${MODEL_NAME}`);
+    
+    // Testing API connectivity
+    const testResponse = await fetch(`${XAI_BASE_URL}/models`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!testResponse.ok) {
+      const errorText = await testResponse.text();
+      console.error(`API test failed (${testResponse.status}): ${errorText}`);
       
-      const modelsData = await modelsResponse.json();
-      console.log("Models response:", JSON.stringify({
-        status: modelsResponse.status,
-        data: modelsData
-      }));
-    } catch (modelsError) {
-      console.error("Error testing models endpoint:", modelsError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: `API responded with status ${testResponse.status}`, 
+          details: {
+            provider: API_PROVIDER,
+            status: testResponse.status,
+            error: errorText,
+            timestamp: new Date().toISOString()
+          }
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
     }
     
-    // Test chat completions endpoint with a simple prompt
-    console.log(`Testing chat completions endpoint for ${API_PROVIDER}`);
-    const chatResponse = await fetch(`${XAI_BASE_URL}/chat/completions`, {
+    const modelsData = await testResponse.json();
+    
+    // Check if the model we want to use is available
+    const availableModels = modelsData.data || [];
+    const ourModelAvailable = availableModels.some(m => m.id === MODEL_NAME);
+    
+    // Test a simple call to ensure the API is fully functional
+    const simpleTestResponse = await fetch(`${XAI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${XAI_API_KEY}`,
+        'Authorization': `Bearer ${API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: modelName,
+        model: MODEL_NAME,
         messages: [
-          { role: "system", content: "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy." },
-          { role: "user", content: "Say hello!" }
+          { role: "system", content: "You are a helpful assistant." },
+          { role: "user", content: "Hello, this is a test message." }
         ],
-        temperature: 0
+        max_tokens: 50,
+        temperature: 0.5
       }),
     });
     
-    const chatStatus = chatResponse.status;
-    const chatData = await chatResponse.text();
+    let completionSuccess = false;
+    let completionResponse = null;
     
-    console.log(`Chat API response status: ${chatStatus}`);
-    console.log(`Chat API response: ${chatData}`);
-    
-    // Handle specific error cases
-    if (chatStatus === 401) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: "Authentication failed. Please check your API key.",
-          details: {
-            error: "Unauthorized - The API key provided is invalid",
-            status: chatStatus
-          }
-        }),
-        { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
-      );
+    if (simpleTestResponse.ok) {
+      completionResponse = await simpleTestResponse.json();
+      completionSuccess = completionResponse && 
+                         completionResponse.choices && 
+                         completionResponse.choices.length > 0;
     }
     
-    if (chatStatus === 404 && chatData.includes("model")) {
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: `The model "${modelName}" was not found. Your account may not have access to this model.`,
-          details: {
-            error: "Model not found or not accessible",
-            model: modelName,
-            provider: API_PROVIDER,
-            status: chatStatus
-          }
-        }),
-        { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json' 
-          } 
-        }
-      );
-    }
-    
-    // Build comprehensive test results
-    const testResults = {
-      success: chatStatus === 200,
-      message: chatStatus === 200 
-        ? "API connection successful"
-        : `Connection test failed with status ${chatStatus}`,
-      apiKey: {
-        provided: !!XAI_API_KEY,
-        truncated: XAI_API_KEY ? `${XAI_API_KEY.substring(0, 5)}...` : null
-      },
-      provider: API_PROVIDER,
-      model: modelName,
-      endpoints: {
-        models: {
-          status: modelsResponse?.status,
-          success: modelsResponse?.ok
-        },
-        chat: {
-          status: chatStatus,
-          success: chatStatus === 200,
-          data: chatStatus === 200 ? JSON.parse(chatData) : { error: chatData }
-        }
-      },
-      timestamp: new Date().toISOString()
-    };
-    
+    // Return the successful result
     return new Response(
-      JSON.stringify(testResults),
+      JSON.stringify({
+        success: true,
+        message: "API connection successful",
+        details: {
+          provider: API_PROVIDER,
+          model: MODEL_NAME,
+          modelAvailable: ourModelAvailable,
+          completionSuccess: completionSuccess,
+          availableModels: availableModels.map(m => m.id),
+          timestamp: new Date().toISOString(),
+          responseTime: `${simpleTestResponse.headers.get('x-response-time') || 'unknown'}ms`
+        }
+      }),
       { 
         headers: { 
           ...corsHeaders,
@@ -164,13 +135,18 @@ serve(async (req) => {
       }
     );
   } catch (error) {
-    console.error("Error testing API:", error);
+    console.error("Error in test-api-connection function:", error);
     
     return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: error.message || "An error occurred testing the API",
-        timestamp: new Date().toISOString()
+      JSON.stringify({
+        success: false,
+        message: `Error: ${error.message || "Unknown error"}`,
+        details: {
+          provider: API_PROVIDER,
+          error: error.message,
+          stack: error.stack,
+          timestamp: new Date().toISOString()
+        }
       }),
       { 
         status: 500,

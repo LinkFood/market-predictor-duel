@@ -111,6 +111,11 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
         title: "AI Prediction Error",
         description: "API key configuration issue. Using simulated prediction data instead."
       });
+    } else {
+      showErrorToast({
+        title: "AI Prediction Error",
+        description: "Could not generate prediction. Using simulated data instead."
+      });
     }
     
     // Return mock data on error
