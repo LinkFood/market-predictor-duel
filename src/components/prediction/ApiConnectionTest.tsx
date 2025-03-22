@@ -1,162 +1,201 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle, InfoIcon, Server, Brain } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { testXaiApiConnection } from '@/lib/xai/prediction-service';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Server, CheckCircle, XCircle, HelpCircle, AlertTriangle } from "lucide-react";
+import { testXaiApiConnection } from "@/lib/xai";
+import { useToast } from "@/hooks/use-toast";
 
 const ApiConnectionTest = () => {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<null | {
-    success: boolean;
-    message: string;
-    details?: any;
-  }>(null);
+  const [results, setResults] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleTestConnection = async () => {
+  // Auto-run the test when the component mounts
+  useEffect(() => {
+    runTest();
+  }, []);
+
+  const runTest = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      setResult(null);
-      console.log("Testing API connection...");
       
-      const testResult = await testXaiApiConnection();
-      console.log("Test result:", testResult);
+      console.log("Testing X.ai API connection...");
+      const result = await testXaiApiConnection();
+      console.log("X.ai API test results:", result);
       
-      setResult(testResult);
+      setResults(result);
+      
+      if (result.success) {
+        toast({
+          title: "API Test Successful",
+          description: "X.ai API is working correctly."
+        });
+      } else {
+        setError(result.message);
+        toast({
+          variant: "destructive",
+          title: "API Test Failed",
+          description: result.message
+        });
+      }
     } catch (err) {
-      console.error("Error testing API connection:", err);
-      setError(err instanceof Error ? err.message : "Failed to test API connection");
+      console.error("Error testing API:", err);
+      setError("Failed to test API connection");
+      toast({
+        variant: "destructive",
+        title: "Test Failed",
+        description: "An error occurred while testing the API connection."
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
+  const renderStatusIcon = () => {
+    if (isLoading) {
+      return <Loader2 className="h-6 w-6 animate-spin text-blue-500" />;
+    }
+    
+    if (!results) {
+      return <HelpCircle className="h-6 w-6 text-slate-400" />;
+    }
+    
+    if (results.success) {
+      return <CheckCircle className="h-6 w-6 text-green-500" />;
+    }
+    
+    return <XCircle className="h-6 w-6 text-red-500" />;
+  };
+
+  const getStatusMessage = () => {
+    if (isLoading) {
+      return "Testing API connection...";
+    }
+    
+    if (!results) {
+      return "API connection status unknown";
+    }
+    
+    if (results.success) {
+      return "X.ai API is connected and working correctly";
+    }
+    
+    return `API connection failed: ${results.message}`;
+  };
+
   return (
-    <Card className="shadow-md">
-      <CardHeader>
+    <Card>
+      <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="flex items-center gap-2">
-              <Server className="h-5 w-5 text-indigo-500" />
-              X.ai API Connection Test
-            </CardTitle>
+            <CardTitle className="text-lg">X.ai API Connection</CardTitle>
             <CardDescription>
-              Test the connection to the X.ai API to ensure predictions can be generated
+              Test connection to the X.ai API for prediction functionality
             </CardDescription>
           </div>
-          {result?.details?.provider && (
-            <Badge variant={result.success ? "success" : "destructive"} className="ml-2">
-              {result.details.provider.toUpperCase()}
-            </Badge>
-          )}
+          <div className="flex items-center gap-3">
+            {renderStatusIcon()}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={runTest} 
+              disabled={isLoading}
+              className="flex items-center gap-1.5"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <Server className="h-3.5 w-3.5" />
+                  Test Connection
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {isLoading && (
-          <div className="space-y-2 py-4">
-            <div className="flex justify-between text-sm mb-1">
-              <span>Testing connection...</span>
-              <span>Please wait</span>
-            </div>
-            <Progress value={result ? 100 : 45} className="h-2" />
+        <div className="space-y-4">
+          <div className="flex items-center gap-2 text-sm">
+            <div className={`h-2 w-2 rounded-full ${
+              isLoading ? "bg-blue-500" :
+              results?.success ? "bg-green-500" :
+              results ? "bg-red-500" : "bg-slate-300"
+            }`}></div>
+            <span className="font-medium">Status:</span>
+            <span className="text-muted-foreground">{getStatusMessage()}</span>
           </div>
-        )}
-        
-        {result && (
-          <div className="mb-4 space-y-4">
-            <div className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                result.success 
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" 
-                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-              }`}>
-                {result.success ? (
-                  <CheckCircle className="h-5 w-5" />
-                ) : (
-                  <XCircle className="h-5 w-5" />
-                )}
+          
+          {/* API Details */}
+          {results?.success && results?.details && (
+            <div className="mt-4 text-sm space-y-2 border rounded-md p-3 bg-slate-50 dark:bg-slate-900">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Provider:</span>
+                <span className="font-medium">{results.details.provider}</span>
               </div>
-              
-              <div className="flex-1">
-                <h3 className="font-medium">{result.success ? "Connection Successful" : "Connection Failed"}</h3>
-                <p className="text-muted-foreground text-sm">{result.message}</p>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Model:</span>
+                <span className="font-medium">{results.details.model}</span>
               </div>
-            </div>
-            
-            {result.details?.model && (
-              <div className="flex items-center gap-2 p-3 border rounded-lg bg-indigo-50 dark:bg-indigo-950/20">
-                <Brain className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-                <div>
-                  <span className="font-medium text-sm">Model:</span>{" "}
-                  <span className="text-sm">{result.details.model}</span>
-                  {result.details.modelAvailable === false && (
-                    <span className="text-amber-600 text-xs ml-2">(Not available)</span>
-                  )}
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Model available:</span>
+                <span className={`font-medium ${results.details.modelAvailable ? "text-green-600" : "text-red-600"}`}>
+                  {results.details.modelAvailable ? "Yes" : "No"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Completion test:</span>
+                <span className={`font-medium ${results.details.completionSuccess ? "text-green-600" : "text-red-600"}`}>
+                  {results.details.completionSuccess ? "Passed" : "Failed"}
+                </span>
+              </div>
+              {results.details.responseTime && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Response time:</span>
+                  <span className="font-medium">{results.details.responseTime}</span>
                 </div>
-              </div>
-            )}
-            
-            {!result.success && (
-              <Alert className="mt-2 bg-amber-50 text-amber-800 border-amber-200">
-                <InfoIcon className="h-4 w-4" />
-                <AlertTitle>Troubleshooting Tips</AlertTitle>
-                <AlertDescription className="text-sm mt-2">
-                  <ul className="list-disc pl-5 space-y-1">
-                    <li>Check that your X.ai API key is correctly set in Supabase secrets</li>
-                    <li>Verify that your API key has the necessary permissions</li>
-                    <li>Ensure your X.ai account has access to the requested model (grok-2-latest)</li>
-                    <li>The application will fall back to mock data if the API is unavailable</li>
-                  </ul>
-                </AlertDescription>
-              </Alert>
-            )}
-            
-            {result.details && (
-              <Accordion type="single" collapsible className="mt-2 border rounded-md">
-                <AccordionItem value="details" className="border-0">
-                  <AccordionTrigger className="text-sm font-medium px-4 py-3">
-                    Technical Details
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="bg-gray-50 dark:bg-gray-900 p-3 rounded text-sm overflow-auto max-h-48 mx-4 mb-3">
-                      <pre className="whitespace-pre-wrap">{JSON.stringify(result.details, null, 2)}</pre>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
-            )}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={handleTestConnection} 
-          disabled={isLoading}
-          className="w-full"
-          variant={result?.success ? "outline" : "default"}
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              Testing Connection...
-            </>
-          ) : (
-            result?.success ? "Test Again" : "Test X.ai API Connection"
+              )}
+            </div>
           )}
-        </Button>
-      </CardFooter>
+          
+          {/* Error display */}
+          {error && (
+            <Alert variant="destructive" className="mt-3">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Connection Error</AlertTitle>
+              <AlertDescription className="mt-2">
+                {error}
+                <div className="mt-2 text-sm opacity-90">
+                  <div>Make sure:</div>
+                  <ul className="list-disc pl-5 mt-1">
+                    <li>A valid X.ai API key is set in Supabase secrets</li>
+                    <li>The API key has sufficient permissions and quota</li>
+                    <li>The edge function is deployed correctly</li>
+                  </ul>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {/* Success display */}
+          {results?.success && (
+            <Alert className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 border-green-200 dark:border-green-900 mt-3">
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Connection Successful</AlertTitle>
+              <AlertDescription>
+                The X.ai API is correctly configured and working. You can now use AI predictions.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+      </CardContent>
     </Card>
   );
 };

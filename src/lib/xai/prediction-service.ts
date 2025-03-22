@@ -80,13 +80,42 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
                             data.prediction.toLowerCase().includes('bull') ? 
                             'uptrend' : 'downtrend';
         }
+
+        // Ensure we have confidence score
+        let confidence = data.confidence;
+        if (typeof confidence === 'string') {
+          confidence = parseInt(confidence, 10);
+        }
+        
+        if (isNaN(confidence) || confidence === undefined) {
+          console.warn('Missing confidence score, using default 80');
+          confidence = 80;
+        }
+        
+        // Ensure we have supporting and counter points
+        const supportingPoints = data.supportingPoints || [];
+        const counterPoints = data.counterPoints || [];
+        
+        if (!Array.isArray(supportingPoints) || supportingPoints.length === 0) {
+          console.warn('Missing supporting points, using default');
+          supportingPoints.push("Technical indicators suggest this direction");
+          supportingPoints.push("Recent price action supports this view");
+          supportingPoints.push("Market sentiment aligns with this prediction");
+        }
+        
+        if (!Array.isArray(counterPoints) || counterPoints.length === 0) {
+          console.warn('Missing counter points, using default');
+          counterPoints.push("Market volatility is a risk factor");
+          counterPoints.push("External economic events could impact this prediction");
+          counterPoints.push("Sector-specific challenges may arise");
+        }
         
         return {
           prediction: data.prediction,
-          confidence: data.confidence || 80,
+          confidence: confidence,
           rationale: data.rationale || data.reasoning || "Based on market analysis, the AI has made this prediction.",
-          supportingPoints: data.supportingPoints || [],
-          counterPoints: data.counterPoints || [],
+          supportingPoints: supportingPoints,
+          counterPoints: counterPoints,
           timestamp: new Date().toISOString()
         };
       } catch (retryError) {
