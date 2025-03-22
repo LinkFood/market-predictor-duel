@@ -7,10 +7,13 @@ interface CounterFactorsProps {
   prediction: Prediction;
 }
 
-// Define the component with proper typing for static Icon property
-const CounterFactors: React.FC<CounterFactorsProps> & {
+// Define the proper type for the component with static Icon property
+type CounterFactorsComponent = React.FC<CounterFactorsProps> & {
   Icon: () => JSX.Element;
-} = ({ prediction }) => {
+};
+
+// Define the component with the correct typing for static Icon property
+const CounterFactors: CounterFactorsComponent = ({ prediction }) => {
   // Ensure counter points exist with fallbacks
   const counterPoints = prediction?.aiAnalysis?.counter || [
     "Market volatility could impact performance",

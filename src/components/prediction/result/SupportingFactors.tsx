@@ -7,10 +7,13 @@ interface SupportingFactorsProps {
   prediction: Prediction;
 }
 
-// Define the component with proper typing for static Icon property
-const SupportingFactors: React.FC<SupportingFactorsProps> & {
+// Define the proper type for the component with static Icon property
+type SupportingFactorsComponent = React.FC<SupportingFactorsProps> & {
   Icon: () => JSX.Element;
-} = ({ prediction }) => {
+};
+
+// Define the component with the correct typing for static Icon property
+const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
   // Ensure supporting points exist with fallbacks
   const supportingPoints = prediction?.aiAnalysis?.supporting || [
     "Technical indicators suggest positive movement",
