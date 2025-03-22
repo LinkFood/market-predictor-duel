@@ -72,8 +72,50 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
       aiAnalysis
     };
     
-    // For now, we'll mock the database insertion
-    console.log('Created new prediction:', newPrediction);
+    // Insert the prediction into Supabase
+    console.log('Saving prediction to database:', newPrediction);
+    
+    if (!USE_DEV_MODE) {
+      // In production mode, save to Supabase database
+      const { data, error } = await supabase
+        .from('predictions')
+        .insert({
+          id: newPrediction.id,
+          user_id: newPrediction.userId,
+          ticker: newPrediction.ticker,
+          stock_name: newPrediction.targetName,
+          prediction_type: newPrediction.predictionType,
+          user_prediction: newPrediction.userPrediction,
+          ai_prediction: newPrediction.aiPrediction,
+          confidence: newPrediction.aiConfidence * 10, // Convert back to 0-100 scale for DB
+          timeframe: newPrediction.timeframe,
+          start_price: newPrediction.startingValue,
+          status: 'pending',
+          created_at: newPrediction.createdAt,
+          resolves_at: newPrediction.resolvesAt,
+          ai_analysis: newPrediction.aiAnalysis
+        });
+      
+      if (error) {
+        console.error("Error inserting prediction into Supabase:", error);
+        throw error;
+      }
+      
+      console.log('Prediction saved to Supabase:', data);
+    } else {
+      // In dev mode, just log the prediction
+      console.log('🧪 Development mode: Skipping database insertion for prediction', newPrediction.id);
+      // Here we would typically save to a local storage or mock database
+      // Store in localStorage to persist between page refreshes
+      try {
+        const existingPredictions = JSON.parse(localStorage.getItem('dev_predictions') || '[]');
+        existingPredictions.push(newPrediction);
+        localStorage.setItem('dev_predictions', JSON.stringify(existingPredictions));
+        console.log('🧪 Development mode: Saved prediction to localStorage');
+      } catch (storageError) {
+        console.error('Failed to save prediction to localStorage:', storageError);
+      }
+    }
     
     return newPrediction;
   } catch (error) {
