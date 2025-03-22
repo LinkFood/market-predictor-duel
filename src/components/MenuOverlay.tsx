@@ -3,6 +3,7 @@ import React from "react";
 import { Home, TrendingUp, LineChart, Trophy, User, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLocation, useNavigate } from "react-router-dom";
+import PlanBadge from "./subscription/PlanBadge";
 
 interface MenuOverlayProps {
   isOpen: boolean;
@@ -43,6 +44,10 @@ const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, onClose }) => {
           >
             <X className="h-5 w-5" />
           </button>
+        </div>
+        
+        <div className="mb-5">
+          <PlanBadge />
         </div>
         
         <div className="space-y-4">

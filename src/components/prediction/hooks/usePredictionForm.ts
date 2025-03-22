@@ -4,12 +4,24 @@ import { useToast } from "@/hooks/use-toast";
 import { createPrediction } from "@/lib/prediction";
 import { getStockData } from "@/lib/market";
 import { Prediction } from "@/lib/prediction/types";
+import useUsageLimits from "@/lib/subscription/use-usage-limits";
 
 // Types
 export type PredictionType = 'trend' | 'price';
 
 export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => void) => {
   const { toast } = useToast();
+  const { 
+    canMakePrediction, 
+    canMakeApiCall, 
+    showPredictionLimitModal, 
+    showApiLimitModal, 
+    trackPrediction, 
+    trackApiCall, 
+    closePredictionLimitModal, 
+    closeApiLimitModal 
+  } = useUsageLimits();
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStock, setSelectedStock] = useState<any | null>(null);
@@ -22,10 +34,24 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
 
   // Handle stock selection
   const handleSelectStock = async (stock: any) => {
+    // Check if user has exceeded API call limit
+    if (!canMakeApiCall) {
+      toast({
+        variant: "destructive",
+        title: "API Limit Reached",
+        description: "You've reached your daily API call limit."
+      });
+      return;
+    }
+    
     try {
       setIsLoading(true);
       setError(null);
       console.log('Selected stock:', stock);
+      
+      // Track the API call
+      trackApiCall();
+      
       const stockDetails = await getStockData(stock.symbol);
       console.log('Retrieved stock details:', stockDetails);
       
@@ -80,6 +106,16 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
 
   // Handle submit
   const handleSubmit = async () => {
+    // Check if user has exceeded prediction limit
+    if (!canMakePrediction) {
+      toast({
+        variant: "destructive",
+        title: "Prediction Limit Reached",
+        description: "You've reached your monthly prediction limit."
+      });
+      return;
+    }
+    
     if (!selectedStock) {
       toast({
         variant: "destructive",
@@ -127,6 +163,9 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
         if (!newPrediction || !newPrediction.id) {
           throw new Error('Invalid prediction response');
         }
+        
+        // Track the prediction
+        trackPrediction();
         
         toast({
           title: "Prediction Submitted",
@@ -181,6 +220,13 @@ export const usePredictionForm = (onPredictionMade: (prediction: Prediction) => 
     handleSelectStock,
     handleOpenConfirmDialog,
     handleSubmit,
-    isFormValid
+    isFormValid,
+    // Usage limits
+    canMakePrediction,
+    canMakeApiCall,
+    showPredictionLimitModal,
+    showApiLimitModal,
+    closePredictionLimitModal,
+    closeApiLimitModal
   };
 };

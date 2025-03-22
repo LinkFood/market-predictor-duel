@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sidebar as SidebarContainer, SidebarContent } from "@/components/ui/sidebar";
+import PlanBadge from "./subscription/PlanBadge";
 
 const menuItems = [
   { 
@@ -82,6 +83,10 @@ const Sidebar: React.FC = () => {
               </Link>
             ))}
           </nav>
+          
+          <div className="mt-auto pt-4 px-3">
+            <PlanBadge className="w-full" />
+          </div>
         </SidebarContent>
       </div>
     </SidebarContainer>
