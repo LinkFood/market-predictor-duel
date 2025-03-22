@@ -1,10 +1,9 @@
 
 import React from "react";
-import { Target, BarChart, Clock, Calendar, Award, ChevronRight } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Target, BarChart, Clock, Calendar, Award } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 import { useNavigate } from "react-router-dom";
 
 interface PredictionDetailsCardProps {
@@ -67,7 +66,7 @@ export const PredictionDetailsCard: React.FC<PredictionDetailsCardProps> = ({
                 <div className="font-medium">{formatDate(prediction.resolvesAt)}</div>
               </div>
             </div>
-            {prediction.resolved && prediction.resolvedAt && (
+            {(prediction.status === "complete" || prediction.status === "completed") && prediction.resolvedAt && (
               <div className="flex items-start gap-2">
                 <Calendar className="h-4 w-4 text-indigo-500 mt-0.5" />
                 <div>
@@ -78,13 +77,13 @@ export const PredictionDetailsCard: React.FC<PredictionDetailsCardProps> = ({
             )}
           </div>
         </div>
-        {prediction.resolved && prediction.winner === "user" && (
+        {(prediction.status === "complete" || prediction.status === "completed") && prediction.outcome === "user_win" && prediction.points && (
           <div className="py-3">
             <div className="flex items-start gap-2">
               <Award className="h-4 w-4 text-amber-500 mt-0.5" />
               <div>
                 <div className="text-xs text-muted-foreground">Points Earned</div>
-                <div className="font-medium text-indigo-600 dark:text-indigo-400">+50 points</div>
+                <div className="font-medium text-indigo-600 dark:text-indigo-400">+{prediction.points} points</div>
               </div>
             </div>
           </div>

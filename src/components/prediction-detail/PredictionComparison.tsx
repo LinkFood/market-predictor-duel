@@ -3,7 +3,7 @@ import React from "react";
 import { Flame, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 
 interface PredictionComparisonProps {
   prediction: Prediction;
