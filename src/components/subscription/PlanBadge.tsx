@@ -1,3 +1,4 @@
+
 /**
  * Plan Badge Component
  * Shows the user's current subscription plan as a badge
@@ -33,8 +34,6 @@ const PlanBadge: React.FC<PlanBadgeProps> = ({ className, showMenu = true }) => 
         return 'bg-amber-50 text-amber-700 border-amber-200';
       case SubscriptionPlan.PRO:
         return 'bg-indigo-50 text-indigo-700 border-indigo-200';
-      case SubscriptionPlan.ENTERPRISE:
-        return 'bg-purple-50 text-purple-700 border-purple-200';
       default:
         return 'bg-gray-100 text-gray-600 border-gray-200';
     }
@@ -57,8 +56,6 @@ const PlanBadge: React.FC<PlanBadgeProps> = ({ className, showMenu = true }) => 
         return 'Basic Plan';
       case SubscriptionPlan.PRO:
         return 'Pro Plan';
-      case SubscriptionPlan.ENTERPRISE:
-        return 'Enterprise';
       default:
         return 'Free Plan';
     }

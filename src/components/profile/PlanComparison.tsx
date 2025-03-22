@@ -3,17 +3,8 @@ import React from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
   getPlanComparisonData, 
-  SubscriptionPlan,
-  isFeatureBoolean
+  SubscriptionPlan
 } from '@/lib/subscription/plan-features';
 
 interface PlanComparisonProps {
