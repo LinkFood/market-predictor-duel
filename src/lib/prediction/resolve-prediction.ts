@@ -8,6 +8,7 @@ import { getStockData } from '../market';
 import { Prediction } from './types';
 import { getPredictionById } from './user-predictions';
 import { dbToPrediction } from './adapters';
+import { toast } from "sonner";
 
 /**
  * Resolve a prediction (determine the outcome)
@@ -19,6 +20,30 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
     if (!prediction) {
       throw new Error("Prediction not found");
     }
+    
+    // Check if the prediction is already resolved
+    if (prediction.status === "complete" || prediction.status === "completed") {
+      console.log(`Prediction ${id} is already resolved`);
+      return prediction;
+    }
+    
+    // Check if the prediction has reached its resolution date
+    const now = new Date();
+    const resolveDate = new Date(prediction.resolvesAt);
+    
+    if (now < resolveDate) {
+      console.log(`Prediction ${id} is not yet ready to be resolved. Resolves at: ${resolveDate.toISOString()}`);
+      toast.info("Prediction not yet ready", {
+        description: `This prediction will be resolved on ${resolveDate.toLocaleDateString()} at ${resolveDate.toLocaleTimeString()}`
+      });
+      return prediction;
+    }
+    
+    // Notify user that resolution is in progress
+    toast.info("Resolving prediction...", {
+      id: `resolve-${id}`,
+      description: "Fetching latest market data"
+    });
     
     // Get current stock data
     const { data: stockData } = await getStockData(prediction.ticker);
@@ -94,11 +119,27 @@ export async function resolvePrediction(id: string): Promise<Prediction> {
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      toast.error("Error resolving prediction", { 
+        id: `resolve-${id}`,
+        description: error.message
+      });
+      throw error;
+    }
+    
+    // Show success notification
+    const resultMessage = outcome === 'user_win' ? 'You won!' : outcome === 'ai_win' ? 'AI won' : 'It\'s a tie';
+    toast.success(`Prediction resolved: ${resultMessage}`, {
+      id: `resolve-${id}`,
+      description: `You earned ${points} points`
+    });
     
     return dbToPrediction(data);
   } catch (error) {
     console.error("Error resolving prediction:", error);
+    toast.error("Failed to resolve prediction", {
+      description: error.message
+    });
     throw error;
   }
 }
