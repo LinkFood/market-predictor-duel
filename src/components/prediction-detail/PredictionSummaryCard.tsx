@@ -10,7 +10,7 @@ import { PredictionCards } from "./PredictionCards";
 import { PredictionComparison } from "./PredictionComparison";
 import { PredictionResults } from "./PredictionResults";
 import { AIAnalysisCard } from "./AIAnalysisCard";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 
 interface PredictionSummaryCardProps {
   prediction: Prediction;
@@ -50,7 +50,7 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
           
           <PredictionComparison prediction={prediction} />
           
-          {prediction.resolved && prediction.actualResult && (
+          {prediction.status === "complete" && prediction.endValue && (
             <PredictionResults 
               prediction={prediction} 
               formatDate={formatDate} 
