@@ -21,6 +21,8 @@ const SupportingFactors: SupportingFactorsComponent = ({ prediction }) => {
     "Price action shows strength in this timeframe"
   ];
 
+  console.log("Rendering supporting factors with points:", supportingPoints);
+
   return (
     <div className="divide-y">
       {supportingPoints.map((point, idx) => (

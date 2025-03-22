@@ -81,7 +81,7 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
                             'uptrend' : 'downtrend';
         }
 
-        // Ensure we have confidence score
+        // Ensure we have confidence score (number between 0-100)
         let confidence = data.confidence;
         if (typeof confidence === 'string') {
           confidence = parseInt(confidence, 10);
@@ -92,30 +92,35 @@ export async function getStockPrediction(request: StockPredictionRequest): Promi
           confidence = 80;
         }
         
-        // Ensure we have supporting and counter points
-        const supportingPoints = data.supportingPoints || [];
-        const counterPoints = data.counterPoints || [];
-        
-        if (!Array.isArray(supportingPoints) || supportingPoints.length === 0) {
+        // Normalize field names for consistency
+        // Convert supportingPoints to supporting if needed
+        let supporting = data.supportingPoints || data.supporting || [];
+        if (!Array.isArray(supporting) || supporting.length === 0) {
           console.warn('Missing supporting points, using default');
-          supportingPoints.push("Technical indicators suggest this direction");
-          supportingPoints.push("Recent price action supports this view");
-          supportingPoints.push("Market sentiment aligns with this prediction");
+          supporting = [
+            "Technical indicators suggest this direction",
+            "Recent price action supports this view",
+            "Market sentiment aligns with this prediction"
+          ];
         }
         
-        if (!Array.isArray(counterPoints) || counterPoints.length === 0) {
+        // Convert counterPoints to counter if needed
+        let counter = data.counterPoints || data.counter || [];
+        if (!Array.isArray(counter) || counter.length === 0) {
           console.warn('Missing counter points, using default');
-          counterPoints.push("Market volatility is a risk factor");
-          counterPoints.push("External economic events could impact this prediction");
-          counterPoints.push("Sector-specific challenges may arise");
+          counter = [
+            "Market volatility is a risk factor",
+            "External economic events could impact this prediction",
+            "Sector-specific challenges may arise"
+          ];
         }
         
         return {
           prediction: data.prediction,
           confidence: confidence,
           rationale: data.rationale || data.reasoning || "Based on market analysis, the AI has made this prediction.",
-          supportingPoints: supportingPoints,
-          counterPoints: counterPoints,
+          supportingPoints: supporting,
+          counterPoints: counter,
           timestamp: new Date().toISOString()
         };
       } catch (retryError) {

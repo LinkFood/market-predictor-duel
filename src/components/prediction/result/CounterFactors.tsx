@@ -21,6 +21,8 @@ const CounterFactors: CounterFactorsComponent = ({ prediction }) => {
     "Historical resistance levels may prove challenging"
   ];
 
+  console.log("Rendering counter factors with points:", counterPoints);
+
   return (
     <div className="divide-y">
       {counterPoints.map((point, idx) => (

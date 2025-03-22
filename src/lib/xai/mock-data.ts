@@ -26,35 +26,41 @@ export function getMockPrediction(request: StockPredictionRequest): StockPredict
   const trendKeyword = isPriceUp ? 'uptrend' : 'downtrend';
   const direction = isPriceUp ? 'upward' : 'downward';
   
+  const supportingPoints = [
+    isPriceUp ? 
+      `${ticker} has shown strong momentum in recent trading sessions` : 
+      `${ticker} has been encountering resistance at current price levels`,
+    isPriceUp ? 
+      `Positive earnings outlook and strong fundamental indicators` : 
+      `Recent sector rotation away from ${ticker}'s industry`,
+    isPriceUp ? 
+      `Favorable market conditions and increased institutional buying` : 
+      `Technical indicators show overbought conditions`
+  ];
+  
+  const counterPoints = [
+    isPriceUp ? 
+      `Potential market volatility could limit upside` : 
+      `The stock may find support at key technical levels`,
+    isPriceUp ? 
+      `Profit-taking could occur after recent gains` : 
+      `Oversold conditions may trigger a technical bounce`,
+    isPriceUp ? 
+      `Sector-wide challenges could impact performance` : 
+      `Recent insider buying suggests company confidence`
+  ];
+  
   // Create a structured mock prediction
   const prediction: StockPredictionResponse = {
     prediction: request.predictionType === 'trend' ? trendKeyword : `$${mockPrice?.toFixed(2) || '0.00'}`,
     confidence: confidenceScore,
     rationale: `Based on analysis of ${ticker}'s recent performance and market conditions, an ${direction} movement is expected over the ${timeframeText}. Technical indicators, trading volumes, and overall market sentiment suggest this prediction has a confidence level of ${confidenceScore}%.`,
     timestamp: new Date().toISOString(),
-    supportingPoints: [
-      isPriceUp ? 
-        `${ticker} has shown strong momentum in recent trading sessions` : 
-        `${ticker} has been encountering resistance at current price levels`,
-      isPriceUp ? 
-        `Positive earnings outlook and strong fundamental indicators` : 
-        `Recent sector rotation away from ${ticker}'s industry`,
-      isPriceUp ? 
-        `Favorable market conditions and increased institutional buying` : 
-        `Technical indicators show overbought conditions`
-    ],
-    counterPoints: [
-      isPriceUp ? 
-        `Potential market volatility could limit upside` : 
-        `The stock may find support at key technical levels`,
-      isPriceUp ? 
-        `Profit-taking could occur after recent gains` : 
-        `Oversold conditions may trigger a technical bounce`,
-      isPriceUp ? 
-        `Sector-wide challenges could impact performance` : 
-        `Recent insider buying suggests company confidence`
-    ]
+    supportingPoints: supportingPoints,
+    counterPoints: counterPoints
   };
+  
+  console.log('Generated mock prediction:', prediction);
   
   return prediction;
 }

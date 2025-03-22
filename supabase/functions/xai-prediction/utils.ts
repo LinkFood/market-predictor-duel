@@ -247,6 +247,19 @@ export function validatePredictionResult(content: string, predictionType: string
     predictionData.rationale = predictionData.rationale || predictionData.reasoning || 
                               "Based on market analysis, the AI has made this prediction.";
     
+    // Standardize field names
+    // For supporting points: convert to supportingPoints if using supporting
+    if (predictionData.supporting && !predictionData.supportingPoints) {
+      console.log("Converting 'supporting' field to 'supportingPoints'");
+      predictionData.supportingPoints = predictionData.supporting;
+    }
+    
+    // For counter points: convert to counterPoints if using counter
+    if (predictionData.counter && !predictionData.counterPoints) {
+      console.log("Converting 'counter' field to 'counterPoints'");
+      predictionData.counterPoints = predictionData.counter;
+    }
+    
     // Handle supporting points
     if (!predictionData.supportingPoints || !Array.isArray(predictionData.supportingPoints) || predictionData.supportingPoints.length === 0) {
       console.log("Creating default supporting points");
@@ -292,6 +305,10 @@ export function validatePredictionResult(content: string, predictionType: string
         );
       }
     }
+    
+    // Copy fields for backward compatibility
+    predictionData.supporting = predictionData.supportingPoints;
+    predictionData.counter = predictionData.counterPoints;
     
     return predictionData;
   } catch (parseError) {

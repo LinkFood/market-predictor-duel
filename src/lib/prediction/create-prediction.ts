@@ -58,6 +58,8 @@ export async function createPrediction(request: PredictionRequest): Promise<Pred
       ]
     };
     
+    console.log('Processed AI analysis:', aiAnalysis);
+    
     // Create prediction record in database
     const newPredictionData = {
       user_id: userData.user.id,
