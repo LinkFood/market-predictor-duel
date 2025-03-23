@@ -35,7 +35,8 @@ const LoginForm: React.FC = () => {
   const { 
     register, 
     handleSubmit, 
-    formState: { errors } 
+    formState: { errors },
+    watch
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,6 +46,8 @@ const LoginForm: React.FC = () => {
     }
   });
 
+  const rememberMe = watch('remember');
+
   const onSubmit = async (data: LoginFormData) => {
     try {
       setIsLoading(true);
@@ -52,10 +55,20 @@ const LoginForm: React.FC = () => {
       setSuccess(null);
       
       console.log("Attempting login with:", data.email);
+      console.log("Remember Me:", data.remember);
+      
+      const options = {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: { remember: data.remember }
+      };
       
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
-        password: data.password
+        password: data.password,
+        options: {
+          ...options,
+          expiresIn: data.remember ? 60 * 60 * 24 * 30 : 60 * 60 * 8
+        }
       });
       
       if (authError) {

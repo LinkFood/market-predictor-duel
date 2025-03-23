@@ -1,61 +1,51 @@
 
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import AuthCard from "@/components/auth/AuthCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { resetPassword } from "@/lib/auth-service";
-import AuthCard from "@/components/auth/AuthCard";
-import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ArrowLeft } from "lucide-react";
 
-// Define validation schema
-const forgotPasswordSchema = z.object({
+const schema = z.object({
   email: z.string().email('Please enter a valid email address'),
 });
 
-type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+type FormData = z.infer<typeof schema>;
 
 const ForgotPassword: React.FC = () => {
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
   
-  const { 
-    register, 
-    handleSubmit, 
-    formState: { errors } 
-  } = useForm<ForgotPasswordFormData>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: {
-      email: '',
-    }
+  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+    resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: ForgotPasswordFormData) => {
+  const onSubmit = async (data: FormData) => {
     try {
       setIsLoading(true);
       setError(null);
-      setSuccess(false);
+      setSuccess(null);
       
-      const { success, error } = await resetPassword(data.email);
+      const { error: authError } = await supabase.auth.resetPasswordForEmail(data.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
-      if (!success) {
-        setError(error || 'Failed to send password reset email');
+      if (authError) {
+        console.error("Password reset error:", authError);
+        setError(authError.message);
         return;
       }
       
-      setSuccess(true);
-      toast({
-        title: "Reset link sent",
-        description: "Check your email for a link to reset your password",
-      });
+      setSuccess("Password reset email sent. Please check your inbox.");
     } catch (err) {
-      console.error("Unexpected error:", err);
+      console.error("Unexpected error during password reset:", err);
       setError('An unexpected error occurred');
     } finally {
       setIsLoading(false);
@@ -65,7 +55,7 @@ const ForgotPassword: React.FC = () => {
   return (
     <AuthCard
       title="Reset your password"
-      description="Enter your email and we'll send you a password reset link"
+      description="Enter your email address and we'll send you a password reset link"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {error && (
@@ -76,9 +66,7 @@ const ForgotPassword: React.FC = () => {
         
         {success && (
           <Alert className="bg-green-50 text-green-800 border-green-200">
-            <AlertDescription>
-              We've sent you an email with a link to reset your password.
-            </AlertDescription>
+            <AlertDescription>{success}</AlertDescription>
           </Alert>
         )}
         
@@ -90,34 +78,32 @@ const ForgotPassword: React.FC = () => {
             placeholder="name@example.com" 
             {...register('email')}
             className={errors.email ? 'border-red-500' : ''}
-            disabled={success}
           />
           {errors.email && (
             <p className="text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
         
-        <div className="flex flex-col space-y-4">
-          <Button 
-            className="w-full bg-indigo-600 hover:bg-indigo-700" 
-            type="submit"
-            disabled={isLoading || success}
-          >
-            {isLoading ? (
-              <>
-                <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></span>
-                Sending...
-              </>
-            ) : (
-              'Send Reset Link'
-            )}
-          </Button>
-          
-          <div className="text-center text-sm">
-            <Link to="/login" className="text-indigo-600 hover:underline">
-              Back to login
-            </Link>
-          </div>
+        <Button 
+          className="w-full bg-indigo-600 hover:bg-indigo-700" 
+          type="submit"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></span>
+              Sending Reset Link...
+            </>
+          ) : (
+            'Send Reset Link'
+          )}
+        </Button>
+        
+        <div className="text-center text-sm">
+          <Link to="/login" className="text-indigo-600 hover:underline flex items-center justify-center">
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Login
+          </Link>
         </div>
       </form>
     </AuthCard>
