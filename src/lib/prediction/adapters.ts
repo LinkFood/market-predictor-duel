@@ -1,4 +1,3 @@
-
 /**
  * Data adapters for converting database data to application types
  */
@@ -25,7 +24,7 @@ export function dbToPrediction(data: any): Prediction {
     resolvesAt: data.resolves_at,
     resolvedAt: data.resolved_at,
     endValue: data.final_value,
-    percent_change: data.percent_change, // Changed from percentChange to percent_change which exists in the Prediction type
+    percentChange: data.percent_change, // Using percentChange which exists in Prediction type
     actualResult: data.actual_result
   };
 }
