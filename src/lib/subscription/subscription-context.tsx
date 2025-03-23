@@ -256,6 +256,9 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
   // Fetch subscription data
   useEffect(() => {
     const fetchSubscription = async () => {
+      // Always log subscription status at startup for debugging
+      console.log("Subscription provider initialized", { userId: user?.id });
+      
       if (!user) {
         setCurrentPlan(SubscriptionPlan.FREE);
         setIsLoading(false);
@@ -266,15 +269,48 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
         setIsLoading(true);
         setError(null);
         
+        // Development fallback - FOR TESTING ONLY
+        // Force a specific subscription plan for UI testing
+        const FORCE_PLAN = true;
+        const TEST_PLAN = SubscriptionPlan.BASIC;
+        
+        if (FORCE_PLAN) {
+          console.log("🛠️ DEVELOPMENT MODE: Using test plan:", TEST_PLAN);
+          setCurrentPlan(TEST_PLAN);
+          
+          // Set test usage data
+          const planLimits = PLAN_LIMITS[TEST_PLAN];
+          setUsageData({
+            predictions: {
+              used: 3,
+              limit: planLimits.predictions.daily
+            },
+            apiCalls: {
+              used: 12,
+              limit: planLimits.apiCalls.daily
+            },
+            predictionsThisMonth: 3,
+            predictionsLimit: planLimits.predictions.daily,
+            apiCallsToday: 12,
+            apiCallsLimit: planLimits.apiCalls.daily,
+            lastUpdated: new Date()
+          });
+          
+          setIsLoading(false);
+          // Still make the Supabase query for debugging purposes
+        }
+        
         // Fetch subscription from Supabase
         const { data, error } = await supabase
-          .from('subscriptions')
+          .from('user_subscriptions') // Changed from 'subscriptions' to match migration
           .select('*')
           .eq('user_id', user.id)
           .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
+          
+        console.log('Subscription data:', data, 'Error:', error);
         
         if (error) {
           console.error('Error fetching subscription:', error);
