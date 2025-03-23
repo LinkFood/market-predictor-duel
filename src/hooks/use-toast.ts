@@ -13,7 +13,7 @@ export type ToastType = ToastProps & {
 };
 
 const TOAST_LIMIT = 5;
-const TOAST_REMOVE_DELAY = 1000000;
+const TOAST_REMOVE_DELAY = 5000; // Reduced from 1000000 to 5000ms (5 seconds)
 
 const actionTypes = {
   ADD_TOAST: 'ADD_TOAST',
@@ -139,6 +139,11 @@ export function toast(props: Omit<ToastType, "id" | "open" | "onOpenChange">) {
     type: actionTypes.ADD_TOAST,
     toast: newToast,
   });
+
+  // Auto-dismiss toasts after TOAST_REMOVE_DELAY
+  setTimeout(() => {
+    dismiss(id);
+  }, TOAST_REMOVE_DELAY);
 
   return id;
 }

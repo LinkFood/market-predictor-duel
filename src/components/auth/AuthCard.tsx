@@ -17,8 +17,8 @@ const AuthCard: React.FC<AuthCardProps> = ({
   footer 
 }) => {
   return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12">
-      <Card className="w-full max-w-md">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 px-4 py-12 relative z-0">
+      <Card className="w-full max-w-md relative z-10">
         <CardHeader className="space-y-2">
           <div className="mx-auto flex items-center gap-2 text-indigo-600">
             <TrendingUp className="h-6 w-6" />
@@ -30,7 +30,7 @@ const AuthCard: React.FC<AuthCardProps> = ({
           </CardDescription>
         </CardHeader>
         
-        <CardContent>
+        <CardContent className="relative z-10">
           {children}
         </CardContent>
         

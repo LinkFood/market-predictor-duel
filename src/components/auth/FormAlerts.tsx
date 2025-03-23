@@ -12,7 +12,7 @@ const FormAlerts: React.FC<FormAlertsProps> = ({ error, success, supabaseError }
   if (!error && !success && !supabaseError) return null;
   
   return (
-    <>
+    <div className="relative z-0"> {/* Set a lower z-index */}
       {supabaseError && (
         <Alert variant="destructive">
           <AlertDescription>
@@ -36,7 +36,7 @@ const FormAlerts: React.FC<FormAlertsProps> = ({ error, success, supabaseError }
           <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
-    </>
+    </div>
   );
 };
 

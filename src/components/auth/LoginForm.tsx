@@ -87,7 +87,7 @@ const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="relative z-10">
       <div className="space-y-4">
         <FormAlerts 
           error={error} 
@@ -103,6 +103,7 @@ const LoginForm: React.FC = () => {
             placeholder="name@example.com" 
             {...register('email')}
             className={errors.email ? 'border-red-500' : ''}
+            autoComplete="email"
           />
           {errors.email && (
             <p className="text-sm text-red-500">{errors.email.message}</p>
@@ -124,6 +125,7 @@ const LoginForm: React.FC = () => {
             type="password"
             {...register('password')}
             className={errors.password ? 'border-red-500' : ''}
+            autoComplete="current-password"
           />
           {errors.password && (
             <p className="text-sm text-red-500">{errors.password.message}</p>
