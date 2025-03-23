@@ -29,7 +29,7 @@ export function usePredictionData(id: string | undefined) {
               const predictionWithRequiredFields = {
                 ...fetchedPrediction,
                 ticker: fetchedPrediction.ticker || fetchedPrediction.targetName || "",
-                predictionType: fetchedPrediction.predictionType || fetchedPrediction.prediction_type || "trend"
+                predictionType: fetchedPrediction.predictionType || "trend"
               };
               
               // Convert to the application's Prediction type
@@ -53,7 +53,7 @@ export function usePredictionData(id: string | undefined) {
           const predictionWithRequiredFields = {
             ...found,
             ticker: found.ticker || found.targetName || "",
-            predictionType: found.predictionType || found.prediction_type || "trend"
+            predictionType: found.predictionType || "trend"
           };
           setPrediction(adaptPrediction(predictionWithRequiredFields));
         } else {

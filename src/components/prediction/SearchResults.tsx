@@ -4,15 +4,16 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import DataSourceIndicator from "./form/DataSourceIndicator";
+import { StockData } from "@/lib/market/types";
 
 interface SearchResultsProps {
-  searchResults: any[];
+  searchResults: StockData[];
   showSearchResults: boolean;
   searchQuery: string;
   error: string | null;
   usingMockData: boolean;
-  onSelectStock: (stock: any) => void;
-  onSelect: (stock: any, query: string) => void;
+  onSelectStock: (stock: StockData) => void;
+  onSelect: (stock: StockData, query: string) => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
@@ -48,7 +49,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 key={`${stock.symbol}-${index}`}
                 className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => {
-                  onSelectStock({...stock, usingMockData});
+                  // Create a new stock object with the usingMockData field
+                  const stockWithMockFlag = {
+                    ...stock,
+                    usingMockData
+                  };
+                  onSelectStock(stockWithMockFlag);
                   onSelect(stock, stock.name);
                 }}
               >

@@ -11,7 +11,7 @@ import { MARKET_CONFIG, API_ERRORS } from "../../config";
 /**
  * Call the Polygon API through our Supabase edge function with retries
  */
-export async function callPolygonApi(endpoint: string, params = {}, maxRetries = MARKET_CONFIG.retryAttempts) {
+export async function callPolygonApi(endpoint: string, params = {}, maxRetries = 3) {
   let attempts = 0;
   let lastError = null;
 
@@ -81,8 +81,8 @@ export async function callPolygonApi(endpoint: string, params = {}, maxRetries =
         throw error;
       }
       
-      // Exponential backoff
-      const delayMs = MARKET_CONFIG.retryDelay * Math.pow(2, attempts - 1);
+      // Exponential backoff with a fixed delay
+      const delayMs = 1000 * Math.pow(2, attempts - 1);
       console.log(`Retrying in ${delayMs}ms... (attempt ${attempts + 1}/${maxRetries})`);
       await new Promise(resolve => setTimeout(resolve, delayMs));
     }
