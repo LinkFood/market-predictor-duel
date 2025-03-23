@@ -1,69 +1,95 @@
-# Welcome to your Lovable project
+# Stock Market Predictor Duel
 
-## Project info
+A competitive platform where users can challenge AI in stock market prediction duels. Create brackets, track performance, and prove humans still beat machines!
 
-**URL**: https://lovable.dev/projects/087d0edd-3755-42cb-a03d-b959d93e8e6b
+## Features
 
-## How can I edit this code?
+- AI vs Human bracket competitions
+- Real-time performance tracking
+- Multiple AI personalities with different trading styles
+- Responsive mobile-first design
+- Supabase backend integration
 
-There are several ways of editing your application.
+## Setup Instructions
 
-**Use Lovable**
+### 1. Prerequisites
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/087d0edd-3755-42cb-a03d-b959d93e8e6b) and start prompting.
+- Node.js 16+ and npm/bun installed
+- Supabase account with a project created
+- Supabase URL and API keys
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### 2. Installation
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Clone the repository
+git clone <REPO_URL>
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Navigate to the project directory
+cd market-predictor-duel
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Install dependencies
+npm install
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Create a .env file for environment variables
+cp .env.example .env
+```
+
+### 3. Database Setup
+
+This project requires a Supabase database with specific tables for brackets, subscriptions, and prediction patterns. You can check the database status by:
+
+1. Start the development server: `npm run dev`
+2. Navigate to: http://localhost:8080/app/test-db
+3. Click "Check Connection & Tables" to verify database status
+
+If tables are missing, you need to apply the migrations:
+
+1. Update the `apply-migrations.js` file with your Supabase Service Role Key
+2. Run: `node apply-migrations.js`
+
+Alternatively, you can manually execute the SQL files found in the `supabase/migrations` directory:
+
+- `20250322_add_prediction_patterns.sql`
+- `20250323_add_brackets_table.sql`
+- `20250323_add_subscription_tables.sql`
+- `20250323_add_prediction_pattern_functions.sql`
+
+### 4. Environment Configuration
+
+Update your `.env` file with the following:
+
+```
+VITE_SUPABASE_URL=your-supabase-url
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_API_URL=your-api-url
+```
+
+### 5. Development
+
+Start the development server:
+
+```sh
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+The application will be available at: http://localhost:8080
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
+## Technologies Used
 
 - Vite
 - TypeScript
 - React
-- shadcn-ui
+- Framer Motion for animations
+- Supabase for backend
+- shadcn-ui components
 - Tailwind CSS
+- Lucide icons
 
-## How can I deploy this project?
+## Project Structure
 
-Simply open [Lovable](https://lovable.dev/projects/087d0edd-3755-42cb-a03d-b959d93e8e6b) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+- `/src/components` - Reusable UI components
+- `/src/hooks` - Custom React hooks
+- `/src/lib` - Utility functions and services
+- `/src/pages` - Application pages
+- `/src/integrations` - External service integrations
+- `/supabase` - Supabase migrations and functions
