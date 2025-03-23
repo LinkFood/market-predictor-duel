@@ -9,9 +9,11 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
   // Check if property exists in either camelCase or snake_case format
   const userPredictionValue = prediction.userPrediction || prediction.user_prediction;
   const aiPredictionValue = prediction.aiPrediction || prediction.ai_prediction;
+  
+  // Safe access to properties that might not exist
   const actualResultValue = 
-    typeof prediction.actualResult !== 'undefined' ? prediction.actualResult : 
-    typeof prediction.actual_result !== 'undefined' ? prediction.actual_result : 
+    'actualResult' in prediction ? prediction.actualResult : 
+    'actual_result' in prediction ? prediction.actual_result : 
     "bullish";
   
   return {
@@ -50,7 +52,7 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
  */
 export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction => {
   // Create a base object with all camelCase properties
-  const baseObject = {
+  const baseObject: Partial<ApiPrediction> = {
     id: prediction.id,
     userId: prediction.userId,
     ticker: prediction.ticker,
@@ -74,7 +76,7 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     // Add properties that exist on ApiPrediction but not AppPrediction
     final_value: prediction.finalValue,
     endValue: prediction.endValue
-  } as ApiPrediction;
+  };
 
   // Add snake_case properties for API compatibility
   return {
