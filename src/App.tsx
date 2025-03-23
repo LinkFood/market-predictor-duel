@@ -1,3 +1,4 @@
+
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./lib/auth-context";
@@ -11,6 +12,7 @@ import { SubscriptionProvider } from "./lib/subscription/subscription-context";
 import DebugBanner from "./components/subscription/DebugBanner";
 import { useState, useEffect } from "react";
 import { useSupabaseCheck } from "./hooks/use-supabase-check";
+import { HelmetProvider } from "react-helmet-async";
 import "./App.css";
 
 function App() {
@@ -54,20 +56,22 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <BrowserRouter>
-        <AuthProvider>
-          <SubscriptionProvider>
-            <MarketDataProvider>
-              <AILearningInitializer />
-              <AppErrorBoundary>
-                <AppRoutes />
-                <DebugBanner />
-              </AppErrorBoundary>
-              <Toaster />
-            </MarketDataProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <SubscriptionProvider>
+              <MarketDataProvider>
+                <AILearningInitializer />
+                <AppErrorBoundary>
+                  <AppRoutes />
+                  <DebugBanner />
+                </AppErrorBoundary>
+                <Toaster />
+              </MarketDataProvider>
+            </SubscriptionProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </HelmetProvider>
     </ErrorBoundary>
   );
 }
