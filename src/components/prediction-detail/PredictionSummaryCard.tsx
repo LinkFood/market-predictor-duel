@@ -61,7 +61,8 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
           <PredictionStatusIndicator 
             prediction={{
               ...adaptedPrediction,
-              resolvedAt: adaptedPrediction.resolvedAt
+              resolvedAt: adaptedPrediction.resolvedAt,
+              ticker: adaptedPrediction.ticker || adaptedPrediction.targetName || ""
             }} 
             timeRemaining={timeRemaining} 
           />

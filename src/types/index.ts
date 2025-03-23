@@ -52,6 +52,9 @@ export interface Prediction {
   outcome?: "user_win" | "ai_win" | "tie";
   points?: number;
   
+  // Required ticker field
+  ticker?: string;
+  
   // Legacy fields
   predictionType?: "trend" | "price";
   prediction_type?: string;

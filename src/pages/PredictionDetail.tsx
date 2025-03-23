@@ -64,7 +64,7 @@ const PredictionDetail: React.FC = () => {
             ...found,
             ticker: found.ticker || found.targetName || ""
           };
-          setPrediction(predictionWithTicker);
+          setPrediction(adaptPrediction(predictionWithTicker));
         } else {
           setError("Prediction not found");
           toast.error("Prediction not found");
@@ -181,7 +181,10 @@ const PredictionDetail: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2 space-y-6">
           <PredictionSummaryCard 
-            prediction={prediction}
+            prediction={{
+              ...prediction,
+              ticker: prediction.ticker || prediction.targetName || ""
+            }}
             timeRemaining={timeRemaining}
             getStatusBadge={getStatusBadge}
             formatDate={formatDate}
@@ -190,7 +193,10 @@ const PredictionDetail: React.FC = () => {
 
         <div className="space-y-6">
           <PredictionDetailsCard 
-            prediction={prediction}
+            prediction={{
+              ...prediction,
+              ticker: prediction.ticker || prediction.targetName || ""
+            }}
             formatDate={formatDate}
             getTimeframeText={getTimeframeText}
           />
