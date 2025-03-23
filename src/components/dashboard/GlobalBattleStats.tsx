@@ -1,81 +1,68 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { Shield, Users, Zap, Award } from "lucide-react";
 import { GlobalStats } from "@/types";
-import { Progress } from "@/components/ui/progress";
-import { User, Users, Brain, Zap, TrendingUp } from "lucide-react";
 
 interface GlobalBattleStatsProps {
   stats: GlobalStats;
 }
 
 const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
-  // Calculate win percentages
-  const humanWinPercent = (stats.humanWins / stats.totalPredictions) * 100;
-  const aiWinPercent = (stats.aiWins / stats.totalPredictions) * 100;
-  const tiePercent = (stats.ties / stats.totalPredictions) * 100;
-
+  // Calculate human win rate
+  const humanWinRate = stats.totalPredictions > 0 
+    ? Math.round((stats.humanWins / stats.totalPredictions) * 100)
+    : 0;
+    
+  // Calculate AI win rate
+  const aiWinRate = stats.totalPredictions > 0
+    ? Math.round((stats.aiWins / stats.totalPredictions) * 100) 
+    : 0;
+    
   return (
-    <Card>
+    <Card className="shadow-sm border-0">
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg flex items-center">
-          <Zap className="w-5 h-5 mr-2 text-yellow-500" />
-          Humans vs. AI Battle
+        <CardTitle className="text-lg font-semibold flex items-center">
+          <Shield className="w-5 h-5 mr-2 text-primary" />
+          Global Battle Stats
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div>
-            <div className="flex justify-between mb-1">
-              <div className="flex items-center">
-                <Users className="w-4 h-4 mr-1.5 text-blue-500" />
-                <span className="text-sm font-medium">Humans</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Users className="w-4 h-4 mr-2 text-blue-500" />
+              <span className="text-sm font-medium">Traders</span>
+            </div>
+            <span className="text-sm font-medium">{humanWinRate}% win rate</span>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Zap className="w-4 h-4 mr-2 text-purple-500" />
+              <span className="text-sm font-medium">AI</span>
+            </div>
+            <span className="text-sm font-medium">{aiWinRate}% win rate</span>
+          </div>
+          
+          <div className="pt-2 border-t">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs text-gray-500">Total Predictions</span>
+              <span className="text-xs font-medium">{stats.totalPredictions.toLocaleString()}</span>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500">Humans vs AI</span>
+              <div className="flex items-center space-x-1">
+                <span className="text-xs font-medium text-blue-600">{stats.humanWins.toLocaleString()}</span>
+                <span className="text-xs">:</span>
+                <span className="text-xs font-medium text-purple-600">{stats.aiWins.toLocaleString()}</span>
               </div>
-              <span className="text-sm">{humanWinPercent.toFixed(1)}%</span>
-            </div>
-            <Progress value={humanWinPercent} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-1 text-right">
-              {stats.humanWins.toLocaleString()} wins
-            </p>
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-1">
-              <div className="flex items-center">
-                <Brain className="w-4 h-4 mr-1.5 text-purple-500" />
-                <span className="text-sm font-medium">AI</span>
-              </div>
-              <span className="text-sm">{aiWinPercent.toFixed(1)}%</span>
-            </div>
-            <Progress value={aiWinPercent} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-1 text-right">
-              {stats.aiWins.toLocaleString()} wins
-            </p>
-          </div>
-
-          <div className="pt-2 text-sm border-t">
-            <div className="flex justify-between items-center">
-              <span>Total Predictions</span>
-              <span className="font-medium">{stats.totalPredictions.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center mt-1">
-              <span>Ties</span>
-              <span>{stats.ties.toLocaleString()} ({tiePercent.toFixed(1)}%)</span>
-            </div>
-          </div>
-
-          <div className="pt-3 grid grid-cols-3 gap-2 text-center">
-            <div className="bg-muted p-2 rounded-md">
-              <p className="text-xs text-muted-foreground">Market</p>
-              <p className="font-medium">{stats.marketPredictions.toLocaleString()}</p>
-            </div>
-            <div className="bg-muted p-2 rounded-md">
-              <p className="text-xs text-muted-foreground">Sector</p>
-              <p className="font-medium">{stats.sectorPredictions.toLocaleString()}</p>
-            </div>
-            <div className="bg-muted p-2 rounded-md">
-              <p className="text-xs text-muted-foreground">Stock</p>
-              <p className="font-medium">{stats.stockPredictions.toLocaleString()}</p>
             </div>
           </div>
         </div>

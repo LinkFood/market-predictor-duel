@@ -18,13 +18,13 @@ const mockBrackets: Bracket[] = [
   {
     id: "bracket-1",
     name: "Weekly Tech Face-off",
-    status: "active",
-    aiPersonality: "ValueHunter",
-    timeframe: "weekly",
+    status: "active" as const,
+    aiPersonality: "ValueHunter" as const,
+    timeframe: "weekly" as const,
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     userId: "user-1",
-    size: 3,
+    size: 3 as const,
     userEntries: [],
     aiEntries: [],
     matches: [],
@@ -35,13 +35,13 @@ const mockBrackets: Bracket[] = [
   {
     id: "bracket-2",
     name: "Monthly Growth Stars",
-    status: "pending",
-    aiPersonality: "GrowthSeeker",
-    timeframe: "monthly",
+    status: "pending" as const,
+    aiPersonality: "GrowthSeeker" as const,
+    timeframe: "monthly" as const,
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     userId: "user-1",
-    size: 3,
+    size: 3 as const,
     userEntries: [],
     aiEntries: [],
     matches: [],
@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
         </div>
         <div className="space-y-6">
           <GlobalBattleStats stats={mockGlobalStats} />
-          <MarketPulse marketData={marketData} stockData={mockStockData} />
+          <MarketPulse marketData={marketData} stockData={marketData} />
         </div>
       </div>
       
