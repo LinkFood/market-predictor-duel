@@ -19,14 +19,18 @@ serve(async (req) => {
     )
 
     // Query public tables from the database
-    const { data, error } = await supabaseClient.rpc('get_tables')
+    const { data, error } = await supabaseClient.from('pg_catalog.pg_tables')
+      .select('tablename')
+      .eq('schemaname', 'public')
 
     if (error) {
       throw error
     }
 
+    const tables = data.map(row => row.tablename)
+
     return new Response(
-      JSON.stringify({ tables: data }),
+      JSON.stringify({ tables }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,

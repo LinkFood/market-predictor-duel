@@ -30,13 +30,10 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(-1);
 
-  // Mock data for demonstration - in a real app, this would fetch from API
   useEffect(() => {
-    // Simulating API call to get user brackets
     const fetchBrackets = async () => {
       setIsLoading(true);
       
-      // Mock brackets data
       const mockBrackets: Bracket[] = [
         {
           id: "bracket-1",
@@ -81,7 +78,7 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
           endDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
           userId: "user-1",
           size: 6,
-          aiPersonality: "TechTrends",
+          aiPersonality: "ContraThinker",
           userEntries: [],
           aiEntries: [],
           matches: [],
@@ -92,7 +89,6 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
         }
       ];
       
-      // Find the index of the current bracket
       const index = mockBrackets.findIndex(b => b.id === currentBracketId);
       
       setBrackets(mockBrackets);
@@ -103,21 +99,18 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
     fetchBrackets();
   }, [currentBracketId]);
 
-  // Navigate to previous bracket
   const goToPrevious = () => {
     if (currentIndex > 0) {
       navigate(`/app/brackets/${brackets[currentIndex - 1].id}`);
     }
   };
 
-  // Navigate to next bracket
   const goToNext = () => {
     if (currentIndex < brackets.length - 1) {
       navigate(`/app/brackets/${brackets[currentIndex + 1].id}`);
     }
   };
 
-  // Status icon component
   const StatusIcon = ({ status }: { status: string }) => {
     switch (status) {
       case 'active':
@@ -131,7 +124,6 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
     }
   };
 
-  // Loading state
   if (isLoading) {
     return (
       <Card className="w-full p-4 mb-6">
@@ -147,7 +139,6 @@ const BracketNavigation: React.FC<BracketNavigationProps> = ({
     );
   }
 
-  // If bracket not found in the list
   if (currentIndex === -1) {
     return (
       <Card className="w-full p-4 mb-6 border border-slate-200">

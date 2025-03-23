@@ -19,14 +19,7 @@ export const safelyParseJson = <T>(json: Json | null, defaultValue: T): T => {
 // Get all public tables
 export const getPublicTables = async (): Promise<string[]> => {
   try {
-    // First try using the RPC function
-    const { data: tables, error } = await supabase.rpc('get_tables');
-    
-    if (!error && tables) {
-      return tables;
-    }
-    
-    // Fallback to edge function
+    // Use supabase edge function to get tables
     const response = await supabase.functions.invoke('get-tables');
     
     if (response.error) {

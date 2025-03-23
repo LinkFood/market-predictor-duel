@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { getPublicTables } from '@/lib/supabase-utils';
 
 const TestSupabaseConnection = () => {
   const [loading, setLoading] = useState(false);
@@ -25,11 +26,8 @@ const TestSupabaseConnection = () => {
       });
 
       // Get list of tables
-      const { data: tablesData } = await supabase.rpc('get_tables');
-      
-      if (tablesData) {
-        setTables(tablesData);
-      }
+      const tablesData = await getPublicTables();
+      setTables(tablesData);
     } catch (error) {
       console.error('Error testing connection:', error);
       setResult({

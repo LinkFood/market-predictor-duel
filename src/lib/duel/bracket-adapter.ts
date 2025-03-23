@@ -1,5 +1,6 @@
 
 import { Json } from '@/integrations/supabase/types';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   Bracket, 
   BracketEntry, 
@@ -111,26 +112,4 @@ export function modelBracketToDb(bracket: Bracket): Record<string, any> {
     user_points: bracket.userPoints,
     ai_points: bracket.aiPoints
   };
-}
-
-// Function to create a stored procedure for getting tables
-export async function createGetTablesFunction() {
-  try {
-    await supabase.rpc('get_tables');
-    // Function exists, no need to create it
-    return true;
-  } catch (error) {
-    // Create the function if it doesn't exist
-    try {
-      const { error: createError } = await supabase.rpc('create_get_tables_function');
-      if (createError) {
-        console.error('Error creating get_tables function:', createError);
-        return false;
-      }
-      return true;
-    } catch (err) {
-      console.error('Failed to create get_tables function:', err);
-      return false;
-    }
-  }
 }

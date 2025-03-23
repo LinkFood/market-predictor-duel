@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bracket } from '@/lib/duel/types';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { dbBracketToModel } from '@/lib/duel/bracket-adapter';
 
 const TestBracketsTable: React.FC = () => {
   const { user } = useAuth();
@@ -35,7 +36,9 @@ const TestBracketsTable: React.FC = () => {
         throw error;
       }
       
-      setBrackets(data || []);
+      // Convert database format to app model
+      const formattedBrackets = data?.map(dbBracketToModel) || [];
+      setBrackets(formattedBrackets);
       toast.success('Successfully connected to brackets table!');
     } catch (err: any) {
       console.error('Error testing brackets connection:', err);

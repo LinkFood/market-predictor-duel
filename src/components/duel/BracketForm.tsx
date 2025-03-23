@@ -216,6 +216,34 @@ const BracketForm: React.FC<BracketFormProps> = ({ onCreateBracket }) => {
     }
   };
   
+  const SearchResults = searchResults.map((stock) => (
+    <motion.li
+      key={stock.symbol}
+      className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
+      onClick={() => handleAddStock(stock)}
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <div className="flex justify-between items-center">
+        <div>
+          <div className="flex items-center">
+            <span className="font-mono font-bold text-lg">{stock.symbol}</span>
+            {stock.sector && (
+              <span className="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 rounded text-xs">
+                {stock.sector}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{stock.name}</p>
+        </div>
+        <Button size="sm" variant="outline" className="rounded-full w-8 h-8 p-0">
+          <Plus className="h-5 w-5" />
+        </Button>
+      </div>
+    </motion.li>
+  ));
+  
   return (
     <Card className="w-full max-w-4xl mx-auto overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 pb-8">
@@ -418,33 +446,7 @@ const BracketForm: React.FC<BracketFormProps> = ({ onCreateBracket }) => {
                   </div>
                   <div className="max-h-60 overflow-y-auto">
                     <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-                      {searchResults.map((stock) => (
-                        <motion.li
-                          key={stock.symbol}
-                          className="p-3 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors"
-                          onClick={() => handleAddStock(stock)}
-                          initial={{ opacity: 0, y: 5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <div className="flex items-center">
-                                <span className="font-mono font-bold text-lg">{stock.symbol}</span>
-                                {stock.exchange && (
-                                  <span className="ml-2 px-2 py-0.5 bg-blue-100 dark:bg-blue-900 rounded text-xs">
-                                    {stock.exchange}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-sm text-gray-600 dark:text-gray-400">{stock.name}</p>
-                            </div>
-                            <Button size="sm" variant="outline" className="rounded-full w-8 h-8 p-0">
-                              <Plus className="h-5 w-5" />
-                            </Button>
-                          </div>
-                        </motion.li>
-                      ))}
+                      {SearchResults}
                     </ul>
                   </div>
                 </motion.div>
