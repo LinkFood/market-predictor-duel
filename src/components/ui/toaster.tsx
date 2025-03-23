@@ -28,7 +28,7 @@ export function Toaster() {
           </Toast>
         )
       })}
-      <ToastViewport className="z-50" /> {/* Explicitly set a z-index that won't block content */}
+      <ToastViewport className="z-[100]" /> {/* Set a higher z-index to ensure toasts appear above other content */}
     </ToastProvider>
   )
 }

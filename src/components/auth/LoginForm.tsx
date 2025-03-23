@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -10,11 +9,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast, toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client"; // Import directly from client
+import { supabase } from "@/integrations/supabase/client"; 
 import FormAlerts from "@/components/auth/FormAlerts";
 import { useSupabaseCheck } from "@/hooks/use-supabase-check";
 
-// Define validation schema
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
@@ -32,7 +30,6 @@ const LoginForm: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const { supabaseError } = useSupabaseCheck();
   
-  // Get redirect path from location state
   const from = location.state?.from?.pathname || '/app';
   
   const { 
@@ -56,7 +53,6 @@ const LoginForm: React.FC = () => {
       
       console.log("Attempting login with:", data.email);
       
-      // Use Supabase client directly for authentication
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
@@ -70,13 +66,11 @@ const LoginForm: React.FC = () => {
       
       setSuccess("Login successful");
       
-      // Use the toast function directly from the import
       toast({
         title: "Login successful",
         description: "Welcome back to StockDuel!",
       });
       
-      // Navigate back to the page they tried to visit or to dashboard
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Unexpected error during login:", err);
