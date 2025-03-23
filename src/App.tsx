@@ -8,6 +8,7 @@ import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
 import AILearningInitializer from "./components/AILearningInitializer";
 import { SubscriptionProvider } from "./lib/subscription/subscription-context";
+import DebugBanner from "./components/subscription/DebugBanner";
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -58,6 +59,7 @@ function App() {
             <MarketDataProvider>
               <AILearningInitializer />
               <AppRoutes />
+              <DebugBanner />
               <Toaster />
             </MarketDataProvider>
           </SubscriptionProvider>

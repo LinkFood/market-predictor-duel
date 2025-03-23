@@ -53,10 +53,10 @@ const Sidebar: React.FC = () => {
 
   return (
     <SidebarContainer>
-      <div className="flex flex-col h-full bg-sidebar text-sidebar-foreground">
-        <div className="p-3 border-b border-sidebar-border">
+      <div className="flex flex-col h-full bg-[#111] text-white" style={{height: '100vh', position: 'sticky', top: 0}}>
+        <div className="p-3 border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-market-green" />
+            <BarChart3 className="h-5 w-5 text-green-500" />
             <h1 className="text-lg font-bold text-white">StockDuel</h1>
           </div>
         </div>
@@ -85,7 +85,10 @@ const Sidebar: React.FC = () => {
           </nav>
           
           <div className="mt-auto pt-4 px-3">
-            <PlanBadge className="w-full" />
+            <div className="p-3 bg-green-900/20 rounded-lg border border-green-500/30 mb-2">
+              <h3 className="text-sm font-medium mb-2 text-green-300">SUBSCRIPTION STATUS</h3>
+              <PlanBadge className="w-full" />
+            </div>
           </div>
         </SidebarContent>
       </div>

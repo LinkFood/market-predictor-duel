@@ -46,7 +46,8 @@ const MenuOverlay: React.FC<MenuOverlayProps> = ({ isOpen, onClose }) => {
           </button>
         </div>
         
-        <div className="mb-5">
+        <div className="mb-5 p-3 bg-amber-900/20 rounded-lg border border-amber-500/30">
+          <h3 className="text-sm font-medium mb-2 text-amber-300">Your Subscription</h3>
           <PlanBadge />
         </div>
         

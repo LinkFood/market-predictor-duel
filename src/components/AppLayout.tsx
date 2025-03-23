@@ -8,6 +8,7 @@ import SearchOverlay from "./SearchOverlay";
 import MenuOverlay from "./MenuOverlay";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
+import SubscriptionDebugger from "./subscription/SubscriptionDebugger";
 
 // App Navigation Component with shared layout
 const AppLayout: React.FC = () => {
@@ -68,6 +69,9 @@ const AppLayout: React.FC = () => {
           {showSearch && <SearchOverlay isOpen={showSearch} onClose={() => setShowSearch(false)} />}
           {showMenu && <MenuOverlay isOpen={showMenu} onClose={() => setShowMenu(false)} />}
         </AnimatePresence>
+        
+        {/* Subscription debugger */}
+        <SubscriptionDebugger />
       </div>
     </div>
   );
