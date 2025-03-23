@@ -24,8 +24,8 @@ export function dbToPrediction(data: any): Prediction {
     createdAt: data.created_at,
     resolvesAt: data.resolves_at,
     resolvedAt: data.resolved_at,
-    endValue: data.final_value, // Changed from finalValue to endValue which exists in the Prediction type
-    percentChange: data.percent_change,
+    endValue: data.final_value,
+    percent_change: data.percent_change, // Changed from percentChange to percent_change which exists in the Prediction type
     actualResult: data.actual_result
   };
 }
