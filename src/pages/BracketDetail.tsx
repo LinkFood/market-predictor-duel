@@ -16,7 +16,9 @@ import {
   Share2,
   Trophy,
   ChevronDown,
-  Users
+  Users,
+  Trash2,
+  Play
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -32,10 +34,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import BracketVisualizer from "@/components/duel/BracketVisualizer";
 import AIOpponentProfile from "@/components/duel/AIOpponentProfile";
 import { Bracket } from "@/lib/duel/types";
-import { getBracketById, updateBracketPrices } from "@/lib/duel/bracket-service";
+import { getBracketById, updateBracketPrices, resetBracket, deleteBracket } from "@/lib/duel/bracket-service";
 import { format, formatDistance, parseISO } from "date-fns";
 
 const BracketDetail: React.FC = () => {
@@ -48,6 +61,8 @@ const BracketDetail: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   
   // Load bracket data
   useEffect(() => {
@@ -92,6 +107,61 @@ const BracketDetail: React.FC = () => {
         variant: "destructive",
       });
     } finally {
+      setIsUpdating(false);
+    }
+  };
+  
+  // Handle reset bracket
+  const handleResetBracket = async () => {
+    if (!id || !bracket) return;
+    
+    setIsUpdating(true);
+    setIsResetDialogOpen(false);
+    
+    try {
+      const resetBracketData = await resetBracket(id);
+      setBracket(resetBracketData);
+      
+      toast({
+        title: "Bracket Reset",
+        description: "The bracket has been reset and is ready to start again.",
+      });
+    } catch (err) {
+      console.error("Error resetting bracket:", err);
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset bracket. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  
+  // Handle delete bracket
+  const handleDeleteBracket = async () => {
+    if (!id || !bracket) return;
+    
+    setIsUpdating(true);
+    setIsDeleteDialogOpen(false);
+    
+    try {
+      await deleteBracket(id);
+      
+      toast({
+        title: "Bracket Deleted",
+        description: "The bracket has been deleted successfully.",
+      });
+      
+      // Navigate back to brackets list
+      navigate('/app/brackets');
+    } catch (err) {
+      console.error("Error deleting bracket:", err);
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete bracket. Please try again.",
+        variant: "destructive",
+      });
       setIsUpdating(false);
     }
   };
@@ -232,24 +302,81 @@ const BracketDetail: React.FC = () => {
             </div>
             
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleRefreshBracket}
-                disabled={isUpdating || bracket.status === 'completed'}
-              >
-                <RefreshCw className={`w-4 h-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
-                Update
-              </Button>
+              {bracket.status === 'pending' ? (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={handleRefreshBracket}
+                  disabled={isUpdating}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Start Now
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleRefreshBracket}
+                  disabled={isUpdating || bracket.status === 'completed'}
+                >
+                  <RefreshCw className={`w-4 h-4 mr-2 ${isUpdating ? 'animate-spin' : ''}`} />
+                  Update
+                </Button>
+              )}
               
-              <Button
-                variant="outline"
-                size="sm"
-                disabled
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
+              <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isUpdating || bracket.status === 'active'}
+                  >
+                    <Clock className="w-4 h-4 mr-2" />
+                    Reset
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Reset Bracket</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to reset this bracket? This will clear all progress and start over with the same stocks.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleResetBracket}>Reset Bracket</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+              
+              <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isUpdating}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Bracket</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this bracket? This action cannot be undone, and all associated data will be permanently removed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteBracket} className="bg-red-600 hover:bg-red-700">
+                      Delete Bracket
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
         </motion.div>
