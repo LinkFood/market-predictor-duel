@@ -152,12 +152,15 @@ export const getUserProfile = async (userId: string): Promise<{ profile?: UserPr
       // Continue without subscription data
     }
     
+    // Get user email from auth.users through Supabase auth (not directly from profiles)
+    const { data: userData } = await supabase.auth.getUser(userId);
+    const userEmail = userData?.user?.email;
+    
     // Combine profile and subscription data
     const profile: UserProfile = {
       id: profileData.id,
       username: profileData.username,
-      // Only access email if it exists in profileData
-      ...(profileData.email && { email: profileData.email }),
+      email: userEmail,
       avatar_url: profileData.avatar_url,
       created_at: profileData.created_at,
       subscription_tier: subscriptionData?.plan || 'free'
