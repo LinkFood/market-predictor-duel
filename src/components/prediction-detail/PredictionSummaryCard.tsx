@@ -1,4 +1,3 @@
-
 import React from "react";
 import { FileText, TrendingUp } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
@@ -11,8 +10,7 @@ import { PredictionComparison } from "./PredictionComparison";
 import { PredictionResults } from "./PredictionResults";
 import { AIAnalysisCard } from "./AIAnalysisCard";
 import { Prediction } from "@/types";
-import { isPredictionResolved, adaptToLibPrediction } from "@/lib/prediction/prediction-adapter";
-import { adaptPrediction } from "@/lib/prediction/prediction-adapter";
+import { isPredictionResolved, adaptPrediction } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionSummaryCardProps {
   prediction: any; // Allow any prediction type that will be adapted
@@ -43,7 +41,7 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
   const isResolved = isPredictionResolved(adaptedPrediction);
   
   // If needed for any lib function that expects the lib prediction type
-  const libPrediction = adaptToLibPrediction(adaptedPrediction);
+  const libPrediction = adaptPrediction(adaptedPrediction);
   
   return (
     <Card className="shadow-md border-0 overflow-hidden">

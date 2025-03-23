@@ -7,6 +7,9 @@
 // Export all types
 export * from './types';
 
+// Export adapter functions
+export { adaptPrediction, isPredictionResolved, adaptToApiPrediction, adaptToLibPrediction } from './prediction-adapter';
+
 // Export all functions
 export { createPrediction } from './create-prediction';
 export { getUserPredictions, getPredictionById } from './user-predictions';
