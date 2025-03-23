@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
@@ -80,7 +79,10 @@ const BracketDetail: React.FC = () => {
   const handleUpdatePrices = async () => {
     try {
       setIsUpdating(true);
-      toast({ title: "Updating prices...", description: "Fetching latest market data" });
+      toast({
+        title: "Updating prices...",
+        description: "Fetching latest market data"
+      });
       
       // This would fetch the latest prices and update the bracket
       // For now, we just simulate a success
@@ -89,6 +91,7 @@ const BracketDetail: React.FC = () => {
       toast({
         title: "Prices updated",
         description: "Latest market data has been applied.",
+        variant: "default"
       });
       
       // In a real implementation, we would call an API to update the prices
@@ -111,7 +114,10 @@ const BracketDetail: React.FC = () => {
   const handleResetBracket = async () => {
     try {
       setIsResetting(true);
-      toast({ title: "Resetting bracket...", description: "This may take a moment" });
+      toast({
+        title: "Resetting bracket...",
+        description: "This may take a moment"
+      });
       
       // This would call the API to reset the bracket
       // For now, we just simulate a success
@@ -120,6 +126,7 @@ const BracketDetail: React.FC = () => {
       toast({
         title: "Bracket reset",
         description: "Bracket has been reset to initial state.",
+        variant: "default"
       });
       
       // In a real implementation, we would call an API to reset the bracket
@@ -143,13 +150,17 @@ const BracketDetail: React.FC = () => {
   const handleCompleteBracket = async () => {
     try {
       setIsUpdating(true);
-      toast({ title: "Completing bracket...", description: "This may take a moment" });
+      toast({
+        title: "Completing bracket...",
+        description: "This may take a moment"
+      });
       
       const result = await completeBracket(bracket.id || "");
       
       toast({
         title: "Bracket completed",
         description: "Results have been calculated.",
+        variant: "default"
       });
       
       setBracket(result);

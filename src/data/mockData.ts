@@ -186,172 +186,178 @@ export const mockMarketIndices: MarketData[] = [
   }
 ];
 
-// Create functions to export mock gainers and losers data
-export function getMockGainers(): StockData[] {
-  return [
-    {
-      symbol: "AAPL",
-      name: "Apple Inc.",
-      price: 175.45,
-      change: 2.19,
-      changePercent: 1.25,
-      marketCap: 2850000000000,
-      volume: 75365421,
-      datetime: new Date().toISOString(),
-      sector: "Technology"
-    },
-    {
-      symbol: "MSFT",
-      name: "Microsoft Corporation",
-      price: 325.76,
-      change: 2.54,
-      changePercent: 0.78,
-      marketCap: 2450000000000,
-      volume: 25467890,
-      datetime: new Date().toISOString(),
-      sector: "Technology"
-    }
-  ];
+// Define StockData interface
+export interface StockData {
+  symbol: string;
+  name: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  marketCap?: number;
+  volume?: number;
+  pe?: number;
+  high52Week?: number;
+  low52Week?: number;
+  avgVolume?: number;
+  yield?: number;
+  beta?: number;
+  datetime?: string;
+  sector?: string;
 }
 
-export function getMockLosers(): StockData[] {
-  return [
+// Create a mock bracket for testing
+import { 
+  Bracket, 
+  BracketTimeframe, 
+  BracketStatus, 
+  BracketSize,
+  BracketEntry,
+  BracketMatch,
+  AIPersonality
+} from '@/lib/duel/types';
+
+export function createMockBracket(id: string): Bracket {
+  // Generate common properties
+  const now = new Date();
+  const startDate = now.toISOString();
+  const endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  const createdAt = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+  
+  // Create user entries
+  const userEntries: BracketEntry[] = [
     {
-      symbol: "TSLA",
-      name: "Tesla Inc.",
-      price: 680.52,
-      change: -12.73,
-      changePercent: -1.87,
-      marketCap: 680000000000,
-      volume: 35421876,
-      datetime: new Date().toISOString(),
-      sector: "Automotive"
+      id: `${id}-user-1`,
+      symbol: 'AAPL',
+      name: 'Apple Inc.',
+      entryType: 'stock',
+      direction: 'bullish',
+      startPrice: 178.72,
+      marketCap: 'large',
+      sector: 'Technology',
+      order: 1
     },
     {
-      symbol: "GOOGL",
-      name: "Alphabet Inc.",
-      price: 137.23,
-      change: -0.62,
-      changePercent: -0.45,
-      marketCap: 1850000000000,
-      volume: 18654237,
-      datetime: new Date().toISOString(),
-      sector: "Technology"
+      id: `${id}-user-2`,
+      symbol: 'JPM',
+      name: 'JPMorgan Chase & Co.',
+      entryType: 'stock',
+      direction: 'bearish',
+      startPrice: 197.45,
+      marketCap: 'large',
+      sector: 'Financial Services',
+      order: 2
+    },
+    {
+      id: `${id}-user-3`,
+      symbol: 'JNJ',
+      name: 'Johnson & Johnson',
+      entryType: 'stock',
+      direction: 'bullish',
+      startPrice: 152.67,
+      marketCap: 'large',
+      sector: 'Healthcare',
+      order: 3
     }
   ];
-}
-
-// Add a function to create a mock bracket for testing
-export function createMockBracket(id: string) {
+  
+  // Create AI entries
+  const aiEntries: BracketEntry[] = [
+    {
+      id: `${id}-ai-1`,
+      symbol: 'MSFT',
+      name: 'Microsoft Corporation',
+      entryType: 'stock',
+      direction: 'bullish',
+      startPrice: 403.78,
+      marketCap: 'large',
+      sector: 'Technology',
+      order: 1
+    },
+    {
+      id: `${id}-ai-2`,
+      symbol: 'BAC',
+      name: 'Bank of America Corp.',
+      entryType: 'stock',
+      direction: 'bearish',
+      startPrice: 37.92,
+      marketCap: 'large',
+      sector: 'Financial Services',
+      order: 2
+    },
+    {
+      id: `${id}-ai-3`,
+      symbol: 'PFE',
+      name: 'Pfizer Inc.',
+      entryType: 'stock',
+      direction: 'bearish',
+      startPrice: 28.12,
+      marketCap: 'large',
+      sector: 'Healthcare',
+      order: 3
+    }
+  ];
+  
+  // Create matches
+  const matches: BracketMatch[] = [
+    {
+      id: `${id}-match-1`,
+      roundNumber: 1,
+      matchNumber: 1,
+      entry1Id: `${id}-user-1`,
+      entry2Id: `${id}-ai-1`,
+      completed: false
+    },
+    {
+      id: `${id}-match-2`,
+      roundNumber: 1,
+      matchNumber: 2,
+      entry1Id: `${id}-user-2`,
+      entry2Id: `${id}-ai-2`,
+      completed: false
+    },
+    {
+      id: `${id}-match-3`,
+      roundNumber: 1,
+      matchNumber: 3,
+      entry1Id: `${id}-user-3`,
+      entry2Id: `${id}-ai-3`,
+      completed: false
+    }
+  ];
+  
+  // Return complete bracket
   return {
     id,
-    userId: "user-1",
-    name: "Weekly Tech Showdown",
-    timeframe: "weekly",
+    userId: 'user-1',
+    name: 'Weekly Tech Face-off',
+    timeframe: 'weekly',
     size: 3,
-    status: "active",
-    aiPersonality: "ValueHunter",
-    userEntries: [
-      {
-        id: "user-entry-1",
-        symbol: "AAPL",
-        name: "Apple Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 175.45,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "user-entry-2",
-        symbol: "MSFT",
-        name: "Microsoft Corporation",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 325.76,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "user-entry-3",
-        symbol: "GOOGL",
-        name: "Alphabet Inc.",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 137.23,
-        marketCap: "large",
-        sector: "Technology",
-        order: 3
-      }
-    ],
-    aiEntries: [
-      {
-        id: "ai-entry-1",
-        symbol: "AAPL",
-        name: "Apple Inc.",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 175.45,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "ai-entry-2",
-        symbol: "MSFT",
-        name: "Microsoft Corporation",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 325.76,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "ai-entry-3",
-        symbol: "GOOGL",
-        name: "Alphabet Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 137.23,
-        marketCap: "large",
-        sector: "Technology",
-        order: 3
-      }
-    ],
-    matches: [
-      {
-        roundNumber: 1,
-        matchNumber: 1,
-        entry1Id: "user-entry-1",
-        entry2Id: "ai-entry-1",
-        completed: true,
-        winnerId: "user-entry-1"
-      },
-      {
-        roundNumber: 1,
-        matchNumber: 2,
-        entry1Id: "user-entry-2",
-        entry2Id: "ai-entry-2",
-        completed: true,
-        winnerId: "user-entry-2"
-      },
-      {
-        roundNumber: 1,
-        matchNumber: 3,
-        entry1Id: "user-entry-3",
-        entry2Id: "ai-entry-3",
-        completed: false
-      }
-    ],
-    startDate: new Date().toISOString(),
-    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
-    userPoints: 2.5,
-    aiPoints: 1.2
+    status: 'active',
+    aiPersonality: 'ValueHunter',
+    userEntries,
+    aiEntries,
+    matches,
+    startDate,
+    endDate,
+    createdAt,
+    userPoints: 0,
+    aiPoints: 0
   };
+}
+
+// Export mock gainers and losers for market movers service
+export function getMockGainers() {
+  return mockStockData.slice(0, 5).map(stock => ({
+    ...stock,
+    changePercent: Math.abs(stock.changePercent) 
+  }));
+}
+
+export function getMockLosers() {
+  return mockStockData.slice(5, 10).map(stock => ({
+    ...stock,
+    changePercent: -Math.abs(stock.changePercent)
+  }));
 }
 
 export const mockGlobalStats = {

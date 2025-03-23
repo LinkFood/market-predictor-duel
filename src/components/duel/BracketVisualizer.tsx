@@ -245,12 +245,14 @@ function generateRounds(
     
     // Each user entry vs matching AI entry
     for (let i = 0; i < 3; i++) {
-      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1);
+      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1) || { completed: false };
+      
+      // Add match with proper type that includes winnerId property
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: match?.winnerId || undefined,
-        completed: match?.completed || false,
+        winnerId: match.winnerId,
+        completed: match.completed || false,
       });
     }
     
@@ -263,34 +265,35 @@ function generateRounds(
     // Round 1: Three matches with initial pairings
     const round1: any[] = [];
     for (let i = 0; i < 3; i++) {
-      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1);
+      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1) || { completed: false };
+      
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: match?.winnerId || undefined,
-        completed: match?.completed || false,
+        winnerId: match.winnerId,
+        completed: match.completed || false,
       });
     }
     rounds.push(round1);
     
     // Round 2: Final with winners
     const round2: any[] = [];
-    const finalMatch = matches.find(m => m.roundNumber === 2 && m.matchNumber === 1);
+    const finalMatch = matches.find(m => m.roundNumber === 2 && m.matchNumber === 1) || { completed: false };
     
     // Get entries for final based on winners from first round
-    const finalEntry1 = finalMatch?.entry1Id 
+    const finalEntry1 = finalMatch.entry1Id 
       ? [...userEntries, ...aiEntries].find(e => e.id === finalMatch.entry1Id)
       : undefined;
       
-    const finalEntry2 = finalMatch?.entry2Id
+    const finalEntry2 = finalMatch.entry2Id
       ? [...userEntries, ...aiEntries].find(e => e.id === finalMatch.entry2Id)
       : undefined;
     
     round2.push({
       entry1: finalEntry1,
       entry2: finalEntry2,
-      winnerId: finalMatch?.winnerId || undefined,
-      completed: finalMatch?.completed || false,
+      winnerId: finalMatch.winnerId,
+      completed: finalMatch.completed || false,
     });
     
     rounds.push(round2);
@@ -311,8 +314,8 @@ function generateRounds(
       round1.push({
         entry1: userEntries[entry1Index],
         entry2: aiEntries[entry2Index],
-        winnerId: match.winnerId || undefined,
-        completed: match.completed,
+        winnerId: match.winnerId,
+        completed: match.completed || false,
       });
     }
     rounds.push(round1);
@@ -320,44 +323,44 @@ function generateRounds(
     // Round 2: Two semifinals
     const round2: any[] = [];
     for (let i = 0; i < 2; i++) {
-      const match = matches.find(m => m.roundNumber === 2 && m.matchNumber === i + 1);
+      const match = matches.find(m => m.roundNumber === 2 && m.matchNumber === i + 1) || { completed: false };
       
       // Get entries for semifinal based on winners from first round
-      const semifinalEntry1 = match?.entry1Id 
+      const semifinalEntry1 = match.entry1Id 
         ? [...userEntries, ...aiEntries].find(e => e.id === match.entry1Id)
         : undefined;
         
-      const semifinalEntry2 = match?.entry2Id
+      const semifinalEntry2 = match.entry2Id
         ? [...userEntries, ...aiEntries].find(e => e.id === match.entry2Id)
         : undefined;
       
       round2.push({
         entry1: semifinalEntry1,
         entry2: semifinalEntry2,
-        winnerId: match?.winnerId || undefined,
-        completed: match?.completed || false,
+        winnerId: match.winnerId,
+        completed: match.completed || false,
       });
     }
     rounds.push(round2);
     
     // Round 3: Final match
     const round3: any[] = [];
-    const finalMatch = matches.find(m => m.roundNumber === 3 && m.matchNumber === 1);
+    const finalMatch = matches.find(m => m.roundNumber === 3 && m.matchNumber === 1) || { completed: false };
     
     // Get entries for final based on winners from semifinals
-    const finalEntry1 = finalMatch?.entry1Id 
+    const finalEntry1 = finalMatch.entry1Id 
       ? [...userEntries, ...aiEntries].find(e => e.id === finalMatch.entry1Id)
       : undefined;
       
-    const finalEntry2 = finalMatch?.entry2Id
+    const finalEntry2 = finalMatch.entry2Id
       ? [...userEntries, ...aiEntries].find(e => e.id === finalMatch.entry2Id)
       : undefined;
     
     round3.push({
       entry1: finalEntry1,
       entry2: finalEntry2,
-      winnerId: finalMatch?.winnerId || undefined,
-      completed: finalMatch?.completed || false,
+      winnerId: finalMatch.winnerId,
+      completed: finalMatch.completed || false,
     });
     
     rounds.push(round3);

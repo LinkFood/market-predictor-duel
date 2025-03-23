@@ -50,10 +50,10 @@ export async function createBracket(
       id: bracketId,
       userId: 'current-user', // In a real app, get from auth context
       name: generateBracketName(timeframe, aiPersonality),
-      timeframe,
-      size,
+      timeframe: timeframe,
+      size: size,
       status: 'pending',
-      aiPersonality,
+      aiPersonality: aiPersonality,
       userEntries: formattedUserEntries,
       aiEntries,
       matches,
@@ -132,7 +132,7 @@ export async function completeBracket(id: string): Promise<Bracket> {
     // Create updated bracket
     const updatedBracket: Bracket = {
       ...bracket,
-      status: 'completed' as BracketStatus,
+      status: 'completed',
       matches: updatedMatches,
       userPoints,
       aiPoints,

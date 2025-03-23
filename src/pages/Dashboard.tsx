@@ -9,15 +9,47 @@ import GlobalBattleStats from "@/components/dashboard/GlobalBattleStats";
 import MarketPulse from "@/components/dashboard/MarketPulse";
 import HotOpportunities from "@/components/dashboard/HotOpportunities";
 import ActiveBrackets from "@/components/dashboard/ActiveBrackets";
-import { GlobalStats, Prediction, MarketData } from "@/types";
+import { GlobalStats, Prediction, MarketData, User } from "@/types";
 import { mockPredictions, mockStockData, mockGlobalStats } from "@/data/mockData";
+import { Bracket } from "@/lib/duel/types";
 
-// Mock user rank data
-const mockUserRank = {
-  rank: 42,
-  total: 1250,
-  percentile: 3.36
-};
+// Create mocked brackets with fully typed data
+const mockBrackets: Bracket[] = [
+  {
+    id: "bracket-1",
+    name: "Weekly Tech Face-off",
+    status: "active",
+    aiPersonality: "ValueHunter",
+    timeframe: "weekly",
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    userId: "user-1",
+    size: 3,
+    userEntries: [],
+    aiEntries: [],
+    matches: [],
+    createdAt: new Date().toISOString(),
+    userPoints: 0,
+    aiPoints: 0
+  },
+  {
+    id: "bracket-2",
+    name: "Monthly Growth Stars",
+    status: "pending",
+    aiPersonality: "GrowthSeeker",
+    timeframe: "monthly",
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    userId: "user-1",
+    size: 3,
+    userEntries: [],
+    aiEntries: [],
+    matches: [],
+    createdAt: new Date().toISOString(),
+    userPoints: 0,
+    aiPoints: 0
+  }
+];
 
 // Define Opportunity type for HotOpportunities component
 interface Opportunity {
@@ -27,9 +59,9 @@ interface Opportunity {
   signal: string;
   confidence: number;
   timeframe: string;
-  description?: string;
-  movement?: string;
-  icon?: string;
+  description: string;
+  movement: string;
+  icon: string;
 }
 
 // Mock opportunities data with required fields
@@ -83,43 +115,8 @@ const Dashboard: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Mock bracket data with required fields
-  const mockBrackets = [
-    {
-      id: "bracket-1",
-      name: "Weekly Tech Face-off",
-      status: "active",
-      aiPersonality: "ValueHunter",
-      timeframe: "weekly",
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-      userId: "user-1",
-      size: 3,
-      userEntries: [],
-      aiEntries: [],
-      matches: [],
-      createdAt: new Date().toISOString(),
-      userPoints: 0,
-      aiPoints: 0
-    },
-    {
-      id: "bracket-2",
-      name: "Monthly Growth Stars",
-      status: "pending",
-      aiPersonality: "GrowthSeeker",
-      timeframe: "monthly",
-      startDate: new Date().toISOString(),
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-      userId: "user-1",
-      size: 3,
-      userEntries: [],
-      aiEntries: [],
-      matches: [],
-      createdAt: new Date().toISOString(),
-      userPoints: 0,
-      aiPoints: 0
-    }
-  ];
+  // Mock user rank data - this should be a number according to the component
+  const userRank = 42;
 
   // Convert mockStockData to MarketData format
   const marketData: MarketData[] = mockStockData.map(stock => ({
@@ -131,8 +128,9 @@ const Dashboard: React.FC = () => {
   }));
 
   // Create a mock user with required properties
-  const mockUser = {
-    ...user,
+  const mockUser: User = {
+    id: user?.id || "mock-user-id",
+    username: user?.username || "Guest User",
     totalPredictions: 42,
     correctPredictions: 28,
     winsAgainstAi: 25,
@@ -142,6 +140,8 @@ const Dashboard: React.FC = () => {
     bestStreak: 7,
     points: 350,
     createdAt: new Date().toISOString(),
+    email: user?.email || "guest@example.com",
+    avatarUrl: user?.avatarUrl
   };
 
   return (
@@ -151,10 +151,10 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div className="md:col-span-2 space-y-6">
           <RecentPredictionsSection predictions={mockPredictions as Prediction[]} />
-          <UserStatsSection userRank={mockUserRank} />
+          <UserStatsSection userRank={userRank} />
         </div>
         <div className="space-y-6">
-          <GlobalBattleStats stats={mockGlobalStats} />
+          <GlobalBattleStats stats={mockGlobalStats as GlobalStats} />
           <MarketPulse marketData={marketData} stockData={mockStockData} />
         </div>
       </div>
