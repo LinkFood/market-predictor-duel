@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Trophy, Medal, ArrowUp, Users, PieChart } from "lucide-react";
@@ -27,7 +26,6 @@ const Leaderboard = () => {
         const data = await getLeaderboard();
         setLeaderboard(data);
         
-        // If user is logged in, get their rank
         if (user) {
           const rank = await getUserRank(user.id);
           setUserRank(rank);
@@ -52,10 +50,8 @@ const Leaderboard = () => {
     visible: { y: 0, opacity: 1, transition: { duration: 0.5 } }
   };
 
-  // Get user's position in the leaderboard if they're in it
   const userPosition = user ? leaderboard.findIndex(entry => entry.userId === user.id) : -1;
 
-  // Generate medal based on position
   const getMedal = (position: number) => {
     if (position === 0) return <Trophy className="h-5 w-5 text-amber-500" />;
     if (position === 1) return <Medal className="h-5 w-5 text-gray-400" />;
@@ -75,7 +71,6 @@ const Leaderboard = () => {
         <p className="text-muted-foreground">See how you rank against other predictors</p>
       </motion.div>
 
-      {/* User's rank card - only shown when logged in */}
       {user && (
         <motion.div
           variants={itemVariants}
@@ -217,7 +212,12 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 
         <div className="divide-y">
           {leaderboard.map((entry, index) => (
-            <div key={entry.userId} className={`grid grid-cols-12 py-4 px-4 items-center ${entry.userId === userPosition ? 'bg-primary/5' : 'hover:bg-muted/70'} transition-colors`}>
+            <div 
+              key={entry.userId} 
+              className={`grid grid-cols-12 py-4 px-4 items-center ${
+                index === userPosition ? 'bg-primary/5' : 'hover:bg-muted/70'
+              } transition-colors`}
+            >
               <div className="col-span-1 flex justify-center">
                 <div className={`flex items-center justify-center h-8 w-8 rounded-full ${
                   index === 0 ? "bg-amber-100 text-amber-700" : 
@@ -239,7 +239,7 @@ const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
                 <div>
                   <p className="font-medium">
                     {entry.username || `User ${index + 1}`}
-                    {entry.userId === userPosition && (
+                    {index === userPosition && (
                       <Badge className="ml-2 bg-primary/20 text-primary border-primary/30" variant="outline">You</Badge>
                     )}
                   </p>

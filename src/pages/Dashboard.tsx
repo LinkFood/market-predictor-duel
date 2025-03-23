@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
@@ -128,7 +129,8 @@ const Dashboard: React.FC = () => {
         const leaderboard = await getLeaderboard();
         
         if (userData && userData.user) {
-          const currentUserRank = leaderboard.find(item => item.userId === userData.user.id)?.rank || 0;
+          // Changed rank to position which exists in LeaderboardEntry
+          const currentUserRank = leaderboard.find(item => item.userId === userData.user.id)?.position || 0;
           setUserRank(currentUserRank);
         }
       } catch (error) {
