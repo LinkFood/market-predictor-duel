@@ -1,17 +1,31 @@
 
 import React from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PredictionTimeframe } from "@/types";
 
 interface TimeframeSelectorProps {
   timeframe: string;
-  setTimeframe: (value: string) => void;
+  onChange: (value: string) => void;
+  setTimeframe?: (value: string) => void; // Added for backward compatibility
 }
 
-const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({ timeframe, setTimeframe }) => {
+const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({ 
+  timeframe, 
+  onChange,
+  setTimeframe
+}) => {
+  // Handle change with support for both onChange and setTimeframe
+  const handleChange = (value: string) => {
+    onChange(value);
+    if (setTimeframe) {
+      setTimeframe(value);
+    }
+  };
+
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">Prediction timeframe</label>
-      <Select value={timeframe} onValueChange={setTimeframe}>
+      <Select value={timeframe} onValueChange={handleChange}>
         <SelectTrigger>
           <SelectValue placeholder="Select timeframe" />
         </SelectTrigger>

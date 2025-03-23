@@ -3,9 +3,9 @@ import React from 'react';
 import { CheckCircle, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
-  getPlanComparisonData, 
-  SubscriptionPlan
-} from '@/lib/subscription/plan-features';
+  SubscriptionPlan,
+  getPlanComparisonData
+} from '@/lib/subscription/subscription-context';
 
 interface PlanComparisonProps {
   onSelectPlan: (plan: SubscriptionPlan) => void;

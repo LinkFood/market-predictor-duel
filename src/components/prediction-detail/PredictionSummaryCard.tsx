@@ -10,10 +10,12 @@ import { PredictionCards } from "./PredictionCards";
 import { PredictionComparison } from "./PredictionComparison";
 import { PredictionResults } from "./PredictionResults";
 import { AIAnalysisCard } from "./AIAnalysisCard";
-import { Prediction } from "@/lib/prediction/types";
+import { Prediction } from "@/types";
+import { isPredictionResolved, adaptToLibPrediction } from "@/lib/prediction/prediction-adapter";
+import { adaptPrediction } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionSummaryCardProps {
-  prediction: Prediction;
+  prediction: any; // Allow any prediction type that will be adapted
   timeRemaining: string;
   getStatusBadge: () => JSX.Element;
   formatDate: (dateString: string) => string;
@@ -27,8 +29,20 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  // Convert prediction to expected format for components
-  const isResolved = prediction.status === "complete" || prediction.status === "completed";
+  // Add ticker field if missing from prediction
+  const predictionWithTicker = {
+    ...prediction,
+    ticker: prediction.ticker || prediction.targetName || ""
+  };
+  
+  // Convert prediction to standard format
+  const adaptedPrediction = adaptPrediction(predictionWithTicker);
+  
+  // Check if prediction is resolved
+  const isResolved = isPredictionResolved(adaptedPrediction);
+  
+  // If needed for any lib function that expects the lib prediction type
+  const libPrediction = adaptToLibPrediction(adaptedPrediction);
   
   return (
     <Card className="shadow-md border-0 overflow-hidden">
@@ -46,24 +60,24 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
         <div className="p-6 space-y-6">
           <PredictionStatusIndicator 
             prediction={{
-              ...prediction,
-              resolved: isResolved
+              ...adaptedPrediction,
+              resolvedAt: adaptedPrediction.resolvedAt
             }} 
             timeRemaining={timeRemaining} 
           />
           
-          <PredictionCards prediction={prediction} />
+          <PredictionCards prediction={adaptedPrediction} />
           
-          <PredictionComparison prediction={prediction} />
+          <PredictionComparison prediction={libPrediction} />
           
-          {isResolved && prediction.endValue && (
+          {isResolved && adaptedPrediction.endValue && (
             <PredictionResults 
-              prediction={prediction} 
+              prediction={adaptedPrediction} 
               formatDate={formatDate} 
             />
           )}
           
-          <AIAnalysisCard prediction={prediction} />
+          <AIAnalysisCard prediction={adaptedPrediction} />
         </div>
       </CardContent>
       

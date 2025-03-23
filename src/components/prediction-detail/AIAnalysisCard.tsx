@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AnalysisTabs } from "./AnalysisTabs";
 import { Prediction } from "@/types";
 import PremiumFeature from "@/components/subscription/PremiumFeature";
-import { trackAiAnalysisViewed } from "@/lib/subscription/usage-tracking";
+import { trackEvent } from "@/lib/analytics";
 import { useAuth } from "@/lib/auth-context";
 
 interface AIAnalysisCardProps {
@@ -18,7 +18,7 @@ export const AIAnalysisCard: React.FC<AIAnalysisCardProps> = ({ prediction }) =>
   // Track AI analysis view for premium features
   useEffect(() => {
     if (user) {
-      trackAiAnalysisViewed(user.id, prediction.id);
+      trackEvent('ai_analysis_viewed', { predictionId: prediction.id });
     }
   }, [prediction.id, user]);
   

@@ -13,9 +13,9 @@ import { getPredictionById } from "@/lib/prediction/user-predictions";
 import {
   PredictionForm,
   AnalyzingProgress,
-  PredictionResult,
   PredictionSidebar,
-  ApiConnectionTest
+  PredictionResult,
+  ApiConnectionTest,
 } from "@/components/prediction";
 
 const MakePrediction: React.FC = () => {

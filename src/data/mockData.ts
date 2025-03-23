@@ -1,11 +1,11 @@
-
 import { 
   User, 
   Prediction, 
   LeaderboardEntry, 
   MarketData, 
   GlobalStats,
-  PredictionDirection
+  PredictionDirection,
+  PredictionStatus
 } from "../types";
 
 // Mock current user
@@ -69,7 +69,6 @@ export const mockPredictions: Prediction[] = [
     startingValue: 4765.98,
     createdAt: randomPastDate(),
     resolvesAt: randomFutureDate(),
-    resolved: false,
     status: "pending"
   },
   {
@@ -97,7 +96,6 @@ export const mockPredictions: Prediction[] = [
     startingValue: 2832.45,
     createdAt: "2023-11-20T14:30:00Z",
     resolvesAt: "2023-12-20T14:30:00Z",
-    resolved: false,
     status: "pending"
   },
   {
@@ -125,13 +123,12 @@ export const mockPredictions: Prediction[] = [
     startingValue: 187.65,
     createdAt: "2023-11-25T09:15:00Z",
     resolvesAt: "2023-11-26T09:15:00Z",
-    resolved: true,
+    status: "completed",
     finalValue: 191.24,
     percentChange: 1.91,
     actualResult: "bullish",
     winner: "ai",
-    resolvedAt: "2023-11-26T09:15:00Z",
-    status: "incorrect"
+    resolvedAt: "2023-11-26T09:15:00Z"
   },
   {
     id: "p4",
@@ -158,13 +155,12 @@ export const mockPredictions: Prediction[] = [
     startingValue: 14932.53,
     createdAt: "2023-11-18T10:00:00Z",
     resolvesAt: "2023-11-25T10:00:00Z",
-    resolved: true,
+    status: "completed",
     finalValue: 15982.01,
     percentChange: 7.03,
     actualResult: "bullish",
     winner: "both",
-    resolvedAt: "2023-11-25T10:00:00Z",
-    status: "correct"
+    resolvedAt: "2023-11-25T10:00:00Z"
   },
   {
     id: "p5",
@@ -191,13 +187,12 @@ export const mockPredictions: Prediction[] = [
     startingValue: 378.92,
     createdAt: "2023-10-30T11:30:00Z",
     resolvesAt: "2023-11-30T11:30:00Z",
-    resolved: true,
+    status: "completed",
     finalValue: 395.18,
     percentChange: 4.29,
     actualResult: "bullish",
     winner: "both",
-    resolvedAt: "2023-11-30T11:30:00Z",
-    status: "correct"
+    resolvedAt: "2023-11-30T11:30:00Z"
   }
 ];
 
@@ -436,7 +431,6 @@ export const generatePrediction = (
     startingValue: Math.round(startingValue * 100) / 100,
     createdAt: new Date().toISOString(),
     resolvesAt: randomFutureDate(),
-    resolved: false,
-    status: "pending"
+    status: "pending" as PredictionStatus
   };
 };

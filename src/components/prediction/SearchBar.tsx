@@ -8,12 +8,19 @@ import { cn } from "@/lib/utils";
 import { FEATURES } from "@/lib/config";
 import SearchResults from "./SearchResults";
 import { useSearchStocks } from "./hooks/useSearchStocks";
+import { PredictionCategory } from "@/types";
 
 interface SearchBarProps {
   onSelectStock: (stock: any) => void;
+  selectedTarget?: { name: string; type: PredictionCategory };
+  onSelectTarget?: (selected: { name: string; type: PredictionCategory }) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ 
+  onSelectStock, 
+  selectedTarget,
+  onSelectTarget
+}) => {
   const {
     isLoading,
     searchQuery,
@@ -29,7 +36,25 @@ const SearchBar: React.FC<SearchBarProps> = ({ onSelectStock }) => {
   const handleSelectStock = (stock: any, newQuery: string) => {
     setShowSearchResults(false);
     setSearchQuery(newQuery);
+    
+    // If onSelectTarget provided, call it with the selected stock
+    if (onSelectTarget) {
+      onSelectTarget({
+        name: stock.name || stock.symbol,
+        type: 'stock'
+      });
+    } else {
+      // Fallback to original handler
+      onSelectStock(stock);
+    }
   };
+
+  // Initialize search query if there's a selectedTarget
+  React.useEffect(() => {
+    if (selectedTarget?.name && !searchQuery) {
+      setSearchQuery(selectedTarget.name);
+    }
+  }, [selectedTarget, searchQuery]);
 
   return (
     <div className="space-y-2">

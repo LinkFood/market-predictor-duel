@@ -4,7 +4,8 @@ import { Award, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Prediction } from "@/lib/prediction/types";
+import { Prediction } from "@/types";
+import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionResultsProps {
   prediction: Prediction;
@@ -15,20 +16,18 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
   prediction, 
   formatDate 
 }) => {
-  if (!prediction.status || 
-    (prediction.status !== "complete" && prediction.status !== "completed") || 
-    !prediction.endValue) {
+  if (!isPredictionResolved(prediction) || !prediction.endValue) {
     return null;
   }
 
   const resolvedAtDate = prediction.resolvedAt || "";
   
-  // Calculate percent change if not provided
-  const percentChange = prediction.percent_change !== undefined ? prediction.percent_change :
+  // Calculate percent change
+  const percentChange = prediction.percentChange !== undefined ? prediction.percentChange :
     ((prediction.endValue - prediction.startingValue) / prediction.startingValue) * 100;
   
-  // Get actual result from appropriate field
-  const actualResult = prediction.actual_result || 
+  // Get actual result
+  const actualResult = prediction.actualResult || 
     (percentChange >= 0 ? "uptrend" : "downtrend");
   
   return (
@@ -101,22 +100,22 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
           <div className="flex flex-col items-center sm:items-end">
             <div className="text-sm font-medium text-muted-foreground">Winner</div>
             <div className="mt-1">
-              {prediction.outcome === "user_win" && (
+              {prediction.winner === "user" && (
                 <Badge className="bg-indigo-600 hover:bg-indigo-700 text-base px-3 py-1">
                   🏆 You Beat the AI!
                 </Badge>
               )}
-              {prediction.outcome === "ai_win" && (
+              {prediction.winner === "ai" && (
                 <Badge className="bg-indigo-600 hover:bg-indigo-700 text-base px-3 py-1">
                   🤖 AI Won This Round
                 </Badge>
               )}
-              {prediction.outcome === "tie" && (
+              {prediction.winner === "both" && (
                 <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-base px-3 py-1">
                   ✓ Both Correct
                 </Badge>
               )}
-              {!prediction.outcome && (
+              {prediction.winner === "neither" && (
                 <Badge className="bg-slate-600 hover:bg-slate-700 text-base px-3 py-1">
                   ✗ Result Unavailable
                 </Badge>
