@@ -118,7 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signUp = async (email: string, password: string, username: string) => {
     try {
-      return await signUpWithEmail(email, password, username);
+      const response = await signUpWithEmail(email, password, username);
+      return { error: response.error || null };
     } catch (error) {
       console.error('Error during signup:', error);
       return { error };
