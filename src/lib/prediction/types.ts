@@ -1,4 +1,3 @@
-
 /**
  * Prediction types
  */
@@ -101,21 +100,12 @@ export interface UserStats {
 // Type for leaderboard entries
 export interface LeaderboardEntry {
   userId: string;
+  position: number;
   username: string;
-  predictionsCount: number;
-  winCount: number;
+  avatarUrl: string | null;
+  totalPredictions: number;
   accuracy: number;
   points: number;
-  vsAI: {
-    wins: number;
-    losses: number;
-    winRate: number;
-  };
-  rank: number;
-  // Add these for compatibility with existing code
-  totalPoints?: number;
-  winRate?: number;
-  totalPredictions?: number;
-  avatarUrl?: string;
-  winRateAgainstAi?: number;
+  winsAgainstAI: number;
+  joinDate: string | null;
 }
