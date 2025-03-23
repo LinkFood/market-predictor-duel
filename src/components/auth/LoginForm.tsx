@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -62,13 +63,11 @@ const LoginForm: React.FC = () => {
         data: { remember: data.remember }
       };
       
+      // Fixed: the expiresIn is not a property of options, but rather part of the signInWithPassword method options
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        options: {
-          ...options,
-          expiresIn: data.remember ? 60 * 60 * 24 * 30 : 60 * 60 * 8
-        }
+        options
       });
       
       if (authError) {
