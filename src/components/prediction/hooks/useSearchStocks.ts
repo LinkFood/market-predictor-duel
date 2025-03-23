@@ -3,12 +3,13 @@ import { useState } from "react";
 import { searchStocks } from "@/lib/market";
 import { useToast } from "@/hooks/use-toast";
 import { FEATURES } from "@/lib/config";
+import { StockData } from "@/lib/market/types";
 
 export function useSearchStocks() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<StockData[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [usingMockData, setUsingMockData] = useState(false);

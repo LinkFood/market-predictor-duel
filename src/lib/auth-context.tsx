@@ -1,330 +1,286 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from './supabase';
-import { DEV_USER, DEV_SESSION } from './dev-mode';
-import LoadingScreen from '@/components/LoadingScreen';
-import { toast } from '@/hooks/use-toast';
-import { 
-  signInWithEmail, 
-  signUpWithEmail, 
-  signOut as authSignOut, 
-  getCurrentSession,
-  getUserProfile,
-  UserProfile
-} from './auth-service';
 
-// Enable dev mode to skip real authentication for development
-const USE_DEV_MODE = false;
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { FEATURES } from './config';
 
-// Define the context type
-type AuthContextType = {
+// Define user type
+interface User {
+  id: string;
+  email?: string;
+  username?: string;
+  avatarUrl?: string;
+}
+
+// Define auth context type
+interface AuthContextType {
   user: User | null;
-  profile: UserProfile | null;
-  session: Session | null;
-  isLoading: boolean;
   isInitialized: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string, username: string) => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
-};
+  isLoading: boolean;
+  error: string | null;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  register: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
+  updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
+  devLogin: () => Promise<{ success: boolean; error?: string }>;
+}
 
-// Create the context with default values
+// Create auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Create a provider component
+// Create dev user for testing
+const DEV_USER: User = {
+  id: 'user-123',
+  email: 'dev@example.com',
+  username: 'DevUser',
+  avatarUrl: null
+};
+
+// Auth provider component
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // In dev mode, start with a user already logged in
-  const [user, setUser] = useState<User | null>(USE_DEV_MODE ? DEV_USER : null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [session, setSession] = useState<Session | null>(USE_DEV_MODE ? DEV_SESSION : null);
-  const [isLoading, setIsLoading] = useState(!USE_DEV_MODE);
-  const [isInitialized, setIsInitialized] = useState(USE_DEV_MODE);
-  const [authError, setAuthError] = useState<Error | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Log initial authentication state for debugging
+  // Initialize auth on load
   useEffect(() => {
-    console.log('AuthProvider initialized with:', {
-      devMode: USE_DEV_MODE,
-      hasUser: !!user,
-      hasSession: !!session,
-      isInitialized
-    });
-  }, []);
-
-  // Fetch user profile data
-  const fetchUserProfile = async (userId: string) => {
-    if (USE_DEV_MODE) {
-      // Set default profile for dev mode
-      setProfile({
-        id: DEV_USER.id,
-        username: DEV_USER.user_metadata?.username || 'DevUser',
-        email: DEV_USER.email
-      });
-      return;
-    }
-
-    try {
-      const { profile, error } = await getUserProfile(userId);
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return;
-      }
-      if (profile) {
-        setProfile(profile);
-      }
-    } catch (error) {
-      console.error('Unexpected error fetching profile:', error);
-    }
-  };
-
-  // Public method to refresh profile data
-  const refreshProfile = async () => {
-    if (user) {
-      await fetchUserProfile(user.id);
-    }
-  };
-
-  useEffect(() => {
-    // If dev mode is enabled, skip actual authentication
-    if (USE_DEV_MODE) {
-      console.log('🧪 Development mode: Using mock authentication');
-      setUser(DEV_USER);
-      setSession(DEV_SESSION);
-      fetchUserProfile(DEV_USER.id);
-      setIsInitialized(true);
-      setIsLoading(false);
-      return;
-    }
-    
-    // Check for active session on mount
-    const getInitialSession = async () => {
-      setIsLoading(true);
-      
-      // Check if Supabase is properly configured
-      if (!isSupabaseConfigured()) {
-        console.error('Supabase is not configured properly');
-        toast({
-          variant: "destructive",
-          title: "Configuration Error",
-          description: "Supabase is not configured correctly. Please check your configuration.",
-        });
-        
-        setIsLoading(false);
-        setIsInitialized(true);
-        return;
-      }
-      
+    const initializeAuth = async () => {
       try {
-        const { success, session, user, error } = await getCurrentSession();
+        // Check for existing session
+        const { data, error } = await supabase.auth.getSession();
         
-        if (!success) {
-          throw new Error(error);
+        if (error) {
+          console.error('Error getting session:', error);
+          setError(error.message);
+          setIsLoading(false);
+          setIsInitialized(true);
+          return;
         }
         
-        setSession(session);
-        setUser(user ?? null);
-        
-        if (user) {
-          await fetchUserProfile(user.id);
+        if (data?.session) {
+          // Get user details
+          const { data: userData, error: userError } = await supabase.auth.getUser();
+          
+          if (userError) {
+            console.error('Error getting user:', userError);
+            setError(userError.message);
+            setIsLoading(false);
+            setIsInitialized(true);
+            return;
+          }
+          
+          if (userData?.user) {
+            // Get profile data
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('username, avatar_url')
+              .eq('id', userData.user.id)
+              .single();
+            
+            setUser({
+              id: userData.user.id,
+              email: userData.user.email,
+              username: profileData?.username || userData.user.email?.split('@')[0],
+              avatarUrl: profileData?.avatar_url
+            });
+          }
         }
-      } catch (error) {
-        console.error('Error getting session:', error);
-        setAuthError(error as Error);
-        
-        toast({
-          variant: "destructive",
-          title: "Authentication Error",
-          description: "Failed to get user session. Please try again."
-        });
+      } catch (err) {
+        console.error('Error initializing auth:', err);
+        setError('Failed to initialize authentication');
       } finally {
         setIsLoading(false);
         setIsInitialized(true);
       }
     };
 
-    getInitialSession();
+    initializeAuth();
 
-    if (!USE_DEV_MODE) {
-      // Listen for auth changes
-      const { data: authListener } = supabase.auth.onAuthStateChange(
-        async (event, newSession) => {
-          console.log('Auth state changed:', event);
-          setSession(newSession);
-          setUser(newSession?.user ?? null);
+    // Subscribe to auth changes
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const { data: userData } = await supabase.auth.getUser();
+        
+        if (userData?.user) {
+          // Get profile data
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('username, avatar_url')
+            .eq('id', userData.user.id)
+            .single();
           
-          if (newSession?.user) {
-            await fetchUserProfile(newSession.user.id);
-          } else {
-            setProfile(null);
-          }
+          setUser({
+            id: userData.user.id,
+            email: userData.user.email,
+            username: profileData?.username || userData.user.email?.split('@')[0],
+            avatarUrl: profileData?.avatar_url
+          });
         }
-      );
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
 
-      // Cleanup subscription on unmount
-      return () => {
-        authListener.subscription.unsubscribe();
-      };
-    }
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  // Sign in function
-  const signIn = async (email: string, password: string) => {
-    // In dev mode, auto sign in - no need to check credentials
-    if (USE_DEV_MODE) {
-      console.log('🧪 Development mode: Auto signing in');
-      setUser(DEV_USER);
-      setSession(DEV_SESSION);
-      fetchUserProfile(DEV_USER.id);
-      return { error: null };
-    }
-    
+  // Login function
+  const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
-      const { success, error, user } = await signInWithEmail(email, password);
       
-      if (!success) {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: error || "Authentication failed"
-        });
-        return { error };
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      if (error) {
+        return { success: false, error: error.message };
       }
       
-      // Profile will be updated through auth state change listener
-      return { error: null };
-    } catch (error: any) {
-      console.error("Sign in error:", error);
-      toast({
-        variant: "destructive",
-        title: "Login Error",
-        description: "An unexpected error occurred during login."
-      });
-      return { error };
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Failed to log in' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Sign up function
-  const signUp = async (email: string, password: string, username: string) => {
-    // In dev mode, auto sign up
-    if (USE_DEV_MODE) {
-      console.log('🧪 Development mode: Auto signing up');
-      setUser(DEV_USER);
-      setSession(DEV_SESSION);
-      fetchUserProfile(DEV_USER.id);
-      return { error: null };
-    }
-    
+  // Register function
+  const register = async (email: string, password: string, username: string) => {
     try {
       setIsLoading(true);
-      const { success, error } = await signUpWithEmail(email, password, username);
       
-      if (!success) {
-        toast({
-          variant: "destructive",
-          title: "Registration Failed",
-          description: error || "Could not create account"
-        });
-        return { error };
-      }
-      
-      if (error && error.includes('confirmation')) {
-        // This is a success with email confirmation required
-        toast({
-          title: "Registration Successful",
-          description: "Please check your email to confirm your account."
-        });
-      } else {
-        toast({
-          title: "Registration Successful",
-          description: "Your account has been created successfully."
-        });
-      }
-      
-      return { error: null };
-    } catch (error: any) {
-      console.error("Sign up error:", error);
-      toast({
-        variant: "destructive",
-        title: "Registration Error",
-        description: "An unexpected error occurred during registration."
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username
+          }
+        }
       });
-      return { error };
+      
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Failed to register' };
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Sign out function
-  const signOut = async () => {
-    if (USE_DEV_MODE) {
-      // In dev mode, we can still clear the user state but it will be reset on reload
-      console.log('🧪 Development mode: Signing out (temporarily)');
+  // Logout function
+  const logout = async () => {
+    try {
+      setIsLoading(true);
+      await supabase.auth.signOut();
       setUser(null);
-      setSession(null);
-      setProfile(null);
-      toast({
-        title: "Signed Out",
-        description: "You have been signed out (development mode)."
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const { success, error } = await authSignOut();
-      
-      if (!success) {
-        toast({
-          variant: "destructive",
-          title: "Sign Out Error",
-          description: error || "Could not sign out"
-        });
-        return;
-      }
-      
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out."
-      });
-    } catch (error) {
-      console.error("Sign out error:", error);
-      toast({
-        variant: "destructive",
-        title: "Sign Out Error",
-        description: "An error occurred while signing out."
-      });
+    } catch (err) {
+      console.error('Error logging out:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // If still initializing auth, show loading screen
-  if (!isInitialized && !USE_DEV_MODE) {
-    return <LoadingScreen message="Initializing authentication..." />;
-  }
+  // Reset password function
+  const resetPassword = async (email: string) => {
+    try {
+      setIsLoading(true);
+      
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+      
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Failed to send password reset email' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // Create the value object
+  // Update profile function
+  const updateProfile = async (updates: Partial<User>) => {
+    try {
+      setIsLoading(true);
+      
+      if (!user) {
+        return { success: false, error: 'Not logged in' };
+      }
+      
+      // Update profile in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username: updates.username,
+          avatar_url: updates.avatarUrl
+        })
+        .eq('id', user.id);
+      
+      if (error) {
+        return { success: false, error: error.message };
+      }
+      
+      // Update local user state
+      setUser({
+        ...user,
+        ...updates
+      });
+      
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Failed to update profile' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Dev login function for development environment
+  const devLogin = async () => {
+    if (!FEATURES.allowDevLogin) {
+      return { success: false, error: 'Developer login is disabled' };
+    }
+    
+    try {
+      setIsLoading(true);
+      // Set mock user for development
+      setUser(DEV_USER);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: 'Failed to perform developer login' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
-    profile,
-    session,
-    isLoading,
     isInitialized,
-    signIn,
-    signUp,
-    signOut,
-    refreshProfile,
+    isLoading,
+    error,
+    login,
+    register,
+    logout,
+    resetPassword,
+    updateProfile,
+    devLogin
   };
 
-  // Return the provider with the value
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-// Custom hook for using the auth context
+// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

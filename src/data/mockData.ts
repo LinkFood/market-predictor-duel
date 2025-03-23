@@ -1,34 +1,38 @@
-
 export const mockStockData = [
   {
     name: "S&P 500",
     value: 4393.63,
     change: 27.37,
-    changePercent: 0.63
+    changePercent: 0.63,
+    symbol: "SPY"
   },
   {
     name: "Nasdaq",
     value: 13638.59,
     change: 128.41,
-    changePercent: 0.95
+    changePercent: 0.95,
+    symbol: "QQQ"
   },
   {
     name: "Dow Jones",
     value: 34212.24,
     change: 183.56,
-    changePercent: 0.54
+    changePercent: 0.54,
+    symbol: "DIA"
   },
   {
     name: "Russell 2000",
     value: 1854.21,
     change: 12.87,
-    changePercent: 0.70
+    changePercent: 0.70,
+    symbol: "IWM"
   },
   {
     name: "VIX",
     value: 16.85,
     change: -0.52,
-    changePercent: -3.00
+    changePercent: -3.00,
+    symbol: "VIX"
   }
 ];
 
@@ -75,7 +79,6 @@ export function generateMultipleStockData(names: string[], count: number) {
   return data;
 }
 
-// Update mockPredictions to include ticker and predictionType fields
 export const mockPredictions = [
   {
     id: "pred-001",
@@ -194,8 +197,8 @@ export const mockPredictions = [
       reasoning: "Economic reopening and increased infrastructure spending are providing strong tailwinds for the industrial and value-oriented companies that make up much of the Dow Jones index."
     },
     timeframe: "1w",
-    startingValue: 34123.45,  // Removed comma
-    endValue: 35213.12,       // Removed comma
+    startingValue: 34123.45,
+    endValue: 35213.12,
     percentChange: 3.19,
     createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     resolvesAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -424,7 +427,6 @@ export const mockPredictions = [
   }
 ];
 
-// Function to generate a random prediction
 function generateRandomPrediction() {
   const targetTypes = ["market", "sector", "stock"];
   const timeframes = ["1d", "1w", "1m"];
@@ -455,11 +457,224 @@ function generateRandomPrediction() {
   };
 }
 
-// Function to generate multiple random predictions
 export function generateMultipleRandomPredictions(count: number) {
   const predictions = [];
   for (let i = 0; i < count; i++) {
     predictions.push(generateRandomPrediction());
   }
   return predictions;
+}
+
+export const mockBrackets = [
+  {
+    id: "bracket-001",
+    userId: "user-123",
+    name: "Weekly Tech Competition",
+    timeframe: "weekly",
+    size: 3,
+    status: "active",
+    aiPersonality: "MomentumTrader",
+    userEntries: [
+      {
+        id: "entry-001",
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 173.45,
+        marketCap: "large",
+        sector: "Technology",
+        order: 1
+      },
+      {
+        id: "entry-002",
+        symbol: "MSFT",
+        name: "Microsoft Corporation",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 310.65,
+        marketCap: "large",
+        sector: "Technology",
+        order: 2
+      },
+      {
+        id: "entry-003",
+        symbol: "GOOGL",
+        name: "Alphabet Inc.",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 120.00,
+        marketCap: "large",
+        sector: "Technology",
+        order: 3
+      }
+    ],
+    aiEntries: [
+      {
+        id: "entry-004",
+        symbol: "NVDA",
+        name: "NVIDIA Corporation",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 420.00,
+        marketCap: "large",
+        sector: "Technology",
+        order: 1
+      },
+      {
+        id: "entry-005",
+        symbol: "AMD",
+        name: "Advanced Micro Devices, Inc.",
+        entryType: "stock",
+        direction: "bearish",
+        startPrice: 110.25,
+        marketCap: "large",
+        sector: "Technology",
+        order: 2
+      },
+      {
+        id: "entry-006",
+        symbol: "INTC",
+        name: "Intel Corporation",
+        entryType: "stock",
+        direction: "bearish",
+        startPrice: 32.50,
+        marketCap: "large",
+        sector: "Technology",
+        order: 3
+      }
+    ],
+    matches: [
+      {
+        id: "match-001",
+        roundNumber: 1,
+        matchNumber: 1,
+        entry1Id: "entry-001",
+        entry2Id: "entry-004",
+        completed: false
+      },
+      {
+        id: "match-002",
+        roundNumber: 1,
+        matchNumber: 2,
+        entry1Id: "entry-002",
+        entry2Id: "entry-005",
+        completed: false
+      },
+      {
+        id: "match-003",
+        roundNumber: 1,
+        matchNumber: 3,
+        entry1Id: "entry-003",
+        entry2Id: "entry-006",
+        completed: false
+      }
+    ],
+    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    userPoints: 0,
+    aiPoints: 0
+  },
+  {
+    id: "bracket-002",
+    userId: "user-123",
+    name: "Monthly Market Competition",
+    timeframe: "monthly",
+    size: 6,
+    status: "pending",
+    aiPersonality: "ValueHunter",
+    userEntries: [
+      {
+        id: "entry-007",
+        symbol: "SPY",
+        name: "S&P 500 ETF",
+        entryType: "etf",
+        direction: "bullish",
+        startPrice: 430.00,
+        marketCap: "large",
+        sector: "Market Index",
+        order: 1
+      },
+      {
+        id: "entry-008",
+        symbol: "QQQ",
+        name: "Nasdaq ETF",
+        entryType: "etf",
+        direction: "bullish",
+        startPrice: 360.00,
+        marketCap: "large",
+        sector: "Market Index",
+        order: 2
+      }
+    ],
+    aiEntries: [],
+    matches: [],
+    startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + 32 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    userPoints: 0,
+    aiPoints: 0
+  }
+];
+
+export function createMockBracket(timeframe, size, entries, aiPersonality = "MomentumTrader") {
+  const bracketId = `bracket-${Math.floor(Math.random() * 1000)}`;
+  
+  const userEntries = entries.map((entry, index) => ({
+    id: `entry-user-${index}`,
+    symbol: entry.symbol,
+    name: `${entry.symbol} Inc.`,
+    entryType: "stock",
+    direction: entry.direction,
+    startPrice: Math.random() * 500 + 50,
+    marketCap: "large",
+    sector: "Technology",
+    order: index + 1
+  }));
+  
+  const aiEntries = Array(size).fill(null).map((_, index) => {
+    const mockSymbols = ["NVDA", "AMZN", "GOOG", "FB", "NFLX", "TSLA", "DIS", "PYPL", "CRM"];
+    return {
+      id: `entry-ai-${index}`,
+      symbol: mockSymbols[index % mockSymbols.length],
+      name: `${mockSymbols[index % mockSymbols.length]} Inc.`,
+      entryType: "stock",
+      direction: Math.random() > 0.5 ? "bullish" : "bearish",
+      startPrice: Math.random() * 500 + 50,
+      marketCap: "large",
+      sector: "Technology",
+      order: index + 1
+    };
+  });
+  
+  const matches = [];
+  for (let i = 0; i < size; i++) {
+    matches.push({
+      id: `match-${i}`,
+      roundNumber: 1,
+      matchNumber: i + 1,
+      entry1Id: userEntries[i]?.id,
+      entry2Id: aiEntries[i]?.id,
+      completed: false
+    });
+  }
+  
+  return {
+    id: bracketId,
+    userId: "user-123",
+    name: `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Competition`,
+    timeframe,
+    size,
+    status: "pending",
+    aiPersonality,
+    userEntries,
+    aiEntries,
+    matches,
+    startDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+    endDate: new Date(Date.now() + (timeframe === "daily" ? 1 : timeframe === "weekly" ? 7 : 30) * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+    userPoints: 0,
+    aiPoints: 0
+  };
 }

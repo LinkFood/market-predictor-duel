@@ -4,15 +4,16 @@ import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 import DataSourceIndicator from "./form/DataSourceIndicator";
+import { StockData } from "@/lib/market/types";
 
 interface SearchResultsProps {
-  searchResults: any[];
+  searchResults: StockData[];
   showSearchResults: boolean;
   searchQuery: string;
   error: string | null;
   usingMockData: boolean;
-  onSelectStock: (stock: any) => void;
-  onSelect: (stock: any, query: string) => void;
+  onSelectStock: (stock: StockData) => void;
+  onSelect: (stock: StockData, query: string) => void;
 }
 
 const SearchResults: React.FC<SearchResultsProps> = ({
