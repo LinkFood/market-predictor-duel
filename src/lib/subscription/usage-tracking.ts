@@ -1,160 +1,180 @@
-/**
- * Usage Tracking Service
- * Tracks API calls, predictions, and resource usage for both analytics and billing
- */
+
 import { supabase } from '@/integrations/supabase/client';
-import { getUserPlan } from './plan-features';
+import { logError } from '../error-handling';
 
-// Usage event types
-export enum UsageEventType {
-  API_CALL = 'api_call',
-  PREDICTION_CREATED = 'prediction_created',
-  AI_ANALYSIS_VIEWED = 'ai_analysis_viewed',
-  MARKET_DATA_FETCHED = 'market_data_fetched'
-}
+// Event types for tracking
+export type UsageEventType = 
+  | 'prediction_created'
+  | 'prediction_resolved'
+  | 'prediction_viewed'
+  | 'analysis_viewed'
+  | 'ai_analysis_viewed'
+  | 'subscription_changed'
+  | 'login';
 
-// Usage event interface
+// Define types for tables not in the Supabase types.ts
 interface UsageEvent {
-  userId: string;
-  eventType: UsageEventType;
-  resourceId?: string;
-  metadata?: Record<string, any>;
+  id?: string;
+  user_id: string;
+  event_type: UsageEventType;
+  event_date?: string;
+  details?: Record<string, any>;
 }
 
 /**
- * Track a usage event
+ * Track a usage event for the current user
  */
-export async function trackUsage(event: UsageEvent): Promise<void> {
+export async function trackUsageEvent(
+  eventType: UsageEventType, 
+  details?: Record<string, any>
+): Promise<boolean> {
   try {
-    console.log('Tracking usage event:', event);
+    // Get the current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
-    // Create usage record in database
+    if (userError || !user) {
+      console.warn('Cannot track usage: No authenticated user');
+      return false;
+    }
+    
+    // Use custom type assertion for the table not in the schema types
+    const eventData: UsageEvent = {
+      user_id: user.id,
+      event_type: eventType,
+      details: details || {}
+    };
+    
+    // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
     const { error } = await supabase
       .from('usage_events')
-      .insert({
-        user_id: event.userId,
-        event_type: event.eventType,
-        resource_id: event.resourceId,
-        metadata: event.metadata,
-        plan: getUserPlan()
-      });
+      .insert(eventData);
     
     if (error) {
-      console.error('Error tracking usage:', error);
+      console.error('Error tracking usage event:', error);
+      return false;
     }
+    
+    return true;
   } catch (error) {
-    // Don't let tracking errors affect the main app flow
-    console.error('Failed to track usage:', error);
+    logError(error, 'trackUsageEvent');
+    console.error('Error tracking usage event:', error);
+    return false;
   }
 }
 
 /**
- * Track an API call
+ * Track when a prediction is created
  */
-export async function trackApiCall(
-  userId: string, 
-  apiName: string, 
-  endpoint: string
-): Promise<void> {
-  await trackUsage({
-    userId,
-    eventType: UsageEventType.API_CALL,
-    metadata: {
-      apiName,
-      endpoint,
-      timestamp: new Date().toISOString()
-    }
+export function trackPredictionCreated(predictionId: string, predictionType: string): Promise<boolean> {
+  return trackUsageEvent('prediction_created', { 
+    prediction_id: predictionId,
+    prediction_type: predictionType
   });
 }
 
 /**
- * Track prediction creation
+ * Track when a prediction is resolved
  */
-export async function trackPredictionCreated(
+export function trackPredictionResolved(predictionId: string, outcome: string): Promise<boolean> {
+  return trackUsageEvent('prediction_resolved', { 
+    prediction_id: predictionId,
+    outcome 
+  });
+}
+
+/**
+ * Track when AI analysis is viewed
+ */
+export function trackAiAnalysisViewed(predictionId: string): Promise<boolean> {
+  return trackUsageEvent('ai_analysis_viewed', {
+    prediction_id: predictionId
+  });
+}
+
+/**
+ * Get usage statistics for a specific event type in a date range
+ */
+export async function getUserEventCount(
   userId: string,
-  predictionId: string,
-  ticker: string,
-  predictionType: string
-): Promise<void> {
-  await trackUsage({
-    userId,
-    eventType: UsageEventType.PREDICTION_CREATED,
-    resourceId: predictionId,
-    metadata: {
-      ticker,
-      predictionType,
-      timestamp: new Date().toISOString()
-    }
-  });
-}
-
-/**
- * Track AI analysis view
- */
-export async function trackAiAnalysisViewed(
-  userId: string,
-  predictionId: string
-): Promise<void> {
-  await trackUsage({
-    userId,
-    eventType: UsageEventType.AI_ANALYSIS_VIEWED,
-    resourceId: predictionId,
-    metadata: {
-      timestamp: new Date().toISOString()
-    }
-  });
-}
-
-/**
- * Get usage summary for a user
- */
-export async function getUserUsageSummary(userId: string): Promise<{
-  totalPredictions: number;
-  totalApiCalls: number;
-  costEstimate: number;
-}> {
+  eventType: UsageEventType,
+  startDate: Date,
+  endDate: Date = new Date()
+): Promise<number> {
   try {
-    // In a real implementation, query database for usage summary
-    // For now, return mock data
-    
-    // Get prediction count
-    const { data: predictions, error: predictionError } = await supabase
-      .from('predictions')
-      .select('count')
-      .eq('user_id', userId);
-    
-    if (predictionError) {
-      throw predictionError;
-    }
-    
-    // Get API call count
-    const { data: apiCalls, error: apiCallError } = await supabase
+    // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
+    const { count, error } = await supabase
       .from('usage_events')
-      .select('count')
+      .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .eq('event_type', UsageEventType.API_CALL);
+      .eq('event_type', eventType)
+      .gte('event_date', startDate.toISOString())
+      .lte('event_date', endDate.toISOString());
     
-    if (apiCallError) {
-      throw apiCallError;
+    if (error) {
+      console.error('Error getting usage count:', error);
+      return 0;
     }
     
-    // Calculate an estimated cost
-    // This would be based on your actual cost structure
-    const totalPredictions = predictions?.length || 0;
-    const totalApiCalls = apiCalls?.length || 0;
-    const costEstimate = totalPredictions * 0.02 + totalApiCalls * 0.001;
-    
-    return {
-      totalPredictions,
-      totalApiCalls,
-      costEstimate
-    };
+    return count || 0;
   } catch (error) {
-    console.error('Error fetching usage summary:', error);
+    logError(error, 'getUserEventCount');
+    console.error('Error getting usage count:', error);
+    return 0;
+  }
+}
+
+/**
+ * Get usage statistics for the current day 
+ */
+export async function getTodayUsageStats(userId: string): Promise<Record<UsageEventType, number>> {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const result: Record<UsageEventType, number> = {
+      prediction_created: 0,
+      prediction_resolved: 0,
+      prediction_viewed: 0,
+      analysis_viewed: 0,
+      ai_analysis_viewed: 0,
+      subscription_changed: 0,
+      login: 0
+    };
+    
+    // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
+    const { data, error } = await supabase
+      .from('usage_events')
+      .select('event_type')
+      .eq('user_id', userId)
+      .gte('event_date', today.toISOString());
+    
+    if (error) {
+      console.error('Error getting usage stats:', error);
+      return result;
+    }
+    
+    if (!data) return result;
+    
+    // Count events by type
+    data.forEach(event => {
+      const eventType = event.event_type as UsageEventType;
+      if (eventType in result) {
+        result[eventType]++;
+      }
+    });
+    
+    return result;
+  } catch (error) {
+    logError(error, 'getTodayUsageStats');
+    console.error('Error getting today usage stats:', error);
     return {
-      totalPredictions: 0,
-      totalApiCalls: 0,
-      costEstimate: 0
+      prediction_created: 0,
+      prediction_resolved: 0,
+      prediction_viewed: 0,
+      analysis_viewed: 0,
+      ai_analysis_viewed: 0,
+      subscription_changed: 0,
+      login: 0
     };
   }
 }

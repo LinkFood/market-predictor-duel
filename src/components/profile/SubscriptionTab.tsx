@@ -1,3 +1,4 @@
+
 /**
  * Subscription Tab Component
  * Displays user subscription details and upgrade options
@@ -7,7 +8,7 @@ import { CreditCard, Sparkles, Zap, CheckCircle, Clock } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { SubscriptionPlan, formatPlanPrice } from '@/lib/subscription/plan-features';
+import { SubscriptionPlan } from '@/lib/subscription/plan-features';
 import { useSubscription } from '@/lib/subscription/subscription-context';
 import PlanComparison from './PlanComparison';
 
@@ -54,7 +55,8 @@ const SubscriptionTab: React.FC<SubscriptionTabProps> = ({ isLoading = false }) 
                 )}
               </h3>
               <p className="text-sm text-muted-foreground mt-1">
-                {formatPlanPrice(plan)}
+                {plan === SubscriptionPlan.FREE ? 'Free' : 
+                 plan === SubscriptionPlan.BASIC ? '$9.99/month' : '$29.99/month'}
               </p>
             </div>
             {!isLoading && (
@@ -138,7 +140,7 @@ const SubscriptionTab: React.FC<SubscriptionTabProps> = ({ isLoading = false }) 
       {/* Plan comparison */}
       <div className="mt-8">
         <h2 className="text-xl font-bold mb-4">Subscription Plans</h2>
-        <PlanComparison onSelectPlan={handleUpgrade} />
+        <PlanComparison onSelectPlan={handleUpgrade} currentPlan={plan} />
       </div>
     </div>
   );

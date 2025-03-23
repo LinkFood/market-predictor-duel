@@ -1,159 +1,92 @@
+
 /**
- * Subscription Plans and Feature Access Management
- * Controls what features users can access based on their subscription level
+ * Subscription plan features configuration
  */
 
-// Subscription plan types
+// Define subscription plans
 export enum SubscriptionPlan {
   FREE = 'free',
   BASIC = 'basic',
-  PRO = 'pro',
-  ENTERPRISE = 'enterprise'
+  PRO = 'pro'
 }
 
-// Feature access flags
+// Define feature types
 export interface PlanFeatures {
-  // Challenge Mode (Free)
-  maxPredictionsPerMonth: number;
-  aiCompetition: boolean;
-  basicStats: boolean;
-  leaderboardAccess: boolean;
+  // Prediction-related limits
+  maxDailyPredictions: number;
+  maxMonthlyPredictions: number;
   
-  // Insight Mode (Paid)
+  // AI features
   aiAnalysisAccess: boolean;
-  aiReasoningAccess: boolean;
-  historicalPatterns: boolean;
-  marketInsights: boolean;
-  realTimeAlerts: boolean;
-  advancedTimeframes: boolean;
-  unlimitedHistory: boolean;
+  aiPatternRecognition: boolean;
   
-  // Usage limits
-  apiCallsPerDay: number;
+  // API limits
+  maxDailyApiCalls: number;
+  
+  // Data access
+  historicalDataAccess: boolean;
+  realTimeData: boolean;
+  
+  // Additional features
+  prioritySupport: boolean;
+  customAlerts: boolean;
 }
 
-// Feature configuration by plan
-export const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
+// Define features for each plan
+const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeatures> = {
   [SubscriptionPlan.FREE]: {
-    // Challenge Mode features
-    maxPredictionsPerMonth: 20,
-    aiCompetition: true,
-    basicStats: true,
-    leaderboardAccess: true,
-    
-    // Insight Mode features (restricted)
+    maxDailyPredictions: 5,
+    maxMonthlyPredictions: 100,
     aiAnalysisAccess: false,
-    aiReasoningAccess: false,
-    historicalPatterns: false,
-    marketInsights: false,
-    realTimeAlerts: false,
-    advancedTimeframes: false,
-    unlimitedHistory: false,
-    
-    // Usage limits
-    apiCallsPerDay: 10
+    aiPatternRecognition: false,
+    maxDailyApiCalls: 50,
+    historicalDataAccess: false,
+    realTimeData: false,
+    prioritySupport: false,
+    customAlerts: false
   },
   
   [SubscriptionPlan.BASIC]: {
-    // Challenge Mode features
-    maxPredictionsPerMonth: 50,
-    aiCompetition: true,
-    basicStats: true,
-    leaderboardAccess: true,
-    
-    // Insight Mode features (basic)
+    maxDailyPredictions: 20,
+    maxMonthlyPredictions: 500,
     aiAnalysisAccess: true,
-    aiReasoningAccess: true,
-    historicalPatterns: false,
-    marketInsights: true,
-    realTimeAlerts: false,
-    advancedTimeframes: false,
-    unlimitedHistory: false,
-    
-    // Usage limits
-    apiCallsPerDay: 50
+    aiPatternRecognition: false,
+    maxDailyApiCalls: 200,
+    historicalDataAccess: true,
+    realTimeData: false,
+    prioritySupport: false,
+    customAlerts: true
   },
   
   [SubscriptionPlan.PRO]: {
-    // Challenge Mode features
-    maxPredictionsPerMonth: 200,
-    aiCompetition: true,
-    basicStats: true,
-    leaderboardAccess: true,
-    
-    // Insight Mode features (full)
+    maxDailyPredictions: 100,
+    maxMonthlyPredictions: 3000,
     aiAnalysisAccess: true,
-    aiReasoningAccess: true,
-    historicalPatterns: true,
-    marketInsights: true,
-    realTimeAlerts: true,
-    advancedTimeframes: true,
-    unlimitedHistory: true,
-    
-    // Usage limits
-    apiCallsPerDay: 200
-  },
-  
-  [SubscriptionPlan.ENTERPRISE]: {
-    // Challenge Mode features
-    maxPredictionsPerMonth: 1000,
-    aiCompetition: true,
-    basicStats: true,
-    leaderboardAccess: true,
-    
-    // Insight Mode features (unlimited)
-    aiAnalysisAccess: true,
-    aiReasoningAccess: true,
-    historicalPatterns: true,
-    marketInsights: true,
-    realTimeAlerts: true,
-    advancedTimeframes: true,
-    unlimitedHistory: true,
-    
-    // Usage limits
-    apiCallsPerDay: 1000
+    aiPatternRecognition: true,
+    maxDailyApiCalls: 1000,
+    historicalDataAccess: true,
+    realTimeData: true,
+    prioritySupport: true,
+    customAlerts: true
   }
 };
 
-// Default to free plan
-const DEFAULT_PLAN = SubscriptionPlan.FREE;
-
-/**
- * Get current user's plan
- */
-export function getUserPlan(): SubscriptionPlan {
-  // In the future, get this from user profile in the database
-  return DEFAULT_PLAN;
+// Function to get features for a specific plan
+export function getPlanFeatures(plan: SubscriptionPlan): PlanFeatures {
+  return PLAN_FEATURES[plan];
 }
 
-/**
- * Check if user has access to a specific feature
- */
-export function hasFeatureAccess(feature: keyof PlanFeatures): boolean {
-  const userPlan = getUserPlan();
-  return PLAN_FEATURES[userPlan][feature];
+// Helper function to check if a feature is a boolean type
+export function isFeatureBoolean(feature: keyof PlanFeatures): boolean {
+  return typeof PLAN_FEATURES[SubscriptionPlan.FREE][feature] === 'boolean';
 }
 
-/**
- * Get user's feature limits (like max predictions)
- */
-export function getUserLimit(limit: keyof PlanFeatures): number {
-  const userPlan = getUserPlan();
-  return PLAN_FEATURES[userPlan][limit];
+// Helper function to check if a feature is a numeric limit
+export function isFeatureNumeric(feature: keyof PlanFeatures): boolean {
+  return typeof PLAN_FEATURES[SubscriptionPlan.FREE][feature] === 'number';
 }
 
-/**
- * Check if user has reached their prediction limit
- */
-export async function hasReachedPredictionLimit(): Promise<boolean> {
-  // This would check the database for current month's prediction count
-  // For now, always return false
-  return false;
-}
-
-/**
- * Format price for display
- */
+// Format plan price for display
 export function formatPlanPrice(plan: SubscriptionPlan): string {
   switch (plan) {
     case SubscriptionPlan.FREE:
@@ -161,8 +94,44 @@ export function formatPlanPrice(plan: SubscriptionPlan): string {
     case SubscriptionPlan.BASIC:
       return '$9.99/month';
     case SubscriptionPlan.PRO:
-      return '$19.99/month';
-    case SubscriptionPlan.ENTERPRISE:
-      return 'Custom pricing';
+      return '$29.99/month';
+    default:
+      return 'Unknown';
   }
+}
+
+// Get the feature descriptions for UI display
+export function getFeatureDescription(feature: keyof PlanFeatures): string {
+  const descriptions: Record<keyof PlanFeatures, string> = {
+    maxDailyPredictions: 'Daily prediction limit',
+    maxMonthlyPredictions: 'Monthly prediction limit',
+    aiAnalysisAccess: 'AI analysis & insights',
+    aiPatternRecognition: 'AI pattern recognition',
+    maxDailyApiCalls: 'Daily API calls',
+    historicalDataAccess: 'Historical data access',
+    realTimeData: 'Real-time market data',
+    prioritySupport: 'Priority support',
+    customAlerts: 'Custom market alerts'
+  };
+  
+  return descriptions[feature] || feature;
+}
+
+// Get comparison table data for the subscription plan comparison
+export function getPlanComparisonData(): { feature: string, free: string | number | boolean, basic: string | number | boolean, pro: string | number | boolean }[] {
+  const comparisonData = [];
+  
+  // Add all features to the comparison data
+  const featureKeys = Object.keys(PLAN_FEATURES[SubscriptionPlan.FREE]) as (keyof PlanFeatures)[];
+  
+  for (const feature of featureKeys) {
+    comparisonData.push({
+      feature: getFeatureDescription(feature),
+      free: PLAN_FEATURES[SubscriptionPlan.FREE][feature],
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC][feature],
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO][feature]
+    });
+  }
+  
+  return comparisonData;
 }

@@ -1,9 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { 
-  CheckCircle, XCircle, Clock
-} from "lucide-react";
+import { CheckCircle, XCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { mockPredictions, mockStockData } from "@/data/mockData";
 import { Prediction } from "@/lib/prediction/types";

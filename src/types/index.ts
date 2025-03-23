@@ -2,9 +2,10 @@
 export type PredictionTimeframe = "1d" | "1w" | "1m";
 export type PredictionCategory = "market" | "sector" | "stock";
 export type PredictionDirection = "bullish" | "bearish" | "uptrend" | "downtrend";
-export type PredictionStatus = "pending" | "correct" | "incorrect";
+export type PredictionStatus = "pending" | "complete" | "completed" | "cancelled";
 export type PredictionWinner = "user" | "ai" | "both" | "neither";
 
+// Using properties from both old and new prediction models to ensure compatibility
 export interface User {
   id: string;
   username: string;
@@ -39,13 +40,32 @@ export interface Prediction {
   startingValue: number;
   createdAt: string;
   resolvesAt: string;
-  resolved: boolean;
+  status: PredictionStatus;
   finalValue?: number;
+  endValue?: number;
   percentChange?: number;
+  percent_change?: number;
   actualResult?: PredictionDirection;
+  actual_result?: string;
   winner?: PredictionWinner;
   resolvedAt?: string;
-  status?: PredictionStatus;
+  outcome?: "user_win" | "ai_win" | "tie";
+  points?: number;
+  
+  // Legacy fields
+  predictionType?: "trend" | "price";
+  prediction_type?: string;
+  stockName?: string;
+  startPrice?: number;
+  endPrice?: number;
+  user_prediction?: string;
+  ai_prediction?: string;
+  ai_confidence?: number;
+  target_name?: string;
+  starting_value?: number;
+  final_value?: number; 
+  created_at?: string;
+  resolved_at?: string;
 }
 
 export interface LeaderboardEntry {

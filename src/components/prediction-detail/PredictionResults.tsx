@@ -4,7 +4,7 @@ import { Award, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Prediction } from "@/types";
+import { Prediction } from "@/lib/prediction/types";
 
 interface PredictionResultsProps {
   prediction: Prediction;
@@ -15,10 +15,22 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
   prediction, 
   formatDate 
 }) => {
-  if (!prediction.resolved || !prediction.actualResult) {
+  if (!prediction.status || 
+    (prediction.status !== "complete" && prediction.status !== "completed") || 
+    !prediction.endValue) {
     return null;
   }
 
+  const resolvedAtDate = prediction.resolvedAt || "";
+  
+  // Calculate percent change if not provided
+  const percentChange = prediction.percent_change !== undefined ? prediction.percent_change :
+    ((prediction.endValue - prediction.startingValue) / prediction.startingValue) * 100;
+  
+  // Get actual result from appropriate field
+  const actualResult = prediction.actual_result || 
+    (percentChange >= 0 ? "uptrend" : "downtrend");
+  
   return (
     <Card className="border-0 shadow-md bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <CardHeader className="pb-2">
@@ -27,7 +39,7 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
           Prediction Results
         </CardTitle>
         <CardDescription>
-          This prediction was resolved on {formatDate(prediction.resolvedAt || "")}
+          This prediction was resolved on {formatDate(resolvedAtDate)}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -38,23 +50,23 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
           </div>
           <div className="bg-white dark:bg-slate-950 p-4 rounded-lg shadow-sm">
             <div className="text-xs text-muted-foreground mb-1">Final Value</div>
-            <div className="text-lg font-mono font-medium">${prediction.finalValue?.toFixed(2)}</div>
+            <div className="text-lg font-mono font-medium">${prediction.endValue.toFixed(2)}</div>
           </div>
           <div className="bg-white dark:bg-slate-950 p-4 rounded-lg shadow-sm">
             <div className="text-xs text-muted-foreground mb-1">Change</div>
             <div className={cn(
               "text-lg font-mono font-medium flex items-center",
-              (prediction.percentChange || 0) >= 0 
+              percentChange >= 0 
                 ? "text-emerald-600 dark:text-emerald-500" 
                 : "text-red-600 dark:text-red-500"
             )}>
-              {(prediction.percentChange || 0) >= 0 ? (
+              {percentChange >= 0 ? (
                 <TrendingUp className="h-4 w-4 mr-1" />
               ) : (
                 <TrendingDown className="h-4 w-4 mr-1" />
               )}
-              {(prediction.percentChange || 0) >= 0 ? "+" : ""}
-              {prediction.percentChange?.toFixed(2)}%
+              {percentChange >= 0 ? "+" : ""}
+              {percentChange.toFixed(2)}%
             </div>
           </div>
         </div>
@@ -63,11 +75,11 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
           <div className="flex items-center gap-3">
             <div className={cn(
               "w-12 h-12 rounded-full flex items-center justify-center",
-              prediction.actualResult === "bullish" 
+              actualResult === "uptrend" || actualResult === "bullish"
                 ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300" 
                 : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
             )}>
-              {prediction.actualResult === "bullish" ? (
+              {actualResult === "uptrend" || actualResult === "bullish" ? (
                 <TrendingUp className="h-6 w-6" />
               ) : (
                 <TrendingDown className="h-6 w-6" />
@@ -77,11 +89,11 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
               <div className="text-sm font-medium text-muted-foreground">Actual Result</div>
               <div className={cn(
                 "text-xl font-bold",
-                prediction.actualResult === "bullish" 
+                actualResult === "uptrend" || actualResult === "bullish"
                   ? "text-emerald-600 dark:text-emerald-500" 
                   : "text-red-600 dark:text-red-500"
               )}>
-                {prediction.actualResult === "bullish" ? "Bullish" : "Bearish"}
+                {actualResult === "uptrend" || actualResult === "bullish" ? "Bullish" : "Bearish"}
               </div>
             </div>
           </div>
@@ -89,24 +101,24 @@ export const PredictionResults: React.FC<PredictionResultsProps> = ({
           <div className="flex flex-col items-center sm:items-end">
             <div className="text-sm font-medium text-muted-foreground">Winner</div>
             <div className="mt-1">
-              {prediction.winner === "user" && (
+              {prediction.outcome === "user_win" && (
                 <Badge className="bg-indigo-600 hover:bg-indigo-700 text-base px-3 py-1">
                   🏆 You Beat the AI!
                 </Badge>
               )}
-              {prediction.winner === "ai" && (
+              {prediction.outcome === "ai_win" && (
                 <Badge className="bg-indigo-600 hover:bg-indigo-700 text-base px-3 py-1">
                   🤖 AI Won This Round
                 </Badge>
               )}
-              {prediction.winner === "both" && (
+              {prediction.outcome === "tie" && (
                 <Badge variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-base px-3 py-1">
                   ✓ Both Correct
                 </Badge>
               )}
-              {prediction.winner === "neither" && (
+              {!prediction.outcome && (
                 <Badge className="bg-slate-600 hover:bg-slate-700 text-base px-3 py-1">
-                  ✗ Both Incorrect
+                  ✗ Result Unavailable
                 </Badge>
               )}
             </div>

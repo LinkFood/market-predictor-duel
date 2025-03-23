@@ -1,119 +1,102 @@
-/**
- * Plan Comparison Component
- * Displays a comparison table of available subscription plans
- */
+
 import React from 'react';
 import { Check, X } from 'lucide-react';
-import { SubscriptionPlan, formatPlanPrice, PLAN_FEATURES } from '@/lib/subscription/plan-features';
 import { Button } from '@/components/ui/button';
-import { useSubscription } from '@/lib/subscription/subscription-context';
 
-interface PlanComparisonProps {
-  onSelectPlan?: (plan: SubscriptionPlan) => void;
+interface PlanFeature {
+  name: string;
+  free: boolean | number;
+  premium: boolean | number;
 }
 
-const PlanComparison: React.FC<PlanComparisonProps> = ({ onSelectPlan }) => {
-  const { plan: currentPlan } = useSubscription();
-  
-  // Features to display in the comparison
-  const features = [
-    { name: 'AI Competition', key: 'aiCompetition' },
-    { name: 'Leaderboard Access', key: 'leaderboardAccess' },
-    { name: 'Basic Stats', key: 'basicStats' },
-    { name: 'AI Analysis Access', key: 'aiAnalysisAccess', isPremium: true },
-    { name: 'AI Reasoning Access', key: 'aiReasoningAccess', isPremium: true },
-    { name: 'Market Insights', key: 'marketInsights', isPremium: true },
-    { name: 'Historical Patterns', key: 'historicalPatterns', isPremium: true },
-    { name: 'Real-time Alerts', key: 'realTimeAlerts', isPremium: true },
-    { name: 'Advanced Timeframes', key: 'advancedTimeframes', isPremium: true },
-    { name: 'Unlimited History', key: 'unlimitedHistory', isPremium: true },
+interface PlanComparisonProps {
+  currentPlan: 'free' | 'premium';
+  onUpgrade: () => void;
+}
+
+const PlanComparison: React.FC<PlanComparisonProps> = ({ currentPlan, onUpgrade }) => {
+  const features: PlanFeature[] = [
+    { name: 'Unlimited predictions', free: false, premium: true },
+    { name: 'AI-powered insights', free: true, premium: true },
+    { name: 'Market data access', free: true, premium: true },
+    { name: 'Daily predictions', free: 3, premium: 'Unlimited' as any },
+    { name: 'Prediction history', free: '7 days' as any, premium: 'Unlimited' as any },
+    { name: 'Performance tracking', free: true, premium: true },
+    { name: 'Advanced AI analysis', free: false, premium: true },
+    { name: 'Priority support', free: false, premium: true },
+    { name: 'Sector-specific insights', free: false, premium: true },
   ];
-  
-  // Plans to display
-  const plans = [
-    { id: SubscriptionPlan.FREE, name: 'Free', description: 'Challenge Mode' },
-    { id: SubscriptionPlan.BASIC, name: 'Basic', description: 'Insight Mode' },
-    { id: SubscriptionPlan.PRO, name: 'Pro', description: 'Advanced Insights' },
-  ];
-  
+
   return (
-    <div className="overflow-hidden rounded-xl border">
-      <div className="grid grid-cols-4 divide-x">
-        {/* Feature column */}
-        <div className="bg-muted/50 p-4">
-          <div className="h-16 flex items-end">
-            <h3 className="text-sm font-medium">Features</h3>
+    <div className="w-full max-w-4xl mx-auto">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="col-span-1"></div>
+        <div className="col-span-1 text-center">
+          <div className="p-4">
+            <h3 className="text-lg font-semibold">Free Plan</h3>
+            <p className="text-sm text-muted-foreground mt-1">Basic access</p>
+            <div className="mt-4 text-2xl font-bold">$0</div>
+            <div className="text-xs text-muted-foreground">forever</div>
           </div>
-          
-          {/* Feature list */}
-          <ul className="space-y-4 pt-4">
-            {features.map((feature) => (
-              <li 
-                key={feature.key} 
-                className={`text-sm py-2 ${feature.isPremium ? 'font-medium' : ''}`}
-              >
-                {feature.name}
-              </li>
-            ))}
-            
-            {/* Usage limits */}
-            <li className="text-sm py-2 font-medium">Monthly Predictions</li>
-            <li className="text-sm py-2">API Calls Per Day</li>
-          </ul>
         </div>
-        
-        {/* Plan columns */}
-        {plans.map((plan) => (
+        <div className="col-span-1 text-center">
+          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
+            <h3 className="text-lg font-semibold text-indigo-600 dark:text-indigo-400">Premium Plan</h3>
+            <p className="text-sm text-indigo-600/70 dark:text-indigo-400/70 mt-1">Full access</p>
+            <div className="mt-4 text-2xl font-bold text-indigo-600 dark:text-indigo-400">$9.99</div>
+            <div className="text-xs text-indigo-600/70 dark:text-indigo-400/70">per month</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 border-t pt-6">
+        {features.map((feature, index) => (
           <div 
-            key={plan.id} 
-            className={`p-4 text-center ${currentPlan === plan.id ? 'ring-2 ring-primary' : ''}`}
+            key={index} 
+            className={`grid grid-cols-3 gap-4 py-3 ${index !== features.length - 1 ? 'border-b' : ''}`}
           >
-            <div className="h-16 flex flex-col items-center justify-end">
-              <h3 className="text-lg font-bold">{plan.name}</h3>
-              <p className="text-xs text-muted-foreground">{plan.description}</p>
+            <div className="col-span-1 flex items-center">
+              <span className="text-sm font-medium">{feature.name}</span>
             </div>
-            
-            {/* Feature availability for this plan */}
-            <ul className="space-y-4 pt-4">
-              {features.map((feature) => (
-                <li key={feature.key} className="py-2">
-                  {PLAN_FEATURES[plan.id][feature.key as keyof typeof PLAN_FEATURES[typeof plan.id]] ? (
-                    <Check className="mx-auto h-4 w-4 text-primary" />
-                  ) : (
-                    <X className="mx-auto h-4 w-4 text-muted-foreground/50" />
-                  )}
-                </li>
-              ))}
-              
-              {/* Usage limits */}
-              <li className="py-2 font-medium">
-                {PLAN_FEATURES[plan.id].maxPredictionsPerMonth}
-              </li>
-              <li className="py-2">
-                {PLAN_FEATURES[plan.id].apiCallsPerDay}
-              </li>
-            </ul>
-            
-            {/* Price and action */}
-            <div className="mt-6 space-y-4">
-              <div className="text-center">
-                <div className="text-xl font-bold">{formatPlanPrice(plan.id)}</div>
-                {plan.id !== SubscriptionPlan.FREE && (
-                  <div className="text-xs text-muted-foreground">Billed monthly</div>
-                )}
-              </div>
-              
-              <Button 
-                variant={currentPlan === plan.id ? "outline" : "default"} 
-                className="w-full"
-                onClick={() => onSelectPlan?.(plan.id)}
-                disabled={currentPlan === plan.id}
-              >
-                {currentPlan === plan.id ? 'Current Plan' : 'Select Plan'}
-              </Button>
+            <div className="col-span-1 flex justify-center items-center">
+              {typeof feature.free === 'boolean' ? (
+                feature.free ? (
+                  <Check className="h-5 w-5 text-green-500" />
+                ) : (
+                  <X className="h-5 w-5 text-gray-300 dark:text-gray-600" />
+                )
+              ) : (
+                <span className="text-sm">{feature.free}</span>
+              )}
+            </div>
+            <div className="col-span-1 flex justify-center items-center">
+              {typeof feature.premium === 'boolean' ? (
+                feature.premium ? (
+                  <Check className="h-5 w-5 text-green-500" />
+                ) : (
+                  <X className="h-5 w-5 text-gray-300 dark:text-gray-600" />
+                )
+              ) : (
+                <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">{feature.premium}</span>
+              )}
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        {currentPlan === 'free' ? (
+          <Button 
+            onClick={onUpgrade}
+            className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700"
+          >
+            Upgrade to Premium
+          </Button>
+        ) : (
+          <Button variant="outline">
+            You're on Premium
+          </Button>
+        )}
       </div>
     </div>
   );

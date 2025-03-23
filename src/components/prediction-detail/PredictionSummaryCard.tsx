@@ -27,6 +27,9 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  // Convert prediction to expected format for components
+  const isResolved = prediction.status === "complete" || prediction.status === "completed";
+  
   return (
     <Card className="shadow-md border-0 overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
@@ -42,7 +45,10 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
       <CardContent className="p-0">
         <div className="p-6 space-y-6">
           <PredictionStatusIndicator 
-            prediction={prediction} 
+            prediction={{
+              ...prediction,
+              resolved: isResolved
+            }} 
             timeRemaining={timeRemaining} 
           />
           
@@ -50,7 +56,7 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
           
           <PredictionComparison prediction={prediction} />
           
-          {(prediction.status === "complete" || prediction.status === "completed") && prediction.endValue && (
+          {isResolved && prediction.endValue && (
             <PredictionResults 
               prediction={prediction} 
               formatDate={formatDate} 
