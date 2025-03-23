@@ -10,18 +10,18 @@
 - [ ] Update feature section to focus on brackets
 
 ### 2. Dashboard Redesign
-- [ ] Create prominent "New Duel" button at top of dashboard
-- [ ] Move bracket section to top position in main content
-- [ ] Add tournament countdown/progress visualization
-- [ ] Enhance bracket card visualization
-- [ ] Add "Quick Duel" option for instant creation
+- [x] Create prominent "New Duel" button at top of dashboard
+- [x] Move bracket section to top position in main content
+- [x] Add tournament countdown/progress visualization
+- [x] Enhance bracket card visualization
+- [x] Add "Quick Duel" option for instant creation
 
 ### 3. Bracket Creation Flow
-- [ ] Simplify bracket creation process
-- [ ] Create more visual bracket form
-- [ ] Add AI opponent selection with personality profiles
-- [ ] Visual representation of stock selections
-- [ ] "Start Duel" confirmation experience
+- [x] Simplify bracket creation process
+- [x] Create more visual bracket form
+- [x] Add AI opponent selection with personality profiles
+- [x] Visual representation of stock selections
+- [x] "Start Duel" confirmation experience
 
 ### 4. Bracket Detail View
 - [ ] Create head-to-head visualization

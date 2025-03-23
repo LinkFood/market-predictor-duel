@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import RecentPredictionsSection from "@/components/dashboard/RecentPredictionsSection";
@@ -14,6 +14,7 @@ import { Bracket, Direction } from "@/lib/duel/types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserPredictions, getUserStats, getLeaderboard } from "@/lib/prediction";
+import { Trophy } from "lucide-react";
 
 // Create mocked brackets with fully typed data
 const mockBrackets: Bracket[] = [
@@ -185,6 +186,22 @@ const Dashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto pb-12">
       <DashboardHeader user={mockUser} />
       
+      {/* New Duel Button */}
+      <div className="flex justify-center my-6">
+        <Link 
+          to="/app/brackets/create" 
+          className="btn-primary btn-lg flex items-center gap-2 animated-pulse-shadow"
+        >
+          <Trophy className="h-5 w-5" />
+          Start New Duel
+        </Link>
+      </div>
+      
+      {/* Brackets Section - Moved to top */}
+      <div className="mb-6">
+        <ActiveBrackets brackets={mockBrackets} />
+      </div>
+      
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div className="md:col-span-2 space-y-6">
           <RecentPredictionsSection predictions={recentPredictions as Prediction[]} />
@@ -198,7 +215,6 @@ const Dashboard: React.FC = () => {
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <HotOpportunities opportunities={mockOpportunities} />
-        <ActiveBrackets brackets={mockBrackets} />
       </div>
     </div>
   );
