@@ -18,6 +18,8 @@ export interface StockData {
   yield?: number;
   beta?: number;
   datetime: string;
+  sector?: string;
+  usingMockData?: boolean; // Added for compatibility with SearchResults
 }
 
 export interface HistoricalData {

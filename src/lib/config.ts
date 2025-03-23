@@ -18,6 +18,7 @@ export const FEATURES = {
   enableSubscriptions: true,
   enableBrackets: true,
   enableCommunityPredictions: true,
+  enableAIAnalysis: true,
 
   // Limit controls
   predictionsPerDay: {
@@ -26,7 +27,8 @@ export const FEATURES = {
   },
   
   // Debug features
-  enableDebugMode: true
+  enableDebugMode: true,
+  devMode: true
 };
 
 // API endpoints and settings
@@ -34,6 +36,31 @@ export const API_CONFIG = {
   marketDataApiBase: "https://api.example.com/market",
   predictionApiBase: "https://api.example.com/predict",
   aiApiBase: "https://api.example.com/ai"
+};
+
+// Market configuration
+export const MARKET_CONFIG = {
+  polygon: {
+    enabled: false,
+    baseUrl: "https://api.polygon.io",
+    apiKey: process.env.POLYGON_API_KEY || "demo"
+  }
+};
+
+// API error messages
+export const API_ERRORS = {
+  MARKET_DATA_UNAVAILABLE: "Market data is temporarily unavailable",
+  PREDICTION_SERVICE_UNAVAILABLE: "Prediction service is temporarily unavailable",
+  AUTHENTICATION_FAILED: "Authentication failed",
+  RATE_LIMIT_EXCEEDED: "Rate limit exceeded",
+  GENERAL_ERROR: "An unexpected error occurred"
+};
+
+// General application config
+export const config = {
+  polygon: {
+    enabled: false
+  }
 };
 
 // Timeframes available for predictions

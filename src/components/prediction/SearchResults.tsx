@@ -49,7 +49,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 key={`${stock.symbol}-${index}`}
                 className="p-3 hover:bg-gray-50 cursor-pointer transition-colors"
                 onClick={() => {
-                  onSelectStock({...stock, usingMockData});
+                  // Create a new stock object with the usingMockData field
+                  const stockWithMockFlag = {
+                    ...stock,
+                    usingMockData
+                  };
+                  onSelectStock(stockWithMockFlag);
                   onSelect(stock, stock.name);
                 }}
               >

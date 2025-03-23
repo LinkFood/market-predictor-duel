@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FEATURES } from './config';
@@ -9,6 +8,8 @@ interface User {
   email?: string;
   username?: string;
   avatarUrl?: string;
+  user_metadata?: Record<string, any>;
+  created_at?: string;
 }
 
 // Define auth context type
@@ -17,9 +18,12 @@ interface AuthContextType {
   isInitialized: boolean;
   isLoading: boolean;
   error: string | null;
+  signIn: (email: string, password: string) => Promise<{ error?: any }>;
+  signUp: (email: string, password: string, username: string) => Promise<{ error?: any }>;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (email: string, password: string, username: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
   updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; error?: string }>;
   devLogin: () => Promise<{ success: boolean; error?: string }>;
@@ -33,7 +37,9 @@ const DEV_USER: User = {
   id: 'user-123',
   email: 'dev@example.com',
   username: 'DevUser',
-  avatarUrl: null
+  avatarUrl: null,
+  user_metadata: { username: 'DevUser' },
+  created_at: new Date().toISOString()
 };
 
 // Auth provider component
@@ -82,7 +88,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               id: userData.user.id,
               email: userData.user.email,
               username: profileData?.username || userData.user.email?.split('@')[0],
-              avatarUrl: profileData?.avatar_url
+              avatarUrl: profileData?.avatar_url,
+              user_metadata: userData.user.user_metadata,
+              created_at: userData.user.created_at
             });
           }
         }
@@ -114,7 +122,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             id: userData.user.id,
             email: userData.user.email,
             username: profileData?.username || userData.user.email?.split('@')[0],
-            avatarUrl: profileData?.avatar_url
+            avatarUrl: profileData?.avatar_url,
+            user_metadata: userData.user.user_metadata,
+            created_at: userData.user.created_at
           });
         }
       } else if (event === 'SIGNED_OUT') {
@@ -127,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Login function
+  // Login function - old name, kept for backward compatibility
   const login = async (email: string, password: string) => {
     try {
       setIsLoading(true);
@@ -149,7 +159,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Register function
+  // Sign in function - new name, same functionality
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      return { error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
+  // Register function - old name, kept for backward compatibility
   const register = async (email: string, password: string, username: string) => {
     try {
       setIsLoading(true);
@@ -176,6 +200,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  // Sign up function - new name, same functionality
+  const signUp = async (email: string, password: string, username: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            username
+          }
+        }
+      });
+      
+      return { error };
+    } catch (err) {
+      return { error: err };
+    }
+  };
+
   // Logout function
   const logout = async () => {
     try {
@@ -187,6 +230,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Sign out function - alias for logout
+  const signOut = async () => {
+    return logout();
   };
 
   // Reset password function
@@ -269,9 +317,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isInitialized,
     isLoading,
     error,
+    signIn,
+    signUp,
     login,
     register,
     logout,
+    signOut,
     resetPassword,
     updateProfile,
     devLogin
