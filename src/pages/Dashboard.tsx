@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon } from "lucide-react";
+import { TrendingUp, Sparkles, Clock, Zap, CalendarIcon, Shuffle } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { mockGlobalStats } from "@/data/mockData";
 import useAnimations from "@/hooks/useAnimations";
@@ -10,7 +9,12 @@ import { Prediction, LeaderboardEntry } from "@/lib/prediction/types";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
-// Component imports
+// UI components
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
+// Feature components
 import AlertBanner from "@/components/dashboard/AlertBanner";
 import UserStatsSection from "@/components/dashboard/UserStatsSection";
 import AiVsHumansBattle from "@/components/dashboard/AiVsHumansBattle";
@@ -40,18 +44,14 @@ const Dashboard: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        console.log("Dashboard: Fetching user predictions");
-        
         // Get current user
         const { data: userData } = await supabase.auth.getUser();
         if (!userData || !userData.user) {
-          console.log("Dashboard: No user found, skipping prediction fetch");
           return;
         }
         
         // Get user predictions
         const predictions = await getUserPredictions();
-        console.log("Dashboard: Received predictions:", predictions);
         setRecentPredictions(predictions.slice(0, 3));
         
         // Get leaderboard to determine user rank
@@ -122,60 +122,148 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <>
-      {/* Main page content with animation */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="px-4 pt-1 pb-10 space-y-6 max-w-md mx-auto"
-      >
-        {/* Alert banner */}
-        <AnimatePresence>
-          {showAlert && <AlertBanner onDismiss={() => setShowAlert(false)} />}
-        </AnimatePresence>
-        
-        {/* User Stats Section */}
-        <motion.div variants={itemVariants}>
-          <UserStatsSection userRank={userRank} />
-        </motion.div>
-        
-        {/* AI vs Humans Battle Stats */}
-        <motion.div variants={itemVariants}>
-          <AiVsHumansBattle stats={mockGlobalStats} />
-        </motion.div>
-        
-        {/* Market Overview */}
-        <motion.div variants={itemVariants}>
-          <TopMarkets />
-        </motion.div>
-        
-        {/* Market Opportunities */}
-        <motion.div variants={itemVariants}>
-          <PredictionOpportunities opportunities={opportunities} />
-        </motion.div>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible" 
+      className="space-y-4"
+    >
+      {/* Alert banner */}
+      <AnimatePresence>
+        {showAlert && <AlertBanner onDismiss={() => setShowAlert(false)} />}
+      </AnimatePresence>
       
-        {/* Recent Predictions */}
-        <motion.div variants={itemVariants}>
-          <RecentPredictionsSection predictions={recentPredictions} />
-        </motion.div>
-        
-        {/* Community Stats */}
-        <motion.div variants={itemVariants}>
-          <CommunityStats />
-        </motion.div>
-        
-        {/* AI Learning Insights */}
-        <motion.div variants={itemVariants}>
-          <AIPredictionInsights />
-        </motion.div>
+      {/* User Stats Summary */}
+      <motion.div variants={itemVariants}>
+        <UserStatsSection userRank={userRank} />
+      </motion.div>
+      
+      {/* Feature Tabs - Mobile First Design */}
+      <motion.div variants={itemVariants}>
+        <Tabs defaultValue="predictions" className="w-full">
+          <TabsList className="w-full grid grid-cols-2 mb-6">
+            <TabsTrigger value="predictions">Predictions</TabsTrigger>
+            <TabsTrigger value="brackets">AI Battles</TabsTrigger>
+          </TabsList>
+          
+          {/* Predictions Tab Content */}
+          <TabsContent value="predictions" className="space-y-4 mt-0">
+            {/* Top Market Movers - Always Visible for Context */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Market Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <TopMarkets />
+              </CardContent>
+            </Card>
+            
+            {/* Opportunities */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Prediction Opportunities</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <PredictionOpportunities opportunities={opportunities} />
+              </CardContent>
+            </Card>
+            
+            {/* Recent Predictions */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Recent Predictions</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <RecentPredictionsSection predictions={recentPredictions} />
+              </CardContent>
+            </Card>
+            
+            {/* AI Learning Insights */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">AI Prediction Insights</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <AIPredictionInsights />
+              </CardContent>
+            </Card>
+            
+            {/* Community Stats */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Community Activity</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <CommunityStats />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          {/* Brackets/AI Battles Tab Content */}
+          <TabsContent value="brackets" className="space-y-4 mt-0">
+            {/* AI vs Humans Battle Stats */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Humans vs AI Battle</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <AiVsHumansBattle stats={mockGlobalStats} />
+              </CardContent>
+            </Card>
+            
+            {/* Active Brackets Section */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Active Brackets</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                <ActiveBrackets brackets={[]} />
+              </CardContent>
+            </Card>
+            
+            {/* Quick Start a Bracket */}
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">Start a New Battle</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="border rounded-lg p-4 hover:border-primary cursor-pointer">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="h-4 w-4 text-[hsl(var(--primary))]" />
+                      <h4 className="font-medium">Daily Challenge</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">Pick 3 stocks for a 1-day battle</p>
+                    <div className="text-xs bg-muted inline-block px-2 py-1 rounded">Quick Play</div>
+                  </div>
+                  
+                  <div className="border rounded-lg p-4 hover:border-primary cursor-pointer">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Shuffle className="h-4 w-4 text-[hsl(var(--primary))]" />
+                      <h4 className="font-medium">Weekly Duel</h4>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">Pick 5 stocks for a week-long battle</p>
+                    <div className="text-xs bg-muted inline-block px-2 py-1 rounded">Popular</div>
+                  </div>
+                </div>
+                
+                <Link to="/app/brackets/create">
+                  <Button className="w-full">Create Custom Bracket</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </motion.div>
 
-      {/* Floating Action Button */}
-      <Link to="/app/predict" className="fab right-6 bottom-24">
+      {/* Floating Action Button - Always present */}
+      <Link 
+        to="/app/predict" 
+        className="fixed bottom-24 right-4 md:bottom-8 md:right-8 z-30 bg-[hsl(var(--primary))] text-white rounded-full shadow-lg p-4 flex items-center justify-center"
+      >
         <TrendingUp className="h-6 w-6" />
       </Link>
-    </>
+    </motion.div>
   );
 };
 

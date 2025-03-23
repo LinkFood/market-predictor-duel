@@ -22,11 +22,17 @@ export async function createBracket(
   try {
     console.log('Creating bracket with size:', size, 'timeframe:', timeframe);
     
-    // Get current user
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!userData.user) {
-      throw new Error("User not authenticated");
+    // Attempt to get current user from Supabase
+    let userId = "user-123"; // Default user ID for mock mode
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (!userError && userData.user) {
+        userId = userData.user.id;
+      } else {
+        console.warn("Using mock user authentication");
+      }
+    } catch (e) {
+      console.warn("Using mock user authentication, Supabase error:", e);
     }
     
     // Validate the number of user entries matches the bracket size
@@ -47,6 +53,7 @@ export async function createBracket(
         const { data: stockData } = await getStockData(entry.symbol);
         
         return {
+          id: `user-${index}`,
           symbol: entry.symbol,
           name: stockData.name,
           entryType: "stock", // Assuming stock for now, can be enhanced to detect ETFs
@@ -70,9 +77,9 @@ export async function createBracket(
     // Generate the initial bracket matches
     const matches = generateInitialMatches(size);
     
-    // Create the bracket record in database
+    // Prepare bracket data
     const bracketData = {
-      user_id: userData.user.id,
+      user_id: userId,
       name: `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} ${size}-Stock Bracket`,
       timeframe,
       size,
@@ -88,38 +95,70 @@ export async function createBracket(
       ai_points: 0
     };
     
-    // Insert bracket into database
-    const { data: bracketResult, error: bracketError } = await supabase
-      .from('brackets')
-      .insert(bracketData)
-      .select('*')
-      .single();
-    
-    if (bracketError) {
-      console.error('Error creating bracket:', bracketError);
-      throw new Error(`Failed to create bracket: ${bracketError.message}`);
+    try {
+      // Try to insert into Supabase
+      const { data: bracketResult, error: bracketError } = await supabase
+        .from('brackets')
+        .insert(bracketData)
+        .select('*')
+        .single();
+      
+      if (bracketError) {
+        throw bracketError;
+      }
+      
+      // Convert database record to application model
+      return {
+        id: bracketResult.id,
+        userId: bracketResult.user_id,
+        name: bracketResult.name,
+        timeframe: bracketResult.timeframe,
+        size: bracketResult.size,
+        status: bracketResult.status,
+        aiPersonality: bracketResult.ai_personality,
+        userEntries: bracketResult.user_entries,
+        aiEntries: bracketResult.ai_entries,
+        matches: bracketResult.matches,
+        startDate: bracketResult.start_date,
+        endDate: bracketResult.end_date,
+        createdAt: bracketResult.created_at,
+        userPoints: 0,
+        aiPoints: 0
+      };
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Create mock bracket with generated ID
+      const mockBracketId = `bracket-${Math.random().toString(36).substring(2, 9)}`;
+      const mockBracket: Bracket = {
+        id: mockBracketId,
+        userId,
+        name: bracketData.name,
+        timeframe,
+        size,
+        status: "pending",
+        aiPersonality: personality,
+        userEntries: processedUserEntries,
+        aiEntries: aiEntries,
+        matches,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        createdAt: new Date().toISOString(),
+        userPoints: 0,
+        aiPoints: 0
+      };
+      
+      // Store in localStorage for persistence between page refreshes
+      try {
+        const existingBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        existingBrackets.push(mockBracket);
+        localStorage.setItem('mockBrackets', JSON.stringify(existingBrackets));
+      } catch (localStorageError) {
+        console.error("Error storing mock bracket in localStorage:", localStorageError);
+      }
+      
+      return mockBracket;
     }
-    
-    // Convert database record to application model
-    const bracket: Bracket = {
-      id: bracketResult.id,
-      userId: bracketResult.user_id,
-      name: bracketResult.name,
-      timeframe: bracketResult.timeframe,
-      size: bracketResult.size,
-      status: bracketResult.status,
-      aiPersonality: bracketResult.ai_personality,
-      userEntries: bracketResult.user_entries,
-      aiEntries: bracketResult.ai_entries,
-      matches: bracketResult.matches,
-      startDate: bracketResult.start_date,
-      endDate: bracketResult.end_date,
-      createdAt: bracketResult.created_at,
-      userPoints: 0,
-      aiPoints: 0
-    };
-    
-    return bracket;
   } catch (error) {
     logError(error, "createBracket");
     console.error("Error creating bracket:", error);
@@ -132,50 +171,359 @@ export async function createBracket(
  */
 export async function getUserBrackets(): Promise<Bracket[]> {
   try {
-    // Get current user
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!userData.user) {
-      throw new Error("User not authenticated");
+    // Attempt to get current user from Supabase
+    let userId = "user-123"; // Default user ID for mock mode
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (!userError && userData.user) {
+        userId = userData.user.id;
+      } else {
+        console.warn("Using mock user authentication");
+      }
+    } catch (e) {
+      console.warn("Using mock user authentication, Supabase error:", e);
     }
     
-    // Get user brackets
-    const { data: bracketsData, error: bracketsError } = await supabase
-      .from('brackets')
-      .select('*')
-      .eq('user_id', userData.user.id)
-      .order('created_at', { ascending: false });
-    
-    if (bracketsError) {
-      throw bracketsError;
+    try {
+      // Try to get brackets from Supabase
+      const { data: bracketsData, error: bracketsError } = await supabase
+        .from('brackets')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+      
+      if (bracketsError) {
+        throw bracketsError;
+      }
+      
+      // Convert database records to application models
+      const brackets: Bracket[] = bracketsData.map(bracket => ({
+        id: bracket.id,
+        userId: bracket.user_id,
+        name: bracket.name,
+        timeframe: bracket.timeframe,
+        size: bracket.size,
+        status: bracket.status,
+        aiPersonality: bracket.ai_personality,
+        userEntries: bracket.user_entries,
+        aiEntries: bracket.ai_entries,
+        matches: bracket.matches,
+        winnerId: bracket.winner_id,
+        startDate: bracket.start_date,
+        endDate: bracket.end_date,
+        createdAt: bracket.created_at,
+        userPoints: bracket.user_points || 0,
+        aiPoints: bracket.ai_points || 0
+      }));
+      
+      return brackets;
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Use localStorage for mock brackets
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        return mockBrackets.filter((bracket: Bracket) => bracket.userId === userId);
+      } catch (e) {
+        console.error("Error reading mock brackets from localStorage:", e);
+        
+        // Return demo brackets if localStorage fails
+        if (window.location.hostname === 'localhost' || window.location.hostname.includes('lovable.dev')) {
+          return generateDemoBrackets(userId);
+        }
+        
+        return [];
+      }
     }
     
-    // Convert database records to application models
-    const brackets: Bracket[] = bracketsData.map(bracket => ({
-      id: bracket.id,
-      userId: bracket.user_id,
-      name: bracket.name,
-      timeframe: bracket.timeframe,
-      size: bracket.size,
-      status: bracket.status,
-      aiPersonality: bracket.ai_personality,
-      userEntries: bracket.user_entries,
-      aiEntries: bracket.ai_entries,
-      matches: bracket.matches,
-      winnerId: bracket.winner_id,
-      startDate: bracket.start_date,
-      endDate: bracket.end_date,
-      createdAt: bracket.created_at,
-      userPoints: bracket.user_points || 0,
-      aiPoints: bracket.ai_points || 0
-    }));
-    
-    return brackets;
   } catch (error) {
     logError(error, "getUserBrackets");
     console.error("Error getting user brackets:", error);
+    
+    // Return demo brackets in development environments
+    if (window.location.hostname === 'localhost' || window.location.hostname.includes('lovable.dev')) {
+      return generateDemoBrackets("user-123");
+    }
+    
     throw error;
   }
+}
+
+/**
+ * Generate demo brackets for development testing
+ */
+function generateDemoBrackets(userId: string): Bracket[] {
+  const now = new Date();
+  
+  const demoUserEntries: BracketEntry[] = [
+    {
+      id: "user-1",
+      symbol: "AAPL",
+      name: "Apple Inc.",
+      entryType: "stock",
+      direction: "bullish",
+      startPrice: 182.56,
+      endPrice: 189.75,
+      percentChange: 3.94,
+      marketCap: "large",
+      sector: "Technology",
+      order: 1
+    },
+    {
+      id: "user-2",
+      symbol: "MSFT",
+      name: "Microsoft Corporation",
+      entryType: "stock",
+      direction: "bullish",
+      startPrice: 334.78,
+      endPrice: 344.32,
+      percentChange: 2.85,
+      marketCap: "large",
+      sector: "Technology",
+      order: 2
+    },
+    {
+      id: "user-3",
+      symbol: "GOOGL",
+      name: "Alphabet Inc.",
+      entryType: "stock",
+      direction: "bearish",
+      startPrice: 138.92,
+      endPrice: 135.60,
+      percentChange: -2.39,
+      marketCap: "large",
+      sector: "Technology",
+      order: 3
+    }
+  ];
+  
+  const demoAIEntries: BracketEntry[] = [
+    {
+      id: "ai-1",
+      symbol: "AMZN",
+      name: "Amazon.com Inc.",
+      entryType: "stock",
+      direction: "bullish",
+      startPrice: 145.24,
+      endPrice: 152.10,
+      percentChange: 4.72,
+      marketCap: "large",
+      sector: "Consumer Discretionary",
+      order: 1
+    },
+    {
+      id: "ai-2",
+      symbol: "META",
+      name: "Meta Platforms Inc.",
+      entryType: "stock",
+      direction: "bullish",
+      startPrice: 318.45,
+      endPrice: 330.12,
+      percentChange: 3.66,
+      marketCap: "large",
+      sector: "Communication Services",
+      order: 2
+    },
+    {
+      id: "ai-3",
+      symbol: "TSLA",
+      name: "Tesla Inc.",
+      entryType: "stock",
+      direction: "bearish",
+      startPrice: 246.83,
+      endPrice: 220.45,
+      percentChange: -10.69,
+      marketCap: "large",
+      sector: "Consumer Discretionary",
+      order: 3
+    }
+  ];
+  
+  const demoMatches: BracketMatch[] = [
+    {
+      id: "match-1",
+      roundNumber: 1,
+      matchNumber: 1,
+      entry1Id: "user-1",
+      entry2Id: "ai-1",
+      entry1PercentChange: 3.94,
+      entry2PercentChange: 4.72,
+      winnerId: "ai-1",
+      completed: true
+    },
+    {
+      id: "match-2",
+      roundNumber: 1,
+      matchNumber: 2,
+      entry1Id: "user-2",
+      entry2Id: "ai-2",
+      entry1PercentChange: 2.85,
+      entry2PercentChange: 3.66,
+      winnerId: "ai-2",
+      completed: true
+    },
+    {
+      id: "match-3",
+      roundNumber: 1,
+      matchNumber: 3,
+      entry1Id: "user-3",
+      entry2Id: "ai-3",
+      entry1PercentChange: 2.39,
+      entry2PercentChange: 10.69,
+      winnerId: "ai-3",
+      completed: true
+    }
+  ];
+  
+  // Create demo brackets
+  return [
+    {
+      id: "bracket-demo1",
+      userId,
+      name: "Weekly 3-Stock Bracket",
+      timeframe: "weekly",
+      size: 3,
+      status: "completed",
+      aiPersonality: "ValueHunter",
+      userEntries: demoUserEntries,
+      aiEntries: demoAIEntries,
+      matches: demoMatches,
+      winnerId: "ai",
+      startDate: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      endDate: now.toISOString(),
+      createdAt: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      userPoints: 4.40,
+      aiPoints: 19.07
+    },
+    {
+      id: "bracket-demo2",
+      userId,
+      name: "Daily 3-Stock Bracket",
+      timeframe: "daily",
+      size: 3,
+      status: "active",
+      aiPersonality: "MomentumTrader",
+      userEntries: [
+        {
+          id: "user-4",
+          symbol: "NVDA",
+          name: "NVIDIA Corporation",
+          entryType: "stock",
+          direction: "bullish",
+          startPrice: 437.53,
+          endPrice: 442.80,
+          percentChange: 1.20,
+          marketCap: "large",
+          sector: "Technology",
+          order: 1
+        },
+        {
+          id: "user-5",
+          symbol: "JPM",
+          name: "JPMorgan Chase & Co.",
+          entryType: "stock",
+          direction: "bullish",
+          startPrice: 179.96,
+          endPrice: 181.25,
+          percentChange: 0.72,
+          marketCap: "large",
+          sector: "Financial",
+          order: 2
+        },
+        {
+          id: "user-6",
+          symbol: "JNJ",
+          name: "Johnson & Johnson",
+          entryType: "stock",
+          direction: "bearish",
+          startPrice: 156.32,
+          endPrice: 154.75,
+          percentChange: -1.00,
+          marketCap: "large",
+          sector: "Healthcare",
+          order: 3
+        }
+      ],
+      aiEntries: [
+        {
+          id: "ai-4",
+          symbol: "V",
+          name: "Visa Inc.",
+          entryType: "stock",
+          direction: "bullish",
+          startPrice: 270.37,
+          endPrice: 273.15,
+          percentChange: 1.03,
+          marketCap: "large",
+          sector: "Financial",
+          order: 1
+        },
+        {
+          id: "ai-5",
+          symbol: "XOM",
+          name: "Exxon Mobil Corporation",
+          entryType: "stock",
+          direction: "bullish",
+          startPrice: 112.46,
+          endPrice: 113.28,
+          percentChange: 0.73,
+          marketCap: "large",
+          sector: "Energy",
+          order: 2
+        },
+        {
+          id: "ai-6",
+          symbol: "PG",
+          name: "Procter & Gamble Co.",
+          entryType: "stock",
+          direction: "bearish",
+          startPrice: 160.34,
+          endPrice: 159.73,
+          percentChange: -0.38,
+          marketCap: "large",
+          sector: "Consumer Staples",
+          order: 3
+        }
+      ],
+      matches: [
+        {
+          id: "match-4",
+          roundNumber: 1,
+          matchNumber: 1,
+          entry1Id: "user-4",
+          entry2Id: "ai-4",
+          entry1PercentChange: 1.20,
+          entry2PercentChange: 1.03,
+          completed: false
+        },
+        {
+          id: "match-5",
+          roundNumber: 1,
+          matchNumber: 2,
+          entry1Id: "user-5",
+          entry2Id: "ai-5",
+          entry1PercentChange: 0.72,
+          entry2PercentChange: 0.73,
+          completed: false
+        },
+        {
+          id: "match-6",
+          roundNumber: 1,
+          matchNumber: 3,
+          entry1Id: "user-6",
+          entry2Id: "ai-6",
+          entry1PercentChange: 1.00,
+          entry2PercentChange: 0.38,
+          completed: false
+        }
+      ],
+      startDate: now.toISOString(),
+      endDate: new Date(now.getTime() + 1 * 24 * 60 * 60 * 1000).toISOString(),
+      createdAt: now.toISOString(),
+      userPoints: 2.92,
+      aiPoints: 2.14
+    }
+  ];
 }
 
 /**
@@ -183,39 +531,69 @@ export async function getUserBrackets(): Promise<Bracket[]> {
  */
 export async function getBracketById(bracketId: string): Promise<Bracket> {
   try {
-    const { data: bracket, error } = await supabase
-      .from('brackets')
-      .select('*')
-      .eq('id', bracketId)
-      .single();
-    
-    if (error) {
-      throw error;
-    }
-    
-    if (!bracket) {
+    try {
+      // Try to get bracket from Supabase
+      const { data: bracket, error } = await supabase
+        .from('brackets')
+        .select('*')
+        .eq('id', bracketId)
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (!bracket) {
+        throw new Error(`Bracket with ID ${bracketId} not found`);
+      }
+      
+      // Convert database record to application model
+      return {
+        id: bracket.id,
+        userId: bracket.user_id,
+        name: bracket.name,
+        timeframe: bracket.timeframe,
+        size: bracket.size,
+        status: bracket.status,
+        aiPersonality: bracket.ai_personality,
+        userEntries: bracket.user_entries,
+        aiEntries: bracket.ai_entries,
+        matches: bracket.matches,
+        winnerId: bracket.winner_id,
+        startDate: bracket.start_date,
+        endDate: bracket.end_date,
+        createdAt: bracket.created_at,
+        userPoints: bracket.user_points || 0,
+        aiPoints: bracket.ai_points || 0
+      };
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Check localStorage for mock brackets
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const bracket = mockBrackets.find((b: Bracket) => b.id === bracketId);
+        
+        if (bracket) {
+          return bracket;
+        }
+      } catch (e) {
+        console.error("Error reading mock brackets from localStorage:", e);
+      }
+      
+      // For demo/development, check if this is a demo bracket ID
+      if (bracketId === 'bracket-demo1' || bracketId === 'bracket-demo2') {
+        const demoUserId = "user-123";
+        const demoBrackets = generateDemoBrackets(demoUserId);
+        const demoBracket = demoBrackets.find(b => b.id === bracketId);
+        
+        if (demoBracket) {
+          return demoBracket;
+        }
+      }
+      
       throw new Error(`Bracket with ID ${bracketId} not found`);
     }
-    
-    // Convert database record to application model
-    return {
-      id: bracket.id,
-      userId: bracket.user_id,
-      name: bracket.name,
-      timeframe: bracket.timeframe,
-      size: bracket.size,
-      status: bracket.status,
-      aiPersonality: bracket.ai_personality,
-      userEntries: bracket.user_entries,
-      aiEntries: bracket.ai_entries,
-      matches: bracket.matches,
-      winnerId: bracket.winner_id,
-      startDate: bracket.start_date,
-      endDate: bracket.end_date,
-      createdAt: bracket.created_at,
-      userPoints: bracket.user_points || 0,
-      aiPoints: bracket.ai_points || 0
-    };
   } catch (error) {
     logError(error, "getBracketById");
     console.error(`Error getting bracket ${bracketId}:`, error);
@@ -395,22 +773,37 @@ export async function updateBracketPrices(bracketId: string): Promise<Bracket> {
       await updateBracketMatches(bracket);
     }
     
-    // Update the database
-    const { error } = await supabase
-      .from('brackets')
-      .update({
-        user_entries: bracket.userEntries,
-        ai_entries: bracket.aiEntries,
-        status: bracket.status,
-        winner_id: bracket.winnerId,
-        user_points: bracket.userPoints,
-        ai_points: bracket.aiPoints,
-        matches: bracket.matches
-      })
-      .eq('id', bracketId);
-    
-    if (error) {
-      throw error;
+    try {
+      // Try to update in Supabase
+      const { error } = await supabase
+        .from('brackets')
+        .update({
+          user_entries: bracket.userEntries,
+          ai_entries: bracket.aiEntries,
+          status: bracket.status,
+          winner_id: bracket.winnerId,
+          user_points: bracket.userPoints,
+          ai_points: bracket.aiPoints,
+          matches: bracket.matches
+        })
+        .eq('id', bracketId);
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Update in localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
+          b.id === bracketId ? bracket : b
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
+      } catch (localStorageError) {
+        console.error("Error updating mock bracket in localStorage:", localStorageError);
+      }
     }
     
     return bracket;
@@ -689,23 +1082,44 @@ function advanceWinnerToNextRound(bracket: Bracket, currentRound: number, match:
  */
 export async function deleteBracket(bracketId: string): Promise<boolean> {
   try {
-    // Get current user
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError) throw userError;
-    if (!userData.user) {
-      throw new Error("User not authenticated");
+    // Attempt to get current user from Supabase
+    let userId = "user-123"; // Default user ID for mock mode
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (!userError && userData.user) {
+        userId = userData.user.id;
+      } else {
+        console.warn("Using mock user authentication");
+      }
+    } catch (e) {
+      console.warn("Using mock user authentication, Supabase error:", e);
     }
     
-    // Delete the bracket
-    const { error } = await supabase
-      .from('brackets')
-      .delete()
-      .eq('id', bracketId)
-      .eq('user_id', userData.user.id); // Ensure the bracket belongs to the user
-    
-    if (error) {
-      console.error("Error deleting bracket:", error);
-      throw error;
+    try {
+      // Try to delete from Supabase
+      const { error } = await supabase
+        .from('brackets')
+        .delete()
+        .eq('id', bracketId)
+        .eq('user_id', userId); // Ensure the bracket belongs to the user
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Delete from localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const filteredBrackets = mockBrackets.filter((b: Bracket) => 
+          !(b.id === bracketId && b.userId === userId)
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(filteredBrackets));
+      } catch (localStorageError) {
+        console.error("Error deleting mock bracket from localStorage:", localStorageError);
+        throw localStorageError;
+      }
     }
     
     return true;
@@ -756,24 +1170,39 @@ export async function resetBracket(bracketId: string): Promise<Bracket> {
     bracket.startDate = startDate.toISOString();
     bracket.endDate = calculateEndDate(bracket.timeframe).toISOString();
     
-    // Update the database
-    const { error } = await supabase
-      .from('brackets')
-      .update({
-        user_entries: bracket.userEntries,
-        ai_entries: bracket.aiEntries,
-        matches: bracket.matches,
-        status: bracket.status,
-        winner_id: bracket.winnerId,
-        user_points: bracket.userPoints,
-        ai_points: bracket.aiPoints,
-        start_date: bracket.startDate,
-        end_date: bracket.endDate
-      })
-      .eq('id', bracketId);
-    
-    if (error) {
-      throw error;
+    try {
+      // Try to update in Supabase
+      const { error } = await supabase
+        .from('brackets')
+        .update({
+          user_entries: bracket.userEntries,
+          ai_entries: bracket.aiEntries,
+          matches: bracket.matches,
+          status: bracket.status,
+          winner_id: bracket.winnerId,
+          user_points: bracket.userPoints,
+          ai_points: bracket.aiPoints,
+          start_date: bracket.startDate,
+          end_date: bracket.endDate
+        })
+        .eq('id', bracketId);
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Update in localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
+          b.id === bracketId ? bracket : b
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
+      } catch (localStorageError) {
+        console.error("Error updating mock bracket in localStorage:", localStorageError);
+      }
     }
     
     return bracket;

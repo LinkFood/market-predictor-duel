@@ -1,33 +1,206 @@
+// Global stats for AI vs humans battle
+export const mockGlobalStats = {
+  totalDuels: 1568,
+  humansWon: 847,
+  aiWon: 721,
+  humanWinRate: 54,
+  humanTrendAccuracy: 62,
+  aiTrendAccuracy: 59,
+  recentHumanAdvantage: 3,
+  topHumanScore: 156,
+  topAiScore: 142
+};
+
+// Mock leaderboard data
+export const mockLeaderboard = [
+  { 
+    userId: "user-001", 
+    name: "TradeMaster", 
+    avatar: "👑", 
+    score: 1250, 
+    rank: 1, 
+    winRate: 76, 
+    streakCount: 5 
+  },
+  { 
+    userId: "user-002", 
+    name: "MarketWizard", 
+    avatar: "🧙‍♂️", 
+    score: 980, 
+    rank: 2, 
+    winRate: 68, 
+    streakCount: 3 
+  },
+  { 
+    userId: "user-003", 
+    name: "StockWhisperer", 
+    avatar: "🐘", 
+    score: 870, 
+    rank: 3, 
+    winRate: 64, 
+    streakCount: 0 
+  },
+  { 
+    userId: "user-004", 
+    name: "BullRider", 
+    avatar: "🐂", 
+    score: 740, 
+    rank: 4, 
+    winRate: 59, 
+    streakCount: 2 
+  },
+  { 
+    userId: "user-005", 
+    name: "AlphaCatcher", 
+    avatar: "🦊", 
+    score: 690, 
+    rank: 5, 
+    winRate: 57, 
+    streakCount: 1 
+  }
+];
+
+// Mock market data for landing page
+export const mockMarketData = [
+  {
+    name: "S&P 500",
+    ticker: "SPY",
+    price: 5192.24,
+    change: 38.52,
+    changePercent: 0.75,
+    volume: 2874523
+  },
+  {
+    name: "Nasdaq",
+    ticker: "QQQ",
+    price: 16298.87,
+    change: 156.32,
+    changePercent: 0.97,
+    volume: 3874521
+  },
+  {
+    name: "Dow Jones",
+    ticker: "DIA",
+    price: 38675.42,
+    change: 214.76,
+    changePercent: 0.56,
+    volume: 1987452
+  },
+  {
+    name: "Bitcoin",
+    ticker: "BTC-USD",
+    price: 69842.18,
+    change: 1587.34,
+    changePercent: 2.33,
+    volume: 4587621
+  }
+];
+
 export const mockStockData = [
   {
+    symbol: "SPY",
     name: "S&P 500",
     value: 4393.63,
     change: 27.37,
     changePercent: 0.63
   },
   {
+    symbol: "QQQ",
     name: "Nasdaq",
     value: 13638.59,
     change: 128.41,
     changePercent: 0.95
   },
   {
+    symbol: "DIA",
     name: "Dow Jones",
     value: 34212.24,
     change: 183.56,
     changePercent: 0.54
   },
   {
+    symbol: "IWM",
     name: "Russell 2000",
     value: 1854.21,
     change: 12.87,
     changePercent: 0.70
   },
   {
+    symbol: "VXX",
     name: "VIX",
     value: 16.85,
     change: -0.52,
     changePercent: -3.00
+  },
+  {
+    symbol: "AAPL",
+    name: "Apple Inc.",
+    value: 182.56,
+    change: 2.34,
+    changePercent: 1.30
+  },
+  {
+    symbol: "MSFT",
+    name: "Microsoft Corporation",
+    value: 334.78,
+    change: 5.67,
+    changePercent: 1.72
+  },
+  {
+    symbol: "GOOGL",
+    name: "Alphabet Inc.",
+    value: 138.92,
+    change: 2.15,
+    changePercent: 1.57
+  },
+  {
+    symbol: "AMZN",
+    name: "Amazon.com Inc.",
+    value: 145.24,
+    change: 3.42,
+    changePercent: 2.41
+  },
+  {
+    symbol: "TSLA",
+    name: "Tesla Inc.",
+    value: 246.83,
+    change: -5.29,
+    changePercent: -2.10
+  },
+  {
+    symbol: "META",
+    name: "Meta Platforms Inc.",
+    value: 318.45,
+    change: 6.78,
+    changePercent: 2.18
+  },
+  {
+    symbol: "NVDA",
+    name: "NVIDIA Corporation",
+    value: 437.53,
+    change: 12.45,
+    changePercent: 2.93
+  },
+  {
+    symbol: "JPM",
+    name: "JPMorgan Chase & Co.",
+    value: 179.96,
+    change: 0.87,
+    changePercent: 0.49
+  },
+  {
+    symbol: "V",
+    name: "Visa Inc.",
+    value: 270.37,
+    change: 1.45,
+    changePercent: 0.54
+  },
+  {
+    symbol: "JNJ",
+    name: "Johnson & Johnson",
+    value: 156.32,
+    change: -0.98,
+    changePercent: -0.62
   }
 ];
 
@@ -193,8 +366,8 @@ export const mockPredictions = [
       reasoning: "Economic reopening and increased infrastructure spending are providing strong tailwinds for the industrial and value-oriented companies that make up much of the Dow Jones index."
     },
     timeframe: "1w",
-    startingValue: 34,123.45,
-    endValue: 35,213.12,
+    startingValue: 34123.45,
+    endValue: 35213.12,
     percentChange: 3.19,
     createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     resolvesAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),

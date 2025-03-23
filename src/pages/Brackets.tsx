@@ -1,6 +1,6 @@
 /**
- * Brackets Page
- * Overview of all user's brackets
+ * Brackets Page - Redesigned
+ * A focused interface for the bracket competitions feature
  */
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -13,7 +13,11 @@ import {
   Clock,
   CheckCircle,
   AlertTriangle,
-  HistoryIcon
+  HistoryIcon,
+  Bot,
+  User,
+  ChevronRight,
+  Medal
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -41,6 +45,34 @@ import { useToast } from "@/components/ui/use-toast";
 import BracketCard from "@/components/duel/BracketCard";
 import { Bracket, BracketTimeframe } from "@/lib/duel/types";
 import { getUserBrackets } from "@/lib/duel/bracket-service";
+
+// AI opponent options for quick-start
+const quickStartOptions = [
+  {
+    name: "Daily Sprint",
+    description: "3 stocks, 1-day competition",
+    icon: <Clock className="w-4 h-4" />,
+    timeframe: "daily",
+    stocks: 3,
+    badge: "Beginner Friendly"
+  },
+  {
+    name: "Weekly Challenge",
+    description: "5 stocks, 1-week battle",
+    icon: <Calendar className="w-4 h-4" />,
+    timeframe: "weekly",
+    stocks: 5,
+    badge: "Most Popular"
+  },
+  {
+    name: "Monthly Marathon",
+    description: "8 stocks, 30-day competition",
+    icon: <TrendingUp className="w-4 h-4" />,
+    timeframe: "monthly",
+    stocks: 8,
+    badge: "High Stakes"
+  }
+];
 
 const Brackets: React.FC = () => {
   const navigate = useNavigate();
@@ -107,19 +139,36 @@ const Brackets: React.FC = () => {
   const userWins = brackets.filter(b => b.status === 'completed' && b.winnerId === 'user').length;
   const aiWins = brackets.filter(b => b.status === 'completed' && b.winnerId === 'ai').length;
   const winRate = completedBrackets > 0 ? (userWins / completedBrackets) * 100 : 0;
+
+  // Start a quick bracket competition with predefined settings
+  const startQuickBracket = (timeframe: string, numStocks: number) => {
+    navigate('/app/brackets/create', { 
+      state: { 
+        quickStart: true,
+        timeframe,
+        numStocks
+      } 
+    });
+  };
   
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className="container py-8">
-        <div className="mb-8">
-          <Skeleton className="h-12 w-48 mb-4" />
-          <Skeleton className="h-4 w-64" />
+      <div className="space-y-4">
+        <Skeleton className="h-12 w-48 mb-2" />
+        <Skeleton className="h-4 w-64 mb-8" />
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={`stat-${index}`} className="h-24 w-full rounded-lg" />
+          ))}
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Skeleton className="h-10 w-full mb-4" />
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {Array.from({ length: 6 }).map((_, index) => (
-            <Skeleton key={index} className="h-64 w-full rounded-lg" />
+            <Skeleton key={`card-${index}`} className="h-64 w-full rounded-lg" />
           ))}
         </div>
       </div>
@@ -129,85 +178,85 @@ const Brackets: React.FC = () => {
   return (
     <>
       <Helmet>
-        <title>Your Brackets | Stock Duel</title>
+        <title>Stock Duels | StockDuel</title>
       </Helmet>
       
-      <div className="container py-8">
+      <div className="space-y-6">
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
         >
-          <div className="flex flex-wrap justify-between items-start gap-4 mb-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-2">
             <div>
-              <h1 className="text-2xl font-bold">Your Brackets</h1>
-              <p className="text-gray-500">
+              <h1 className="text-2xl font-bold">Stock Duels</h1>
+              <p className="text-muted-foreground">
                 Compete against AI traders with your stock picks
               </p>
             </div>
             
             <Button 
               onClick={() => navigate('/app/brackets/create')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              size="sm"
             >
               <Plus className="w-4 h-4 mr-2" />
-              New Bracket
+              New Duel
             </Button>
-          </div>
-          
-          {/* Stats summary */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col items-center text-center">
-                  <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
-                  <h3 className="text-2xl font-bold">{brackets.length}</h3>
-                  <p className="text-sm text-gray-500">Total Brackets</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col items-center text-center">
-                  <CheckCircle className="w-8 h-8 text-green-600 mb-2" />
-                  <h3 className="text-2xl font-bold">{userWins}</h3>
-                  <p className="text-sm text-gray-500">Victories</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col items-center text-center">
-                  <AlertTriangle className="w-8 h-8 text-yellow-600 mb-2" />
-                  <h3 className="text-2xl font-bold">{aiWins}</h3>
-                  <p className="text-sm text-gray-500">Defeats</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex flex-col items-center text-center">
-                  <TrendingUp className="w-8 h-8 text-purple-600 mb-2" />
-                  <h3 className="text-2xl font-bold">{winRate.toFixed(0)}%</h3>
-                  <p className="text-sm text-gray-500">Win Rate</p>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </motion.div>
         
-        {/* Filter bar */}
-        <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+        {/* Stats summary cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <Card>
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Duels</p>
+                <p className="text-2xl font-bold">{brackets.length}</p>
+              </div>
+              <TrendingUp className="w-10 h-10 text-muted-foreground/30" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">Your Wins</p>
+                <p className="text-2xl font-bold">{userWins}</p>
+              </div>
+              <CheckCircle className="w-10 h-10 text-green-500/30" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">AI Wins</p>
+                <p className="text-2xl font-bold">{aiWins}</p>
+              </div>
+              <Bot className="w-10 h-10 text-blue-500/30" />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-4 flex justify-between items-center">
+              <div>
+                <p className="text-sm text-muted-foreground">Win Rate</p>
+                <p className="text-2xl font-bold">{winRate.toFixed(0)}%</p>
+              </div>
+              <TrendingUp className="w-10 h-10 text-primary/30" />
+            </CardContent>
+          </Card>
+        </div>
+        
+        {brackets.length === 0 ? (
+          <EmptyBracketsView createNew={() => navigate('/app/brackets/create')} quickStart={startQuickBracket} />
+        ) : (
           <Tabs 
             defaultValue="all" 
             className="w-full"
             onValueChange={(value) => setActiveFilter(value === 'all' ? null : value)}
           >
-            <div className="flex justify-between items-center">
-              <TabsList>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+              <TabsList className="w-full sm:w-auto">
                 <TabsTrigger value="all">
                   All
                   <Badge variant="outline" className="ml-2">{brackets.length}</Badge>
@@ -220,43 +269,53 @@ const Brackets: React.FC = () => {
                   Completed
                   <Badge variant="outline" className="ml-2">{completedBrackets}</Badge>
                 </TabsTrigger>
-                <TabsTrigger value="pending">
-                  Pending
-                  <Badge variant="outline" className="ml-2">{pendingBrackets}</Badge>
-                </TabsTrigger>
               </TabsList>
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
                     <FilterIcon className="w-4 h-4 mr-2" />
-                    {timeframeFilter ? `${timeframeFilter} brackets` : 'Filter by timeframe'}
+                    {timeframeFilter ? `${timeframeFilter}` : 'Filter Time'}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuLabel>Bracket Timeframe</DropdownMenuLabel>
+                  <DropdownMenuLabel>Timeframe</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => setTimeframeFilter(null)}>
                     All timeframes
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTimeframeFilter('daily')}>
-                    Daily brackets
+                    Daily
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTimeframeFilter('weekly')}>
-                    Weekly brackets
+                    Weekly
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setTimeframeFilter('monthly')}>
-                    Monthly brackets
+                    Monthly
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
             
-            <TabsContent value="all" className="mt-6">
+            <TabsContent value="all" className="mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredBrackets.map(bracket => (
+                  <BracketCard key={bracket.id} bracket={bracket} />
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="active" className="mt-2">
               {filteredBrackets.length === 0 ? (
-                <NoRackets createNew={() => navigate('/app/brackets/create')} />
+                <EmptyStateCard
+                  icon={<Clock className="w-12 h-12" />}
+                  title="No Active Duels"
+                  description="You don't have any active duels right now."
+                  actionText="Start New Duel"
+                  onAction={() => navigate('/app/brackets/create')}
+                />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredBrackets.map(bracket => (
                     <BracketCard key={bracket.id} bracket={bracket} />
                   ))}
@@ -264,62 +323,17 @@ const Brackets: React.FC = () => {
               )}
             </TabsContent>
             
-            <TabsContent value="active" className="mt-6">
+            <TabsContent value="completed" className="mt-2">
               {filteredBrackets.length === 0 ? (
-                <Card className="bg-gray-50 border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No Active Brackets</h3>
-                    <p className="text-gray-500 mb-4">You don't have any active bracket competitions right now.</p>
-                    <Button onClick={() => navigate('/app/brackets/create')}>
-                      Create New Bracket
-                    </Button>
-                  </CardContent>
-                </Card>
+                <EmptyStateCard
+                  icon={<HistoryIcon className="w-12 h-12" />}
+                  title="No Completed Duels"
+                  description="You haven't completed any duels yet."
+                  actionText="Start New Duel"
+                  onAction={() => navigate('/app/brackets/create')}
+                />
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredBrackets.map(bracket => (
-                    <BracketCard key={bracket.id} bracket={bracket} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="completed" className="mt-6">
-              {filteredBrackets.length === 0 ? (
-                <Card className="bg-gray-50 border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <HistoryIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No Completed Brackets</h3>
-                    <p className="text-gray-500 mb-4">You haven't completed any brackets yet.</p>
-                    <Button onClick={() => navigate('/app/brackets/create')}>
-                      Create New Bracket
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredBrackets.map(bracket => (
-                    <BracketCard key={bracket.id} bracket={bracket} />
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="pending" className="mt-6">
-              {filteredBrackets.length === 0 ? (
-                <Card className="bg-gray-50 border-dashed">
-                  <CardContent className="py-8 text-center">
-                    <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-medium mb-2">No Pending Brackets</h3>
-                    <p className="text-gray-500 mb-4">You don't have any brackets waiting to start.</p>
-                    <Button onClick={() => navigate('/app/brackets/create')}>
-                      Create New Bracket
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredBrackets.map(bracket => (
                     <BracketCard key={bracket.id} bracket={bracket} />
                   ))}
@@ -327,36 +341,101 @@ const Brackets: React.FC = () => {
               )}
             </TabsContent>
           </Tabs>
-        </div>
+        )}
       </div>
     </>
   );
 };
 
 // Component for when no brackets exist
-const NoRackets: React.FC<{ createNew: () => void }> = ({ createNew }) => {
+const EmptyBracketsView: React.FC<{ 
+  createNew: () => void;
+  quickStart: (timeframe: string, numStocks: number) => void; 
+}> = ({ createNew, quickStart }) => {
   return (
-    <Card className="bg-gray-50 border-dashed">
-      <CardContent className="py-12 text-center">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-6" />
-          <h2 className="text-2xl font-bold mb-2">No Brackets Created Yet</h2>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
-            Start your first bracket competition against our AI traders and see if your stock picks can win!
-          </p>
-          <Button 
-            size="lg"
-            onClick={createNew}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+    <div className="space-y-6">
+      <Card className="bg-muted/40 border-dashed">
+        <CardContent className="py-12 px-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
           >
-            <Plus className="w-5 h-5 mr-2" />
-            Create Your First Bracket
-          </Button>
-        </motion.div>
+            <div className="bg-primary/10 p-3 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-6">
+              <Medal className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-xl font-bold mb-2">Start Your First Stock Duel</h2>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Challenge AI traders with your stock picks and see if you can outperform the algorithms!
+            </p>
+            <Button 
+              size="lg"
+              onClick={createNew}
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Create Custom Duel
+            </Button>
+          </motion.div>
+        </CardContent>
+      </Card>
+      
+      <div>
+        <h3 className="text-lg font-medium mb-4">Quick Start Options</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {quickStartOptions.map((option, index) => (
+            <Card key={index} className="hover:border-primary cursor-pointer transition-all" onClick={() => quickStart(option.timeframe, option.stocks)}>
+              <CardContent className="p-4">
+                <div className="flex flex-col h-full">
+                  <div className="flex justify-between items-start mb-2">
+                    <div className="bg-primary/10 p-2 rounded">
+                      {option.icon}
+                    </div>
+                    <Badge variant="outline" className="text-xs">{option.badge}</Badge>
+                  </div>
+                  
+                  <h4 className="font-medium text-base mt-2">{option.name}</h4>
+                  <p className="text-xs text-muted-foreground mb-4">{option.description}</p>
+                  
+                  <div className="mt-auto flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-green-500" />
+                      <span>You</span>
+                      <span className="text-muted-foreground">vs</span>
+                      <Bot className="w-4 h-4 text-blue-500" />
+                      <span>AI</span>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Empty state card component
+const EmptyStateCard: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  actionText: string;
+  onAction: () => void;
+}> = ({ icon, title, description, actionText, onAction }) => {
+  return (
+    <Card className="bg-muted/40 border-dashed">
+      <CardContent className="py-8 text-center">
+        <div className="text-muted-foreground/50 mx-auto mb-4">
+          {icon}
+        </div>
+        <h3 className="text-lg font-medium mb-2">{title}</h3>
+        <p className="text-muted-foreground mb-4">{description}</p>
+        <Button onClick={onAction}>
+          {actionText}
+        </Button>
       </CardContent>
     </Card>
   );
