@@ -22,7 +22,7 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     name: "Home",
-    path: "/app",
+    path: "/app", // Make sure this points to the main dashboard
     icon: Home,
     exact: true
   },

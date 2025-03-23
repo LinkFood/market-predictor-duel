@@ -3,7 +3,8 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, Settings, Crown } from "lucide-react";
+import { LogOut, Settings, Crown, Home } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface ProfileHeaderProps {
   username: string;
@@ -75,6 +76,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       </div>
       
       <div className="flex space-x-2">
+        <Link to="/app">
+          <Button variant="outline" size="sm">
+            <Home className="h-4 w-4 mr-2" />
+            Home
+          </Button>
+        </Link>
         <Button variant="outline" size="sm" onClick={onLogout}>
           <LogOut className="h-4 w-4 mr-2" />
           Logout
