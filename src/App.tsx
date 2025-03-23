@@ -4,11 +4,13 @@ import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./lib/auth-context";
 import { MarketDataProvider } from "./lib/market/MarketDataProvider";
 import ErrorBoundary from "./components/ErrorBoundary";
+import AppErrorBoundary from "./components/AppErrorBoundary";
 import { Toaster } from "./components/ui/toaster";
 import LoadingScreen from "./components/LoadingScreen";
 import AILearningInitializer from "./components/AILearningInitializer";
 import { SubscriptionProvider } from "./lib/subscription/subscription-context";
 import { useState, useEffect } from "react";
+import { useSupabaseCheck } from "./hooks/use-supabase-check";
 import "./App.css";
 
 function App() {
@@ -57,7 +59,9 @@ function App() {
           <SubscriptionProvider>
             <MarketDataProvider>
               <AILearningInitializer />
-              <AppRoutes />
+              <AppErrorBoundary>
+                <AppRoutes />
+              </AppErrorBoundary>
               <Toaster />
             </MarketDataProvider>
           </SubscriptionProvider>
