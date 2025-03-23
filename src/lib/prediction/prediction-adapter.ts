@@ -19,31 +19,31 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
   return {
     id: prediction.id,
     ticker: prediction.ticker || "",
-    targetName: prediction.targetName || prediction.target_name || "",
+    targetName: prediction.targetName || ('target_name' in prediction ? prediction.target_name : ""),
     userPrediction: (userPredictionValue || "bullish") as PredictionDirection,
     aiPrediction: (aiPredictionValue || "bullish") as PredictionDirection,
-    targetType: prediction.targetType || prediction.target_type || "stock",
-    startingValue: prediction.startingValue || prediction.starting_value || 0,
+    targetType: prediction.targetType || ('target_type' in prediction ? (prediction as any).target_type : "stock"),
+    startingValue: prediction.startingValue || ('starting_value' in prediction ? (prediction as any).starting_value : 0),
     finalValue: prediction.final_value || 0,
-    percentChange: prediction.percent_change || 0,
-    createdAt: prediction.createdAt || prediction.created_at || new Date().toISOString(),
-    resolvesAt: prediction.resolvesAt || prediction.resolves_at || "",
-    resolvedAt: prediction.resolvedAt || prediction.resolved_at,
+    percentChange: ('percent_change' in prediction) ? (prediction as any).percent_change : 0,
+    createdAt: prediction.createdAt || ('created_at' in prediction ? (prediction as any).created_at : new Date().toISOString()),
+    resolvesAt: prediction.resolvesAt || ('resolves_at' in prediction ? (prediction as any).resolves_at : ""),
+    resolvedAt: prediction.resolvedAt || ('resolved_at' in prediction ? (prediction as any).resolved_at : undefined),
     status: prediction.status || "pending",
     outcome: prediction.outcome,
     actualResult: actualResultValue as PredictionDirection,
-    predictionType: (prediction.predictionType || prediction.prediction_type || "trend") as "trend" | "price",
+    predictionType: (prediction.predictionType || ('prediction_type' in prediction ? (prediction as any).prediction_type : "trend")) as "trend" | "price",
     timeframe: (prediction.timeframe || "1d") as PredictionTimeframe,
-    aiConfidence: prediction.aiConfidence || prediction.ai_confidence || 0,
+    aiConfidence: prediction.aiConfidence || ('ai_confidence' in prediction ? (prediction as any).ai_confidence : 0),
     points: prediction.points || 0,
-    userId: prediction.userId || prediction.user_id || "",
+    userId: prediction.userId || ('user_id' in prediction ? (prediction as any).user_id : ""),
     aiAnalysis: prediction.aiAnalysis || {
       supporting: [],
       counter: [],
       reasoning: ""
     },
     endValue: prediction.endValue || prediction.endPrice || 0,
-    winner: prediction.winner || undefined
+    winner: ('winner' in prediction) ? (prediction as any).winner : undefined
   };
 };
 
@@ -52,7 +52,7 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
  */
 export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction => {
   // Create a base object with all camelCase properties
-  const baseObject: Partial<ApiPrediction> = {
+  const baseObject: any = {
     id: prediction.id,
     userId: prediction.userId,
     ticker: prediction.ticker,
@@ -79,7 +79,7 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
   };
 
   // Add snake_case properties for API compatibility
-  return {
+  const result = {
     ...baseObject,
     // For compatibility with API expected format
     user_id: prediction.userId,
@@ -96,7 +96,9 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     ai_confidence: prediction.aiConfidence,
     // We need to explicitly add these fields from the app type to the API type
     percent_change: prediction.percentChange
-  } as ApiPrediction;
+  };
+  
+  return result as ApiPrediction;
 };
 
 /**
