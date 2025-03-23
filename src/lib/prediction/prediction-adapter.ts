@@ -43,26 +43,40 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
 export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction => {
   return {
     id: prediction.id,
-    user_id: prediction.userId,
+    userId: prediction.userId,
     ticker: prediction.ticker,
+    targetName: prediction.targetName,
+    userPrediction: prediction.userPrediction,
+    aiPrediction: prediction.aiPrediction,
+    targetType: prediction.targetType,
+    startingValue: prediction.startingValue,
+    final_value: prediction.finalValue,
+    percent_change: prediction.percentChange,
+    createdAt: prediction.createdAt,
+    resolvesAt: prediction.resolvesAt,
+    resolvedAt: prediction.resolvedAt,
+    status: prediction.status,
+    outcome: prediction.outcome,
+    actualResult: prediction.actualResult,
+    predictionType: prediction.predictionType,
+    timeframe: prediction.timeframe,
+    aiConfidence: prediction.aiConfidence,
+    points: prediction.points,
+    aiAnalysis: prediction.aiAnalysis,
+    
+    // For compatibility with API expected format
+    user_id: prediction.userId,
     target_name: prediction.targetName,
     user_prediction: prediction.userPrediction,
     ai_prediction: prediction.aiPrediction,
     target_type: prediction.targetType,
     starting_value: prediction.startingValue,
-    final_value: prediction.finalValue,
-    percent_change: prediction.percentChange,
+    prediction_type: prediction.predictionType,
     created_at: prediction.createdAt,
     resolves_at: prediction.resolvesAt,
     resolved_at: prediction.resolvedAt,
-    status: prediction.status,
-    outcome: prediction.outcome,
     actual_result: prediction.actualResult,
-    prediction_type: prediction.predictionType,
-    timeframe: prediction.timeframe,
-    ai_confidence: prediction.aiConfidence,
-    points: prediction.points,
-    aiAnalysis: prediction.aiAnalysis
+    ai_confidence: prediction.aiConfidence
   };
 };
 
