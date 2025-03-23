@@ -16,6 +16,7 @@ import { searchStocks } from "@/lib/market";
 import { AIPersonality, BracketSize, BracketTimeframe, Direction } from "@/lib/duel/types";
 import { getAllAIPersonalities } from "@/lib/duel/ai-personalities";
 import { motion } from "framer-motion";
+import { StockData } from "@/lib/market/types";
 
 interface BracketFormProps {
   onCreateBracket: (
@@ -35,7 +36,7 @@ interface StockEntry {
 const BracketForm: React.FC<BracketFormProps> = ({ onCreateBracket }) => {
   // State for form
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<StockData[]>([]);
   const [selectedStocks, setSelectedStocks] = useState<StockEntry[]>([]);
   const [timeframe, setTimeframe] = useState<BracketTimeframe>("weekly");
   const [bracketSize, setBracketSize] = useState<BracketSize>(3);
@@ -62,8 +63,12 @@ const BracketForm: React.FC<BracketFormProps> = ({ onCreateBracket }) => {
     
     setIsSearching(true);
     try {
-      const results = await searchStocks(searchQuery, 10);
-      setSearchResults(results);
+      const result = await searchStocks(searchQuery, 10);
+      if (result && result.results) {
+        setSearchResults(result.results);
+      } else {
+        setSearchResults([]);
+      }
     } catch (error) {
       console.error("Error searching stocks:", error);
       toast({
@@ -84,7 +89,7 @@ const BracketForm: React.FC<BracketFormProps> = ({ onCreateBracket }) => {
   };
   
   // Add stock to selected list
-  const handleAddStock = (stock: any) => {
+  const handleAddStock = (stock: StockData) => {
     // Check if we already have maximum stocks
     if (selectedStocks.length >= bracketSize) {
       toast({

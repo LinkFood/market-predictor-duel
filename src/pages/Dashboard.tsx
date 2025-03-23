@@ -9,9 +9,10 @@ import GlobalBattleStats from "@/components/dashboard/GlobalBattleStats";
 import MarketPulse from "@/components/dashboard/MarketPulse";
 import HotOpportunities from "@/components/dashboard/HotOpportunities";
 import ActiveBrackets from "@/components/dashboard/ActiveBrackets";
+import { GlobalStats } from "@/types";
 
 // Mock global stats for dashboard
-const mockGlobalStats = {
+const mockGlobalStats: GlobalStats = {
   totalPredictions: 124823,
   aiWins: 58932,
   humanWins: 61284,
@@ -37,25 +38,22 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto pb-12">
-      <DashboardHeader 
-        username={user?.username || "User"}
-        isLoading={isLoading}
-      />
+      <DashboardHeader />
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div className="md:col-span-2 space-y-6">
-          <RecentPredictionsSection isLoading={isLoading} />
-          <UserStatsSection isLoading={isLoading} />
+          <RecentPredictionsSection />
+          <UserStatsSection />
         </div>
         <div className="space-y-6">
-          <GlobalBattleStats isLoading={isLoading} stats={mockGlobalStats} />
-          <MarketPulse isLoading={isLoading} />
+          <GlobalBattleStats stats={mockGlobalStats} />
+          <MarketPulse />
         </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-        <HotOpportunities isLoading={isLoading} />
-        <ActiveBrackets isLoading={isLoading} />
+        <HotOpportunities />
+        <ActiveBrackets />
       </div>
     </div>
   );

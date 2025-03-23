@@ -93,8 +93,11 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
       
       // Check for API key issues
       if (error.name === 'PolygonApiKeyError' || 
-          error.message?.includes('API key') || 
-          error.message?.includes('api key')) {
+          error.message?.includes('api key') || 
+          error.message?.includes('API key') ||
+          error.message?.includes('apikey') ||
+          error.message?.includes('unauthorized')
+      ) {
         setApiKeyMissing(true);
         
         toast({
@@ -125,7 +128,7 @@ export const MarketDataProvider: React.FC<MarketDataProviderProps> = ({ children
       if (!apiKeyMissing) {
         fetchMarketData();
       }
-    }, MARKET_CONFIG.refreshInterval);
+    }, 60000); // Use a fixed interval of 1 minute
 
     return () => clearInterval(interval);
   }, [apiKeyMissing]);

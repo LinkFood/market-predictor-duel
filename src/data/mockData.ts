@@ -1,679 +1,416 @@
-export const mockStockData = [
+export const mockMarketData = [
   {
     name: "S&P 500",
     value: 4393.63,
     change: 27.37,
-    changePercent: 0.63,
-    symbol: "SPY"
+    changePercent: 0.63
   },
   {
     name: "Nasdaq",
     value: 13638.59,
     change: 128.41,
-    changePercent: 0.95,
-    symbol: "QQQ"
+    changePercent: 0.95
   },
   {
     name: "Dow Jones",
     value: 34212.24,
     change: 183.56,
-    changePercent: 0.54,
-    symbol: "DIA"
+    changePercent: 0.54
   },
   {
     name: "Russell 2000",
     value: 1854.21,
     change: 12.87,
-    changePercent: 0.70,
-    symbol: "IWM"
+    changePercent: 0.70
   },
   {
     name: "VIX",
     value: 16.85,
     change: -0.52,
-    changePercent: -3.00,
-    symbol: "VIX"
+    changePercent: -3.00
   }
 ];
 
-export const mockMarketNews = [
+export const mockLeaderboard = [
   {
-    title: "Tech Stocks Lead Market Rally",
-    source: "Bloomberg",
-    date: "2023-07-24",
-    url: "https://www.bloomberg.com/news/articles/2023-07-24/tech-stocks-lead-market-rally"
+    userId: "user-001",
+    username: "MarketMaster",
+    avatarUrl: "/avatars/avatar-1.jpg",
+    points: 12450,
+    totalPredictions: 142,
+    accuracy: 0.78,
+    winRateAgainstAi: 0.65,
+    rank: 1
   },
   {
-    title: "Oil Prices Surge on Supply Concerns",
-    source: "Reuters",
-    date: "2023-07-24",
-    url: "https://www.reuters.com/markets/commodities/oil-prices-surge-supply-concerns-2023-07-24/"
+    userId: "user-002",
+    username: "TradingPro",
+    avatarUrl: "/avatars/avatar-2.jpg",
+    points: 10820,
+    totalPredictions: 119,
+    accuracy: 0.72,
+    winRateAgainstAi: 0.61,
+    rank: 2
   },
   {
-    title: "Fed Expected to Raise Rates This Week",
-    source: "The Wall Street Journal",
-    date: "2023-07-23",
-    url: "https://www.wsj.com/articles/fed-expected-to-raise-rates-this-week-b9a8a5a0"
+    userId: "user-003",
+    username: "StockWhisperer",
+    avatarUrl: "/avatars/avatar-3.jpg",
+    points: 9760,
+    totalPredictions: 103,
+    accuracy: 0.75,
+    winRateAgainstAi: 0.58,
+    rank: 3
+  },
+  {
+    userId: "user-004",
+    username: "BullishBeliever",
+    avatarUrl: "/avatars/avatar-4.jpg",
+    points: 8940,
+    totalPredictions: 98,
+    accuracy: 0.68,
+    winRateAgainstAi: 0.55,
+    rank: 4
+  },
+  {
+    userId: "user-005",
+    username: "MarketMaven",
+    avatarUrl: "/avatars/avatar-5.jpg",
+    points: 7820,
+    totalPredictions: 87,
+    accuracy: 0.71,
+    winRateAgainstAi: 0.52,
+    rank: 5
   }
 ];
 
-export function generateRandomStockData(name: string) {
-  const value = Math.random() * 200 + 50; // Random value between 50 and 250
-  const change = Math.random() * 10 - 5; // Random change between -5 and 5
-  const changePercent = (change / value) * 100;
-  
-  return {
-    name: name,
-    value: value,
-    change: change,
-    changePercent: changePercent
-  };
-}
-
-export function generateMultipleStockData(names: string[], count: number) {
-  const data = [];
-  for (let i = 0; i < count; i++) {
-    const name = names[i % names.length];
-    data.push(generateRandomStockData(name));
+export const mockStockData = [
+  {
+    symbol: "AAPL",
+    name: "Apple Inc.",
+    price: 173.45,
+    change: 2.21,
+    changePercent: 1.29,
+    marketCap: 2700000000000,
+    volume: 56789000,
+    pe: 28.2,
+    high52Week: 179.64,
+    low52Week: 124.17,
+    avgVolume: 62345000,
+    yield: 0.006,
+    beta: 1.21,
+    datetime: new Date().toISOString(),
+    sector: "Technology"
+  },
+  {
+    symbol: "MSFT",
+    name: "Microsoft Corp",
+    price: 338.11,
+    change: 3.57,
+    changePercent: 1.07,
+    marketCap: 2500000000000,
+    volume: 34567000,
+    pe: 36.5,
+    high52Week: 349.67,
+    low52Week: 211.43,
+    avgVolume: 32109000,
+    yield: 0.008,
+    beta: 0.98,
+    datetime: new Date().toISOString(),
+    sector: "Technology"
+  },
+  {
+    symbol: "AMZN",
+    name: "Amazon.com Inc",
+    price: 131.94,
+    change: 1.29,
+    changePercent: 0.99,
+    marketCap: 1300000000000,
+    volume: 45678000,
+    pe: 98.7,
+    high52Week: 146.57,
+    low52Week: 81.30,
+    avgVolume: 78912000,
+    yield: null,
+    beta: 1.15,
+    datetime: new Date().toISOString(),
+    sector: "Consumer Discretionary"
+  },
+  {
+    symbol: "GOOGL",
+    name: "Alphabet Inc",
+    price: 131.86,
+    change: 1.74,
+    changePercent: 1.34,
+    marketCap: 1600000000000,
+    volume: 23456000,
+    pe: 25.4,
+    high52Week: 132.39,
+    low52Week: 83.34,
+    avgVolume: 21098000,
+    yield: null,
+    beta: 1.05,
+    datetime: new Date().toISOString(),
+    sector: "Technology"
+  },
+  {
+    symbol: "TSLA",
+    name: "Tesla Inc",
+    price: 183.25,
+    change: -4.34,
+    changePercent: -2.31,
+    marketCap: 600000000000,
+    volume: 67890000,
+    pe: 67.8,
+    high52Week: 314.67,
+    low52Week: 101.81,
+    avgVolume: 89012000,
+    yield: null,
+    beta: 1.87,
+    datetime: new Date().toISOString(),
+    sector: "Consumer Discretionary"
   }
-  return data;
-}
+];
 
 export const mockPredictions = [
   {
     id: "pred-001",
-    userId: "user-123",
-    targetType: "market",
-    targetName: "S&P 500",
-    ticker: "SPY",
+    userId: "user-001",
+    targetType: "stock",
+    targetName: "Apple Inc.",
+    ticker: "AAPL",
     predictionType: "trend",
     userPrediction: "bullish",
-    aiPrediction: "bearish",
-    aiConfidence: 8,
+    aiPrediction: "bullish",
+    aiConfidence: 0.75,
     aiAnalysis: {
-      supporting: [
-        "Technical indicators suggest a bullish trend",
-        "Recent market sentiment is positive",
-        "Economic data shows growth"
-      ],
-      counter: [
-        "Market may be overvalued",
-        "Rising interest rates could limit growth",
-        "Geopolitical risks remain"
-      ],
-      reasoning: "While economic indicators suggest continued growth, there are significant headwinds from monetary policy tightening that may impact market performance."
+      supporting: ["Strong earnings", "New product launch"],
+      counter: ["Market volatility"],
+      reasoning: "Based on recent performance and upcoming events."
     },
     timeframe: "1w",
-    startingValue: 4372.85,
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "pending"
+    startingValue: 170.50,
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    resolvesAt: new Date(Date.now() + 604800000).toISOString(),
+    status: "pending",
+    stockName: "Apple Inc.",
+    startPrice: 170.50,
+    endPrice: 175.00,
+    user_prediction: "bullish",
+    ai_prediction: "bullish",
+    ai_confidence: 0.75,
+    target_name: "Apple Inc.",
+    starting_value: 170.50,
+    final_value: 175.00,
+    created_at: new Date(Date.now() - 86400000).toISOString(),
+    resolved_at: new Date(Date.now() + 604800000).toISOString(),
+    prediction_type: "trend"
   },
   {
     id: "pred-002",
-    userId: "user-123",
+    userId: "user-002",
+    targetType: "market",
+    targetName: "S&P 500",
+    ticker: "SPX",
+    predictionType: "trend",
+    userPrediction: "bearish",
+    aiPrediction: "bearish",
+    aiConfidence: 0.60,
+    aiAnalysis: {
+      supporting: ["Rising interest rates", "Inflation concerns"],
+      counter: ["Strong employment data"],
+      reasoning: "Economic indicators suggest a potential downturn."
+    },
+    timeframe: "1m",
+    startingValue: 4400.00,
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+    resolvesAt: new Date(Date.now() + 2592000000).toISOString(),
+    status: "pending",
+    stockName: "S&P 500",
+    startPrice: 4400.00,
+    endPrice: 4350.00,
+    user_prediction: "bearish",
+    ai_prediction: "bearish",
+    ai_confidence: 0.60,
+    target_name: "S&P 500",
+    starting_value: 4400.00,
+    final_value: 4350.00,
+    created_at: new Date(Date.now() - 172800000).toISOString(),
+    resolved_at: new Date(Date.now() + 2592000000).toISOString(),
+    prediction_type: "trend"
+  },
+  {
+    id: "pred-003",
+    userId: "user-001",
+    targetType: "stock",
+    targetName: "Tesla Inc.",
+    ticker: "TSLA",
+    predictionType: "price",
+    userPrediction: "bullish",
+    aiPrediction: "bearish",
+    aiConfidence: 0.80,
+    aiAnalysis: {
+      supporting: ["Production increase", "New Gigafactory"],
+      counter: ["Competition", "Supply chain issues"],
+      reasoning: "Despite challenges, Tesla's growth potential remains high."
+    },
+    timeframe: "1w",
+    startingValue: 180.00,
+    createdAt: new Date(Date.now() - 259200000).toISOString(),
+    resolvesAt: new Date(Date.now() + 604800000).toISOString(),
+    status: "pending",
+    stockName: "Tesla Inc.",
+    startPrice: 180.00,
+    endPrice: 185.00,
+    user_prediction: "bullish",
+    ai_prediction: "bearish",
+    ai_confidence: 0.80,
+    target_name: "Tesla Inc.",
+    starting_value: 180.00,
+    final_value: 185.00,
+    created_at: new Date(Date.now() - 259200000).toISOString(),
+    resolved_at: new Date(Date.now() + 604800000).toISOString(),
+    prediction_type: "price"
+  },
+  {
+    id: "pred-004",
+    userId: "user-003",
     targetType: "sector",
     targetName: "Technology",
     ticker: "XLK",
     predictionType: "trend",
     userPrediction: "bullish",
     aiPrediction: "bullish",
-    aiConfidence: 9,
+    aiConfidence: 0.65,
     aiAnalysis: {
-      supporting: [
-        "Tech companies showing strong earnings",
-        "Innovation in AI driving growth",
-        "Consumer demand for tech remains high"
-      ],
-      counter: [
-        "Regulatory challenges ahead",
-        "Valuation concerns for some companies",
-        "Competition intensifying"
-      ],
-      reasoning: "The technology sector continues to demonstrate strong fundamental growth drivers, particularly in artificial intelligence and cloud services, which should drive positive performance in the near term."
+      supporting: ["Innovation", "Digital transformation"],
+      counter: ["Regulatory scrutiny"],
+      reasoning: "The tech sector continues to drive market growth."
     },
     timeframe: "1m",
-    startingValue: 184.29,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() + 27 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "pending"
-  },
-  {
-    id: "pred-003",
-    userId: "user-123",
-    targetType: "stock",
-    targetName: "Apple Inc.",
-    ticker: "AAPL",
-    predictionType: "trend",
-    userPrediction: "bearish",
-    aiPrediction: "bullish",
-    aiConfidence: 7,
-    aiAnalysis: {
-      supporting: [
-        "New product launch imminent",
-        "Service revenue growing",
-        "Strong balance sheet"
-      ],
-      counter: [
-        "Supply chain constraints",
-        "Consumer spending tightening",
-        "Increased competition"
-      ],
-      reasoning: "Despite some near-term headwinds from supply chains, Apple's product ecosystem and services growth continue to create a strong foundation for positive stock performance."
-    },
-    timeframe: "1d",
-    startingValue: 173.45,
-    endValue: 181.21,
-    percentChange: 4.47,
-    createdAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "uptrend",
-    winner: "ai",
-    resolvedAt: new Date(Date.now() - 9 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "ai_win"
-  },
-  {
-    id: "pred-004",
-    userId: "user-123",
-    targetType: "market",
-    targetName: "Dow Jones",
-    ticker: "DIA",
-    predictionType: "trend",
-    userPrediction: "bullish",
-    aiPrediction: "bullish",
-    aiConfidence: 8,
-    aiAnalysis: {
-      supporting: [
-        "Industrial sector recovery",
-        "Infrastructure spending increasing",
-        "Value stocks performing well"
-      ],
-      counter: [
-        "Inflation concerns",
-        "Labor market constraints",
-        "Energy price volatility"
-      ],
-      reasoning: "Economic reopening and increased infrastructure spending are providing strong tailwinds for the industrial and value-oriented companies that make up much of the Dow Jones index."
-    },
-    timeframe: "1w",
-    startingValue: 34123.45,
-    endValue: 35213.12,
-    percentChange: 3.19,
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "uptrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 50
+    startingValue: 150.00,
+    createdAt: new Date(Date.now() - 345600000).toISOString(),
+    resolvesAt: new Date(Date.now() + 2592000000).toISOString(),
+    status: "pending",
+    stockName: "Technology",
+    startPrice: 150.00,
+    endPrice: 155.00,
+    user_prediction: "bullish",
+    ai_prediction: "bullish",
+    ai_confidence: 0.65,
+    target_name: "Technology",
+    starting_value: 150.00,
+    final_value: 155.00,
+    created_at: new Date(Date.now() - 345600000).toISOString(),
+    resolved_at: new Date(Date.now() + 2592000000).toISOString(),
+    prediction_type: "trend"
   },
   {
     id: "pred-005",
-    userId: "user-123",
+    userId: "user-002",
     targetType: "stock",
-    targetName: "Microsoft Corporation",
+    targetName: "Microsoft Corp",
     ticker: "MSFT",
-    predictionType: "trend",
-    userPrediction: "bullish",
-    aiPrediction: "bullish",
-    aiConfidence: 9,
-    aiAnalysis: {
-      supporting: [
-        "Cloud business growing rapidly",
-        "Strong enterprise adoption",
-        "AI investments paying off"
-      ],
-      counter: [
-        "High valuation metrics",
-        "Potential regulatory scrutiny",
-        "Competitive threats in cloud"
-      ],
-      reasoning: "Microsoft's Azure cloud platform and AI investments continue to drive substantial growth, providing a strong foundation for continued positive stock performance."
-    },
-    timeframe: "1m",
-    startingValue: 310.65,
-    endValue: 334.23,
-    percentChange: 7.59,
-    createdAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "uptrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 100
-  },
-  {
-    id: "pred-006",
-    userId: "user-123",
-    targetType: "stock",
-    targetName: "Tesla Inc",
-    ticker: "TSLA",
-    predictionType: "trend",
+    predictionType: "price",
     userPrediction: "bearish",
-    aiPrediction: "bearish",
-    aiConfidence: 6,
+    aiPrediction: "bullish",
+    aiConfidence: 0.70,
     aiAnalysis: {
-      supporting: [
-        "Production numbers are still high",
-        "Demand is still strong",
-        "Stock is still overvalued"
-      ],
-      counter: [
-        "Competition is increasing",
-        "Elon Musk is a wild card",
-        "Valuation is unsustainable"
-      ],
-      reasoning: "Tesla is still a very volatile stock, and it is hard to predict what will happen in the future."
+      supporting: ["High valuation", "Market correction"],
+      counter: ["Cloud growth"],
+      reasoning: "A market correction could impact high-value stocks."
     },
     timeframe: "1w",
-    startingValue: 250.00,
-    endValue: 240.00,
-    percentChange: -4.00,
-    createdAt: new Date(Date.now() - 42 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "downtrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 75
-  },
-  {
-    id: "pred-007",
-    userId: "user-123",
-    targetType: "market",
-    targetName: "FTSE 100",
-    ticker: "FTSE",
-    predictionType: "trend",
-    userPrediction: "bullish",
-    aiPrediction: "bullish",
-    aiConfidence: 7,
-    aiAnalysis: {
-      supporting: [
-        "UK economy is recovering",
-        "Inflation is under control",
-        "Unemployment is falling"
-      ],
-      counter: [
-        "Brexit is still a risk",
-        "Global economy is slowing",
-        "Political uncertainty"
-      ],
-      reasoning: "The UK economy is recovering, but there are still some risks that could derail the recovery."
-    },
-    timeframe: "1m",
-    startingValue: 7500.00,
-    endValue: 7600.00,
-    percentChange: 1.33,
-    createdAt: new Date(Date.now() - 49 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "uptrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 25
-  },
-  {
-    id: "pred-008",
-    userId: "user-123",
-    targetType: "sector",
-    targetName: "Financial Services",
-    ticker: "XLF",
-    predictionType: "trend",
-    userPrediction: "bearish",
-    aiPrediction: "bearish",
-    aiConfidence: 8,
-    aiAnalysis: {
-      supporting: [
-        "Interest rates are rising",
-        "Inflation is falling",
-        "Banks are well capitalized"
-      ],
-      counter: [
-        "Recession is a risk",
-        "Global economy is slowing",
-        "Political uncertainty"
-      ],
-      reasoning: "The financial sector is well capitalized, but there are still some risks that could derail the recovery."
-    },
-    timeframe: "1w",
-    startingValue: 35.00,
-    endValue: 34.00,
-    percentChange: -2.86,
-    createdAt: new Date(Date.now() - 56 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "downtrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 100
-  },
-  {
-    id: "pred-009",
-    userId: "user-123",
-    targetType: "stock",
-    targetName: "Google",
-    ticker: "GOOGL",
-    predictionType: "trend",
-    userPrediction: "bullish",
-    aiPrediction: "bullish",
-    aiConfidence: 9,
-    aiAnalysis: {
-      supporting: [
-        "Advertising revenue is growing",
-        "Cloud business is expanding",
-        "AI investments are paying off"
-      ],
-      counter: [
-        "Regulatory scrutiny is increasing",
-        "Competition is intensifying",
-        "Valuation is high"
-      ],
-      reasoning: "Google is still a very strong company, and it is expected to continue to grow in the future."
-    },
-    timeframe: "1m",
-    startingValue: 120.00,
-    endValue: 130.00,
-    percentChange: 8.33,
-    createdAt: new Date(Date.now() - 63 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "uptrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 50
-  },
-  {
-    id: "pred-010",
-    userId: "user-123",
-    targetType: "market",
-    targetName: "Nikkei 225",
-    ticker: "N225",
-    predictionType: "trend",
-    userPrediction: "bearish",
-    aiPrediction: "bearish",
-    aiConfidence: 6,
-    aiAnalysis: {
-      supporting: [
-        "Japanese economy is slowing",
-        "Inflation is rising",
-        "Political uncertainty"
-      ],
-      counter: [
-        "Government is providing stimulus",
-        "Exports are still strong",
-        "Corporate profits are rising"
-      ],
-      reasoning: "The Japanese economy is slowing, but there are still some factors that could support the market."
-    },
-    timeframe: "1w",
-    startingValue: 27000.00,
-    endValue: 26000.00,
-    percentChange: -3.70,
-    createdAt: new Date(Date.now() - 70 * 24 * 60 * 60 * 1000).toISOString(),
-    resolvesAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    status: "completed",
-    actualResult: "downtrend",
-    winner: "both",
-    resolvedAt: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000).toISOString(),
-    outcome: "tie",
-    points: 75
-  }
-];
-
-function generateRandomPrediction() {
-  const targetTypes = ["market", "sector", "stock"];
-  const timeframes = ["1d", "1w", "1m"];
-  const directions = ["bullish", "bearish"];
-  const statuses = ["pending", "completed"];
-  
-  const targetType = targetTypes[Math.floor(Math.random() * targetTypes.length)];
-  const targetName = targetType === "market" ? "S&P 500" : 
-                    targetType === "sector" ? "Technology" : "Apple Inc.";
-  const ticker = targetType === "market" ? "SPY" : 
-                targetType === "sector" ? "XLK" : "AAPL";
-  
-  return {
-    id: `pred-${Math.floor(Math.random() * 1000)}`,
-    userId: "user-123",
-    targetType,
-    targetName,
-    ticker,
-    predictionType: "trend",
-    userPrediction: directions[Math.floor(Math.random() * directions.length)],
-    aiPrediction: directions[Math.floor(Math.random() * directions.length)],
-    aiConfidence: Math.floor(Math.random() * 10) + 1,
-    timeframe: timeframes[Math.floor(Math.random() * timeframes.length)],
-    startingValue: Math.random() * 500 + 100,
-    createdAt: new Date().toISOString(),
-    resolvesAt: new Date(Date.now() + Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-    status: statuses[Math.floor(Math.random() * statuses.length)]
-  };
-}
-
-export function generateMultipleRandomPredictions(count: number) {
-  const predictions = [];
-  for (let i = 0; i < count; i++) {
-    predictions.push(generateRandomPrediction());
-  }
-  return predictions;
-}
-
-export const mockBrackets = [
-  {
-    id: "bracket-001",
-    userId: "user-123",
-    name: "Weekly Tech Competition",
-    timeframe: "weekly",
-    size: 3,
-    status: "active",
-    aiPersonality: "MomentumTrader",
-    userEntries: [
-      {
-        id: "entry-001",
-        symbol: "AAPL",
-        name: "Apple Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 173.45,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "entry-002",
-        symbol: "MSFT",
-        name: "Microsoft Corporation",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 310.65,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "entry-003",
-        symbol: "GOOGL",
-        name: "Alphabet Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 120.00,
-        marketCap: "large",
-        sector: "Technology",
-        order: 3
-      }
-    ],
-    aiEntries: [
-      {
-        id: "entry-004",
-        symbol: "NVDA",
-        name: "NVIDIA Corporation",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 420.00,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "entry-005",
-        symbol: "AMD",
-        name: "Advanced Micro Devices, Inc.",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 110.25,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "entry-006",
-        symbol: "INTC",
-        name: "Intel Corporation",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 32.50,
-        marketCap: "large",
-        sector: "Technology",
-        order: 3
-      }
-    ],
-    matches: [
-      {
-        id: "match-001",
-        roundNumber: 1,
-        matchNumber: 1,
-        entry1Id: "entry-001",
-        entry2Id: "entry-004",
-        completed: false
-      },
-      {
-        id: "match-002",
-        roundNumber: 1,
-        matchNumber: 2,
-        entry1Id: "entry-002",
-        entry2Id: "entry-005",
-        completed: false
-      },
-      {
-        id: "match-003",
-        roundNumber: 1,
-        matchNumber: 3,
-        entry1Id: "entry-003",
-        entry2Id: "entry-006",
-        completed: false
-      }
-    ],
-    startDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    userPoints: 0,
-    aiPoints: 0
-  },
-  {
-    id: "bracket-002",
-    userId: "user-123",
-    name: "Monthly Market Competition",
-    timeframe: "monthly",
-    size: 6,
+    startingValue: 340.00,
+    createdAt: new Date(Date.now() - 432000000).toISOString(),
+    resolvesAt: new Date(Date.now() + 604800000).toISOString(),
     status: "pending",
-    aiPersonality: "ValueHunter",
-    userEntries: [
-      {
-        id: "entry-007",
-        symbol: "SPY",
-        name: "S&P 500 ETF",
-        entryType: "etf",
-        direction: "bullish",
-        startPrice: 430.00,
-        marketCap: "large",
-        sector: "Market Index",
-        order: 1
-      },
-      {
-        id: "entry-008",
-        symbol: "QQQ",
-        name: "Nasdaq ETF",
-        entryType: "etf",
-        direction: "bullish",
-        startPrice: 360.00,
-        marketCap: "large",
-        sector: "Market Index",
-        order: 2
-      }
-    ],
-    aiEntries: [],
-    matches: [],
-    startDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() + 32 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-    userPoints: 0,
-    aiPoints: 0
+    stockName: "Microsoft Corp",
+    startPrice: 340.00,
+    endPrice: 335.00,
+    user_prediction: "bearish",
+    ai_prediction: "bullish",
+    ai_confidence: 0.70,
+    target_name: "Microsoft Corp",
+    starting_value: 340.00,
+    final_value: 335.00,
+    created_at: new Date(Date.now() - 432000000).toISOString(),
+    resolved_at: new Date(Date.now() + 604800000).toISOString(),
+    prediction_type: "price"
   }
 ];
 
-export function createMockBracket(timeframe, size, entries, aiPersonality = "MomentumTrader") {
-  const bracketId = `bracket-${Math.floor(Math.random() * 1000)}`;
+// Function to create a mock bracket
+export function createMockBracket(
+  timeframe: any,
+  size: any,
+  entries: any[],
+  aiPersonality: any = "MomentumTrader"
+): any {
+  const now = new Date();
+  const endDate = new Date();
   
+  if (timeframe === "daily") {
+    endDate.setDate(now.getDate() + 1);
+  } else if (timeframe === "weekly") {
+    endDate.setDate(now.getDate() + 7);
+  } else {
+    endDate.setDate(now.getDate() + 30);
+  }
+  
+  // Create user entries from the provided entries
   const userEntries = entries.map((entry, index) => ({
-    id: `entry-user-${index}`,
+    id: `user-entry-${index + 1}`,
     symbol: entry.symbol,
-    name: `${entry.symbol} Inc.`,
+    name: entry.symbol, // We don't have the name in the input
     entryType: "stock",
     direction: entry.direction,
-    startPrice: Math.random() * 500 + 50,
+    startPrice: 100 + Math.random() * 200, // Random price
+    marketCap: "large",
+    sector: "Technology", // Default sector
+    order: index + 1
+  }));
+  
+  // Create AI entries (random stocks)
+  const aiEntries = Array.from({ length: size }).map((_, index) => ({
+    id: `ai-entry-${index + 1}`,
+    symbol: ["GOOG", "MSFT", "AMZN", "META", "TSLA", "NVDA", "AMD", "INTC", "IBM", "ORCL"][index % 10],
+    name: ["Google", "Microsoft", "Amazon", "Meta", "Tesla", "NVIDIA", "AMD", "Intel", "IBM", "Oracle"][index % 10],
+    entryType: "stock",
+    direction: Math.random() > 0.5 ? "bullish" : "bearish",
+    startPrice: 100 + Math.random() * 200,
     marketCap: "large",
     sector: "Technology",
     order: index + 1
   }));
   
-  const aiEntries = Array(size).fill(null).map((_, index) => {
-    const mockSymbols = ["NVDA", "AMZN", "GOOG", "FB", "NFLX", "TSLA", "DIS", "PYPL", "CRM"];
-    return {
-      id: `entry-ai-${index}`,
-      symbol: mockSymbols[index % mockSymbols.length],
-      name: `${mockSymbols[index % mockSymbols.length]} Inc.`,
-      entryType: "stock",
-      direction: Math.random() > 0.5 ? "bullish" : "bearish",
-      startPrice: Math.random() * 500 + 50,
-      marketCap: "large",
-      sector: "Technology",
-      order: index + 1
-    };
-  });
-  
+  // Create initial matches
   const matches = [];
   for (let i = 0; i < size; i++) {
     matches.push({
-      id: `match-${i}`,
+      id: `match-${i + 1}`,
       roundNumber: 1,
       matchNumber: i + 1,
-      entry1Id: userEntries[i]?.id,
-      entry2Id: aiEntries[i]?.id,
+      entry1Id: userEntries[i].id,
+      entry2Id: aiEntries[i].id,
       completed: false
     });
   }
   
   return {
-    id: bracketId,
+    id: `bracket-${Date.now()}`,
     userId: "user-123",
-    name: `${timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Competition`,
-    timeframe,
-    size,
+    name: `${aiPersonality} Bracket`,
+    timeframe: timeframe,
+    size: size,
     status: "pending",
-    aiPersonality,
-    userEntries,
-    aiEntries,
-    matches,
-    startDate: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() + (timeframe === "daily" ? 1 : timeframe === "weekly" ? 7 : 30) * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date().toISOString(),
+    aiPersonality: aiPersonality,
+    userEntries: userEntries,
+    aiEntries: aiEntries,
+    matches: matches,
+    startDate: now.toISOString(),
+    endDate: endDate.toISOString(),
+    createdAt: now.toISOString(),
     userPoints: 0,
     aiPoints: 0
   };

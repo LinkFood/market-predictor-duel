@@ -16,7 +16,7 @@ const mockBrackets: Bracket[] = [
     name: "Tech Giants Battle",
     timeframe: "weekly",
     size: 3,
-    status: "completed",
+    status: "completed" as BracketStatus,
     aiPersonality: "MomentumTrader",
     userEntries: [
       {

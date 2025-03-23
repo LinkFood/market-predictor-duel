@@ -1,114 +1,94 @@
-
 /**
  * Market Movers Service
- * Handles fetching top gainers and losers
+ * Fetches top gaining and losing stocks
  */
 
-import { StockData } from "./types";
-import { FEATURES, config, API_ERRORS } from "../config";
-import { getMockTopMovers } from "./mock-data-utils";
-import { getPolygonMarketMovers } from "./api/polygon-movers";
-import { logError, showErrorToast } from "../error-handling";
-import { toast } from "@/hooks/use-toast";
+import { StockData } from '../types';
+import { callPolygonApi, getDateXDaysAgo } from './api/polygon-api-service';
+import { getMockGainers, getMockLosers } from '@/data/mockData';
+import { FEATURES, API_ERRORS } from '../config';
 
 /**
- * Get top gainers and losers for the day
+ * Fetches the top gaining and losing stocks for the current day
  */
-export async function getTopMovers(): Promise<{ gainers: StockData[]; losers: StockData[]; usingMockData: boolean }> {
-  let usingMockData = false;
+export async function getTopMovers(): Promise<{ 
+  gainers: StockData[], 
+  losers: StockData[], 
+  usingMockData: boolean 
+}> {
+  if (FEATURES.enableMockData) {
+    console.log('Using mock data for top movers');
+    return {
+      gainers: getMockGainers(),
+      losers: getMockLosers(),
+      usingMockData: true
+    };
+  }
   
   try {
-    // Use real market data if enabled, otherwise use mock data
-    if (FEATURES.enableRealMarketData && config.polygon.enabled) {
-      console.log(`🌐 Attempting to fetch market movers from Polygon.io`);
-      
-      try {
-        const realData = await getPolygonMarketMovers();
-        
-        // Validate that we have data before returning
-        if (realData && realData.gainers && realData.losers && 
-            (realData.gainers.length > 0 || realData.losers.length > 0)) {
-          console.log(`✅ Successfully fetched market movers: ${realData.gainers.length} gainers, ${realData.losers.length} losers`);
-          return { ...realData, usingMockData: false };
-        } else {
-          const error = new Error('Empty or invalid data received from Polygon API');
-          console.warn('⚠️ Empty or invalid data received from Polygon API:', realData);
-          showErrorToast(error, "Market Data Error");
-          
-          // If we want to force an error rather than fall back
-          if (FEATURES.devMode) {
-            console.error("Using mock data because of empty response from Polygon API");
-            usingMockData = true;
-            
-            // Show a specific toast for API issues when in dev mode
-            toast({
-              title: "API Configuration Issue",
-              description: "Check that your Polygon API key is correctly set in Supabase secrets and that the key is valid.",
-              variant: "destructive"
-            });
-            
-            return { ...getMockTopMovers(), usingMockData };
-          }
-          
-          throw error;
-        }
-      } catch (apiError: any) {
-        logError(apiError, 'getTopMovers:polygon');
-        console.error("❌ Error fetching Polygon market movers:", apiError);
-        
-        // Check for specific API key errors
-        const errorMessage = apiError?.message || '';
-        const data = apiError?.data || {};
-        
-        if (errorMessage.includes('API_KEY_MISSING') || 
-            errorMessage.includes('API_KEY_INVALID') ||
-            data?.error === 'API_KEY_MISSING' || 
-            data?.error === 'API_KEY_INVALID') {
-          
-          console.error("API Key configuration issue detected");
-          
-          toast({
-            title: "API Key Configuration Issue",
-            description: API_ERRORS.POLYGON_ERROR,
-            variant: "destructive"
-          });
-        } else {
-          showErrorToast(apiError, "Market Data Error");
-        }
-        
-        // In dev mode, show more detailed error and use mock data
-        if (FEATURES.devMode) {
-          console.error("Using mock data due to API error:", apiError);
-          usingMockData = true;
-          return { ...getMockTopMovers(), usingMockData };
-        }
-        
-        throw apiError; // Propagate error rather than silently falling back
-      }
-    } else {
-      console.log(`🧪 Using mock market movers data (real data disabled in config)`);
-      usingMockData = true;
-      return { ...getMockTopMovers(), usingMockData };
+    // Get the date for today's movers
+    const today = new Date();
+    const formattedToday = today.toISOString().split('T')[0];
+    
+    // Fetch gainers
+    const gainers = await getMovers('gainers', formattedToday);
+    
+    // Fetch losers
+    const losers = await getMovers('losers', formattedToday);
+    
+    return {
+      gainers,
+      losers,
+      usingMockData: false
+    };
+  } catch (error: any) {
+    if (error.name === 'PolygonApiKeyError') {
+      console.error('Polygon API key error:', error);
+      return {
+        gainers: getMockGainers(),
+        losers: getMockLosers(),
+        usingMockData: true
+      };
     }
+    
+    console.error('Error fetching top movers:', error);
+    throw error;
+  }
+}
+
+/**
+ * Fetches the top movers (gainers or losers) for a specific date
+ */
+async function getMovers(direction: 'gainers' | 'losers', date: string): Promise<StockData[]> {
+  try {
+    const endpoint = `/v2/snapshot/locale/us/markets/stocks/direction/${direction}`;
+    const params = {
+      date: date
+    };
+    
+    const data = await callPolygonApi(endpoint, params);
+    
+    if (!data || !data.tickers) {
+      console.warn(`No ${direction} found for date: ${date}`);
+      return [];
+    }
+    
+    // Map the Polygon API response to the StockData interface
+    const movers: StockData[] = data.tickers.map((ticker: any) => ({
+      symbol: ticker.ticker,
+      name: ticker.ticker, // The ticker name is not available in the response
+      price: ticker.lastTrade.price,
+      change: ticker.todaysChange,
+      changePercent: ticker.todaysChangePerc,
+      marketCap: ticker.marketCap,
+      volume: ticker.volume,
+      datetime: new Date(ticker.lastTrade.timestamp).toISOString(),
+      usingMockData: false
+    }));
+    
+    return movers;
   } catch (error) {
-    logError(error, 'getTopMovers');
-    console.error("❌ Error in getTopMovers:", error);
-    
-    // Show a clear error indicator in UI
-    toast({
-      title: "Using Simulated Market Data",
-      description: "Failed to fetch real market data. Please check your API configuration.",
-      variant: "destructive"
-    });
-    
-    // Only fall back to mock data if real data is not supposed to be used
-    // or we're in dev mode
-    if (!FEATURES.enableRealMarketData || !config.polygon.enabled || FEATURES.devMode) {
-      console.log("Using mock data as real data was not requested or in dev mode");
-      usingMockData = true;
-      return { ...getMockTopMovers(), usingMockData };
-    }
-    
-    throw error; // Propagate error when real data is expected and not in dev mode
+    console.error(`Error fetching ${direction} for date ${date}:`, error);
+    throw error;
   }
 }

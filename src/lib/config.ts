@@ -19,7 +19,7 @@ export const FEATURES = {
   enableBrackets: true,
   enableCommunityPredictions: true,
   enableAIAnalysis: true,
-
+  
   // Limit controls
   predictionsPerDay: {
     free: 5,
@@ -44,7 +44,10 @@ export const MARKET_CONFIG = {
     enabled: false,
     baseUrl: "https://api.polygon.io",
     apiKey: process.env.POLYGON_API_KEY || "demo"
-  }
+  },
+  refreshInterval: 60000, // 1 minute refresh interval
+  retryAttempts: 3,
+  retryDelay: 1000
 };
 
 // API error messages
@@ -53,13 +56,23 @@ export const API_ERRORS = {
   PREDICTION_SERVICE_UNAVAILABLE: "Prediction service is temporarily unavailable",
   AUTHENTICATION_FAILED: "Authentication failed",
   RATE_LIMIT_EXCEEDED: "Rate limit exceeded",
-  GENERAL_ERROR: "An unexpected error occurred"
+  GENERAL_ERROR: "An unexpected error occurred",
+  NETWORK_ERROR: "Network connection error",
+  AUTHENTICATION_ERROR: "Authentication error",
+  NOT_FOUND: "Resource not found",
+  SERVER_ERROR: "Server error",
+  POLYGON_ERROR: "Polygon API configuration error"
 };
 
 // General application config
 export const config = {
   polygon: {
-    enabled: false
+    enabled: false,
+    baseUrl: "https://api.polygon.io"
+  },
+  supabase: {
+    url: process.env.SUPABASE_URL || "",
+    anonKey: process.env.SUPABASE_ANON_KEY || ""
   }
 };
 

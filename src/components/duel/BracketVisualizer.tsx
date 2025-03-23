@@ -103,6 +103,7 @@ interface MatchCardProps {
     entry1?: BracketEntry;
     entry2?: BracketEntry;
     winnerId?: string;
+    completed: boolean;
   };
   roundIndex: number;
   matchIndex: number;
@@ -115,7 +116,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   matchIndex,
   isCompleted 
 }) => {
-  const { entry1, entry2, winnerId } = match;
+  const { entry1, entry2, winnerId, completed } = match;
   
   // Calculate performance
   const entry1Performance = entry1?.percentChange 
@@ -234,6 +235,7 @@ function generateRounds(
     entry1?: BracketEntry;
     entry2?: BracketEntry;
     winnerId?: string;
+    completed: boolean;
   }>> = [];
   
   // For size 3, there's just one round with direct matchups
@@ -242,10 +244,12 @@ function generateRounds(
     
     // Each user entry vs matching AI entry
     for (let i = 0; i < 3; i++) {
+      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1);
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: matches[i]?.winnerId,
+        winnerId: match?.winnerId,
+        completed: match?.completed || false,
       });
     }
     
@@ -258,11 +262,12 @@ function generateRounds(
     // Round 1: Three matches with initial pairings
     const round1: any[] = [];
     for (let i = 0; i < 3; i++) {
-      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1) || { completed: false };
+      const match = matches.find(m => m.roundNumber === 1 && m.matchNumber === i + 1);
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: match.winnerId,
+        winnerId: match?.winnerId,
+        completed: match?.completed || false,
       });
     }
     rounds.push(round1);
@@ -284,6 +289,7 @@ function generateRounds(
       entry1: finalEntry1,
       entry2: finalEntry2,
       winnerId: finalMatch?.winnerId,
+      completed: finalMatch?.completed || false,
     });
     
     rounds.push(round2);
@@ -305,6 +311,7 @@ function generateRounds(
         entry1: userEntries[entry1Index],
         entry2: aiEntries[entry2Index],
         winnerId: match.winnerId,
+        completed: match.completed,
       });
     }
     rounds.push(round1);
@@ -327,6 +334,7 @@ function generateRounds(
         entry1: semifinalEntry1,
         entry2: semifinalEntry2,
         winnerId: match?.winnerId,
+        completed: match?.completed || false,
       });
     }
     rounds.push(round2);
@@ -348,6 +356,7 @@ function generateRounds(
       entry1: finalEntry1,
       entry2: finalEntry2,
       winnerId: finalMatch?.winnerId,
+      completed: finalMatch?.completed || false,
     });
     
     rounds.push(round3);

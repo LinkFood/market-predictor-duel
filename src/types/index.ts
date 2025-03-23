@@ -1,3 +1,4 @@
+
 export type PredictionTimeframe = "1d" | "1w" | "1m";
 export type PredictionCategory = "market" | "sector" | "stock";
 export type PredictionDirection = "bullish" | "bearish" | "uptrend" | "downtrend";
@@ -20,6 +21,9 @@ export interface User {
   points: number;
   createdAt: string;
   lastLogin?: string;
+  // For compatibility with Supabase Auth
+  user_metadata?: Record<string, any>;
+  created_at?: string;
 }
 
 export interface Prediction {
