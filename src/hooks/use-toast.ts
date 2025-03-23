@@ -122,11 +122,12 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-function add(toast: Omit<ToastType, 'id' | 'open' | 'onOpenChange'>) {
+// Create a separate function to add a toast that can be called directly
+export function toast(props: Omit<ToastType, "id" | "open" | "onOpenChange">) {
   const id = genId();
 
   const newToast = {
-    ...toast,
+    ...props,
     id,
     open: true,
     onOpenChange: (open: boolean) => {
@@ -178,14 +179,11 @@ function useToast() {
 
   return {
     ...state,
-    toast: {
-      ...state,
-      add,
-      update,
-      dismiss,
-      remove,
-    },
+    toast,
+    dismiss,
+    update,
+    remove,
   };
 }
 
-export { useToast, add as toast };
+export { useToast };

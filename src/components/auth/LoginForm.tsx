@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useToast } from "@/hooks/use-toast";
+import { useToast, toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client"; // Import directly from client
 import FormAlerts from "@/components/auth/FormAlerts";
 import { useSupabaseCheck } from "@/hooks/use-supabase-check";
@@ -26,7 +26,7 @@ export type LoginFormData = z.infer<typeof loginSchema>;
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
+  const { toast: toastHelper } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -69,6 +69,8 @@ const LoginForm: React.FC = () => {
       }
       
       setSuccess("Login successful");
+      
+      // Use the toast function directly from the import
       toast({
         title: "Login successful",
         description: "Welcome back to StockDuel!",
