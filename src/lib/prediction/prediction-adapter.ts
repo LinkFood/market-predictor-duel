@@ -9,7 +9,10 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
   // Check if property exists in either camelCase or snake_case format
   const userPredictionValue = prediction.userPrediction || prediction.user_prediction;
   const aiPredictionValue = prediction.aiPrediction || prediction.ai_prediction;
-  const actualResultValue = prediction.actualResult || prediction.actual_result;
+  const actualResultValue = 
+    typeof prediction.actualResult !== 'undefined' ? prediction.actualResult : 
+    typeof prediction.actual_result !== 'undefined' ? prediction.actual_result : 
+    "bullish";
   
   return {
     id: prediction.id,
@@ -26,7 +29,7 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
     resolvedAt: prediction.resolvedAt || prediction.resolved_at,
     status: prediction.status || "pending",
     outcome: prediction.outcome,
-    actualResult: (actualResultValue || "bullish") as PredictionDirection,
+    actualResult: actualResultValue as PredictionDirection,
     predictionType: (prediction.predictionType || prediction.prediction_type || "trend") as "trend" | "price",
     timeframe: (prediction.timeframe || "1d") as PredictionTimeframe,
     aiConfidence: prediction.aiConfidence || prediction.ai_confidence || 0,
@@ -71,7 +74,7 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     // Add properties that exist on ApiPrediction but not AppPrediction
     final_value: prediction.finalValue,
     endValue: prediction.endValue
-  };
+  } as ApiPrediction;
 
   // Add snake_case properties for API compatibility
   return {
@@ -91,7 +94,7 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     ai_confidence: prediction.aiConfidence,
     // We need to explicitly add these fields from the app type to the API type
     percent_change: prediction.percentChange
-  };
+  } as ApiPrediction;
 };
 
 /**
