@@ -32,7 +32,8 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
   // Add ticker field if missing from prediction
   const predictionWithTicker = {
     ...prediction,
-    ticker: prediction.ticker || prediction.targetName || ""
+    ticker: prediction.ticker || prediction.targetName || "",
+    predictionType: prediction.predictionType || prediction.prediction_type || "trend"
   };
   
   // Convert prediction to standard format

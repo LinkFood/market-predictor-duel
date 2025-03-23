@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { analyzePredictionBatch, scheduleRoutineAnalysis } from "@/lib/analysis/prediction-learner";
-import { getPredictions } from "@/lib/prediction/user-predictions";
+import { getUserPredictions } from "@/lib/prediction/user-predictions";
 import { Prediction } from "@/types";
 
 interface PredictionLearningState {
@@ -59,10 +59,7 @@ export function usePredictionLearning() {
       setState(prev => ({ ...prev, isAnalyzing: true }));
       
       // Fetch completed predictions to analyze
-      const completedPredictions = await getPredictions({
-        status: "completed",
-        limit: 50
-      });
+      const completedPredictions = await getUserPredictions('completed');
       
       if (completedPredictions && completedPredictions.length > 0) {
         // Analyze the batch of predictions

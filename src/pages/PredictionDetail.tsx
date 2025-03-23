@@ -36,14 +36,15 @@ const PredictionDetail: React.FC = () => {
             if (fetchedPrediction) {
               console.log("Fetched prediction from API:", fetchedPrediction);
               
-              // Ensure ticker is set before adapting
-              const predictionWithTicker = {
+              // Ensure ticker and predictionType are set before adapting
+              const predictionWithRequiredFields = {
                 ...fetchedPrediction,
-                ticker: fetchedPrediction.ticker || fetchedPrediction.targetName || ""
+                ticker: fetchedPrediction.ticker || fetchedPrediction.targetName || "",
+                predictionType: fetchedPrediction.predictionType || fetchedPrediction.prediction_type || "trend"
               };
               
               // Convert to the application's Prediction type
-              const adaptedPrediction = adaptPrediction(predictionWithTicker);
+              const adaptedPrediction = adaptPrediction(predictionWithRequiredFields);
               console.log("Adapted prediction:", adaptedPrediction);
               setPrediction(adaptedPrediction);
               setIsLoading(false);
@@ -60,11 +61,12 @@ const PredictionDetail: React.FC = () => {
         if (found) {
           console.log("Using mock prediction:", found);
           // Ensure ticker is set for mock data too
-          const predictionWithTicker = {
+          const predictionWithRequiredFields = {
             ...found,
-            ticker: found.ticker || found.targetName || ""
+            ticker: found.ticker || found.targetName || "",
+            predictionType: found.predictionType || found.prediction_type || "trend"
           };
-          setPrediction(adaptPrediction(predictionWithTicker));
+          setPrediction(adaptPrediction(predictionWithRequiredFields));
         } else {
           setError("Prediction not found");
           toast.error("Prediction not found");
@@ -183,7 +185,8 @@ const PredictionDetail: React.FC = () => {
           <PredictionSummaryCard 
             prediction={{
               ...prediction,
-              ticker: prediction.ticker || prediction.targetName || ""
+              ticker: prediction.ticker || prediction.targetName || "",
+              predictionType: prediction.predictionType || "trend"
             }}
             timeRemaining={timeRemaining}
             getStatusBadge={getStatusBadge}
@@ -195,7 +198,8 @@ const PredictionDetail: React.FC = () => {
           <PredictionDetailsCard 
             prediction={{
               ...prediction,
-              ticker: prediction.ticker || prediction.targetName || ""
+              ticker: prediction.ticker || prediction.targetName || "",
+              predictionType: prediction.predictionType || "trend"
             }}
             formatDate={formatDate}
             getTimeframeText={getTimeframeText}

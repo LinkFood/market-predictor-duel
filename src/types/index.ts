@@ -1,4 +1,3 @@
-
 export type PredictionTimeframe = "1d" | "1w" | "1m";
 export type PredictionCategory = "market" | "sector" | "stock";
 export type PredictionDirection = "bullish" | "bearish" | "uptrend" | "downtrend";
@@ -52,12 +51,11 @@ export interface Prediction {
   outcome?: "user_win" | "ai_win" | "tie";
   points?: number;
   
-  // Required ticker field
-  ticker?: string;
+  // Required fields
+  ticker: string;
+  predictionType: "trend" | "price";
   
   // Legacy fields
-  predictionType?: "trend" | "price";
-  prediction_type?: string;
   stockName?: string;
   startPrice?: number;
   endPrice?: number;
@@ -69,6 +67,7 @@ export interface Prediction {
   final_value?: number; 
   created_at?: string;
   resolved_at?: string;
+  prediction_type?: string;
 }
 
 export interface LeaderboardEntry {

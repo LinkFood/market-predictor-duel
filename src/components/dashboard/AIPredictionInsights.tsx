@@ -38,7 +38,7 @@ interface PredictionPattern {
 }
 
 const AIPredictionInsights = () => {
-  const { isInitialized, isAnalyzing, lastAnalysis, triggerAnalysis } = usePredictionLearning();
+  const { isInitialized, isAnalyzing, lastAnalysis, runAnalysis } = usePredictionLearning();
   const [patternSummary, setPatternSummary] = useState<PatternSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -98,7 +98,7 @@ const AIPredictionInsights = () => {
   }, [lastAnalysis]);
 
   const handleRunAnalysis = async () => {
-    await triggerAnalysis();
+    await runAnalysis();
   };
 
   return (

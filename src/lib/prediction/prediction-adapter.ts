@@ -12,6 +12,9 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
   // Generate a ticker from targetName if not provided
   const ticker = prediction.ticker || prediction.targetName || prediction.target_name || '';
   
+  // Ensure predictionType is set
+  const predictionType = prediction.predictionType || prediction.prediction_type || 'trend';
+  
   return {
     id: prediction.id,
     userId: prediction.userId || prediction.user_id,
@@ -41,7 +44,7 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
     outcome: prediction.outcome,
     points: prediction.points,
     ticker: ticker, // Ensure ticker is always set
-    predictionType: prediction.predictionType || prediction.prediction_type || 'trend'
+    predictionType: predictionType, // Ensure predictionType is always set
   };
 }
 
