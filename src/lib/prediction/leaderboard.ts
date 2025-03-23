@@ -12,8 +12,8 @@ import { dbToLeaderboardEntry, dbToUserStats } from './adapters';
  */
 export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
   try {
-    // Try to fetch user stats joined with profiles to get usernames
-    const { data: joinedData, error: joinError } = await supabase
+    // Fetch user stats and join with profiles table
+    const { data, error } = await supabase
       .from('user_stats')
       .select(`
         user_id,
@@ -21,36 +21,32 @@ export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
         correct_predictions,
         wins_against_ai,
         losses_against_ai,
-        total_points,
-        profiles(username, avatar_url)
+        total_points
       `)
       .order('total_points', { ascending: false })
       .limit(20);
     
-    // If join failed, try to just get user stats
-    if (joinError) {
-      console.error("Error joining user_stats with profiles:", joinError);
-      
-      // Fetch user stats without the join
-      const { data: statsData, error: statsError } = await supabase
-        .from('user_stats')
-        .select('*')
-        .order('total_points', { ascending: false })
-        .limit(20);
-      
-      if (statsError) throw statsError;
-      
-      // Transform the data without profile information
-      return statsData.map((entry, index) => {
-        return dbToLeaderboardEntry({
-          ...entry,
-          profiles: { username: `User ${index + 1}`, avatar_url: null }
-        }, index);
-      });
-    }
+    if (error) throw error;
     
-    // If join succeeded, transform the data
-    return joinedData.map((entry, index) => dbToLeaderboardEntry(entry, index));
+    // Get usernames for each user
+    const enrichedData = await Promise.all(
+      data.map(async (stat, index) => {
+        // Get profile data for each user
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('username, avatar_url')
+          .eq('id', stat.user_id)
+          .single();
+        
+        // Create a combined object with profile data
+        return dbToLeaderboardEntry({
+          ...stat,
+          profiles: profileData || { username: `User ${index + 1}`, avatar_url: null }
+        }, index);
+      })
+    );
+    
+    return enrichedData;
   } catch (error) {
     console.error("Error fetching leaderboard:", error);
     return []; // Return empty array to prevent UI errors
