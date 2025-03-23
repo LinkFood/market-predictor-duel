@@ -11,7 +11,7 @@ import HotOpportunities from "@/components/dashboard/HotOpportunities";
 import ActiveBrackets from "@/components/dashboard/ActiveBrackets";
 import { GlobalStats, Prediction, MarketData, User } from "@/types";
 import { mockPredictions, mockStockData, mockGlobalStats } from "@/data/mockData";
-import { Bracket } from "@/lib/duel/types";
+import { Bracket, Direction } from "@/lib/duel/types";
 
 // Create mocked brackets with fully typed data
 const mockBrackets: Bracket[] = [
@@ -60,7 +60,7 @@ interface Opportunity {
   confidence: number;
   timeframe: string;
   description: string;
-  movement: string;
+  movement: "bullish" | "bearish" | "volatile";
   icon: string;
 }
 
@@ -74,7 +74,7 @@ const mockOpportunities: Opportunity[] = [
     confidence: 0.85,
     timeframe: "1w",
     description: "Strong technical indicators",
-    movement: "up",
+    movement: "bullish",
     icon: "trending-up"
   },
   {
@@ -85,7 +85,7 @@ const mockOpportunities: Opportunity[] = [
     confidence: 0.92,
     timeframe: "1w",
     description: "Earnings beat expectations",
-    movement: "up",
+    movement: "bullish",
     icon: "trending-up"
   },
   {
@@ -96,7 +96,7 @@ const mockOpportunities: Opportunity[] = [
     confidence: 0.78,
     timeframe: "1w",
     description: "Sector facing headwinds",
-    movement: "down",
+    movement: "bearish",
     icon: "trending-down"
   }
 ];
@@ -115,15 +115,15 @@ const Dashboard: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Mock user rank data - this should be a number according to the component
+  // Mock user rank data
   const userRank = 42;
 
   // Convert mockStockData to MarketData format
   const marketData: MarketData[] = mockStockData.map(stock => ({
     name: stock.name,
-    symbol: stock.symbol || stock.name.substring(0, 4).toUpperCase(),
-    value: stock.price || 150,
-    change: (stock.price || 150) * (stock.changePercent / 100),
+    symbol: stock.symbol,
+    value: stock.price,
+    change: stock.change,
     changePercent: stock.changePercent
   }));
 
@@ -154,7 +154,7 @@ const Dashboard: React.FC = () => {
           <UserStatsSection userRank={userRank} />
         </div>
         <div className="space-y-6">
-          <GlobalBattleStats stats={mockGlobalStats as GlobalStats} />
+          <GlobalBattleStats stats={mockGlobalStats} />
           <MarketPulse marketData={marketData} stockData={mockStockData} />
         </div>
       </div>
