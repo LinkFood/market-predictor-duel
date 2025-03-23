@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -89,7 +89,6 @@ const BracketDetail: React.FC = () => {
       toast({
         title: "Prices updated",
         description: "Latest market data has been applied.",
-        variant: "success"
       });
       
       // In a real implementation, we would call an API to update the prices
@@ -121,12 +120,12 @@ const BracketDetail: React.FC = () => {
       toast({
         title: "Bracket reset",
         description: "Bracket has been reset to initial state.",
-        variant: "success"
       });
       
       // In a real implementation, we would call an API to reset the bracket
       // For now, just update the local state
-      setBracket({...bracket, status: 'pending'});
+      const updatedBracket = {...bracket, status: 'pending' as 'pending' | 'active' | 'completed'};
+      setBracket(updatedBracket);
       
     } catch (err) {
       console.error('Error resetting bracket:', err);
@@ -151,7 +150,6 @@ const BracketDetail: React.FC = () => {
       toast({
         title: "Bracket completed",
         description: "Results have been calculated.",
-        variant: "success"
       });
       
       setBracket(result);
@@ -177,7 +175,7 @@ const BracketDetail: React.FC = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{bracket.name}</h1>
           <div className="flex items-center mt-1 space-x-2">
-            <Badge variant={bracket.status === 'completed' ? 'success' : bracket.status === 'active' ? 'default' : 'secondary'}>
+            <Badge variant={bracket.status === 'completed' ? 'default' : bracket.status === 'active' ? 'default' : 'secondary'}>
               {bracket.status === 'completed' ? 'Completed' : bracket.status === 'active' ? 'In Progress' : 'Pending'}
             </Badge>
             <span className="text-muted-foreground flex items-center">

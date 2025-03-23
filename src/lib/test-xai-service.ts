@@ -7,7 +7,9 @@
 import { 
   getPrediction, 
   StockPredictionRequest,
-  StockPredictionResponse
+  StockPredictionResponse,
+  generateAIPrediction,
+  analyzePredictionResult
 } from './xai-service';
 import { PredictionRequest } from './prediction/types';
 
@@ -64,12 +66,12 @@ export async function testGenerateAIPrediction() {
       userPrediction: 'bullish'
     };
     
-    // Use the main prediction function for now
-    const result = await getPrediction({
-      ticker: request.ticker,
-      timeframe: request.timeframe,
-      predictionType: request.predictionType,
-    });
+    // Use the enhanced prediction function
+    const result = await generateAIPrediction(
+      request.ticker,
+      request.timeframe,
+      request.predictionType
+    );
     
     console.log('X.AI enhanced prediction result:');
     console.log('- Prediction:', result.prediction);
@@ -97,19 +99,7 @@ export async function testAnalyzePredictionResult() {
   try {
     console.log('Testing X.AI analyzePredictionResult...');
     
-    // Mock analysis result
-    const result = {
-      explanation: "The stock declined during the prediction period due to lower than expected earnings report and broader market volatility.",
-      factors: [
-        "Negative earnings surprise",
-        "Market-wide tech sector correction",
-        "Analysts downgraded price targets"
-      ],
-      accuracy: 0.85,
-      learningPoints: [
-        "This stock typically shows higher volatility around earnings"
-      ]
-    };
+    const result = await analyzePredictionResult("pred-1");
     
     console.log('X.AI prediction analysis result:', result);
     return result;

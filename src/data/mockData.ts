@@ -1,6 +1,6 @@
-
 // Add 'price' property to mockStockData to fix issues where 'value' is referenced
-import { StockData, MarketData, Prediction } from "@/types";
+import { MarketData, Prediction } from "@/types";
+import { StockData } from "@/lib/market/types";
 
 export const mockStockData = [
   { 
@@ -8,7 +8,11 @@ export const mockStockData = [
     name: "Apple Inc.", 
     price: 175.45, 
     changePercent: 1.25, 
-    sector: "Technology" 
+    sector: "Technology",
+    change: 2.19,
+    datetime: new Date().toISOString(),
+    marketCap: 2850000000000,
+    volume: 75365421
   },
   { 
     symbol: "MSFT", 
@@ -182,6 +186,7 @@ export const mockMarketIndices: MarketData[] = [
   }
 ];
 
+// Create functions to export mock gainers and losers data
 export function getMockGainers(): StockData[] {
   return [
     {
@@ -234,6 +239,119 @@ export function getMockLosers(): StockData[] {
       sector: "Technology"
     }
   ];
+}
+
+// Add a function to create a mock bracket for testing
+export function createMockBracket(id: string) {
+  return {
+    id,
+    userId: "user-1",
+    name: "Weekly Tech Showdown",
+    timeframe: "weekly",
+    size: 3,
+    status: "active",
+    aiPersonality: "ValueHunter",
+    userEntries: [
+      {
+        id: "user-entry-1",
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 175.45,
+        marketCap: "large",
+        sector: "Technology",
+        order: 1
+      },
+      {
+        id: "user-entry-2",
+        symbol: "MSFT",
+        name: "Microsoft Corporation",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 325.76,
+        marketCap: "large",
+        sector: "Technology",
+        order: 2
+      },
+      {
+        id: "user-entry-3",
+        symbol: "GOOGL",
+        name: "Alphabet Inc.",
+        entryType: "stock",
+        direction: "bearish",
+        startPrice: 137.23,
+        marketCap: "large",
+        sector: "Technology",
+        order: 3
+      }
+    ],
+    aiEntries: [
+      {
+        id: "ai-entry-1",
+        symbol: "AAPL",
+        name: "Apple Inc.",
+        entryType: "stock",
+        direction: "bearish",
+        startPrice: 175.45,
+        marketCap: "large",
+        sector: "Technology",
+        order: 1
+      },
+      {
+        id: "ai-entry-2",
+        symbol: "MSFT",
+        name: "Microsoft Corporation",
+        entryType: "stock",
+        direction: "bearish",
+        startPrice: 325.76,
+        marketCap: "large",
+        sector: "Technology",
+        order: 2
+      },
+      {
+        id: "ai-entry-3",
+        symbol: "GOOGL",
+        name: "Alphabet Inc.",
+        entryType: "stock",
+        direction: "bullish",
+        startPrice: 137.23,
+        marketCap: "large",
+        sector: "Technology",
+        order: 3
+      }
+    ],
+    matches: [
+      {
+        roundNumber: 1,
+        matchNumber: 1,
+        entry1Id: "user-entry-1",
+        entry2Id: "ai-entry-1",
+        completed: true,
+        winnerId: "user-entry-1"
+      },
+      {
+        roundNumber: 1,
+        matchNumber: 2,
+        entry1Id: "user-entry-2",
+        entry2Id: "ai-entry-2",
+        completed: true,
+        winnerId: "user-entry-2"
+      },
+      {
+        roundNumber: 1,
+        matchNumber: 3,
+        entry1Id: "user-entry-3",
+        entry2Id: "ai-entry-3",
+        completed: false
+      }
+    ],
+    startDate: new Date().toISOString(),
+    endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    createdAt: new Date().toISOString(),
+    userPoints: 2.5,
+    aiPoints: 1.2
+  };
 }
 
 export const mockGlobalStats = {

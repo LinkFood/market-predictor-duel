@@ -1,271 +1,280 @@
 
 /**
  * Bracket Service
- * Handles creation and management of bracket tournaments
+ * Functions for managing stock bracket tournaments
  */
-import { supabase } from "@/integrations/supabase/client";
-import { createMockBracket } from "@/data/mockData";
-import { BracketSize, BracketTimeframe, Direction, AIPersonality, Bracket, BracketStatus } from "./types";
-import { FEATURES } from "@/lib/config";
+import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from '@/lib/auth-context';
+import { Bracket, BracketTimeframe, BracketSize, Direction, AIPersonality, BracketEntry, BracketStatus } from './types';
+import { createMockBracket } from '@/data/mockData';
+import { generateAIStockPicks } from './ai-stock-picker';
+import { toast } from 'sonner';
 
-// Mock brackets for testing
-const mockBrackets: Bracket[] = [
-  {
-    id: "bracket-001",
-    userId: "user-123",
-    name: "Tech Giants Battle",
-    timeframe: "weekly",
-    size: 3,
-    status: "completed" as BracketStatus,
-    aiPersonality: "MomentumTrader",
-    userEntries: [
-      {
-        id: "entry-1",
-        symbol: "AAPL",
-        name: "Apple Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 185.92,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "entry-2",
-        symbol: "MSFT",
-        name: "Microsoft Corp",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 338.11,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "entry-3",
-        symbol: "AMZN",
-        name: "Amazon.com",
-        entryType: "stock",
-        direction: "bearish",
-        startPrice: 131.94,
-        marketCap: "large",
-        sector: "Consumer Cyclical",
-        order: 3
-      }
-    ],
-    aiEntries: [
-      {
-        id: "ai-entry-1",
-        symbol: "GOOGL",
-        name: "Alphabet Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 131.86,
-        marketCap: "large",
-        sector: "Technology",
-        order: 1
-      },
-      {
-        id: "ai-entry-2",
-        symbol: "META",
-        name: "Meta Platforms",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 325.11,
-        marketCap: "large",
-        sector: "Technology",
-        order: 2
-      },
-      {
-        id: "ai-entry-3",
-        symbol: "NFLX",
-        name: "Netflix Inc.",
-        entryType: "stock",
-        direction: "bullish",
-        startPrice: 484.21,
-        marketCap: "large",
-        sector: "Technology",
-        order: 3
-      }
-    ],
-    matches: [
-      {
-        id: "match-1",
-        roundNumber: 1,
-        matchNumber: 1,
-        entry1Id: "entry-1",
-        entry2Id: "ai-entry-1",
-        entry1PercentChange: 2.54,
-        entry2PercentChange: 1.89,
-        winnerId: "entry-1",
-        completed: true
-      },
-      {
-        id: "match-2",
-        roundNumber: 1,
-        matchNumber: 2,
-        entry1Id: "entry-2",
-        entry2Id: "ai-entry-2",
-        entry1PercentChange: 1.12,
-        entry2PercentChange: 3.45,
-        winnerId: "ai-entry-2",
-        completed: true
-      },
-      {
-        id: "match-3",
-        roundNumber: 1,
-        matchNumber: 3,
-        entry1Id: "entry-3",
-        entry2Id: "ai-entry-3",
-        entry1PercentChange: -1.25,
-        entry2PercentChange: 0.87,
-        winnerId: "ai-entry-3",
-        completed: true
-      }
-    ],
-    winnerId: "ai",
-    startDate: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    endDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
-    userPoints: 2.54,
-    aiPoints: 5.21
-  }
-];
-
-/**
- * Get all brackets for the current user
- */
-export async function getUserBrackets(): Promise<Bracket[]> {
-  try {
-    if (FEATURES.enableMockData) {
-      // Return mock brackets when real data is not available
-      console.log('Using mock data for brackets');
-      return mockBrackets;
-    }
-
-    const { data: user } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error("No authenticated user found");
-    }
-
-    // Real implementation would fetch from Supabase
-    // For now, return mock data
-    return mockBrackets;
-  } catch (error) {
-    console.error("Error fetching user brackets:", error);
-    return [];
-  }
-}
-
-/**
- * Get a bracket by ID
- */
-export async function getBracketById(bracketId: string): Promise<Bracket | null> {
-  try {
-    if (FEATURES.enableMockData) {
-      const bracket = mockBrackets.find(b => b.id === bracketId);
-      return bracket || null;
-    }
-
-    // Real implementation would fetch from Supabase
-    // For now, return mock data
-    return mockBrackets.find(b => b.id === bracketId) || null;
-  } catch (error) {
-    console.error("Error fetching bracket:", error);
-    return null;
-  }
-}
-
-/**
- * Create a new bracket competition
- */
+// Create a new bracket
 export async function createBracket(
   timeframe: BracketTimeframe,
   size: BracketSize,
-  entries: { symbol: string; direction: Direction }[],
-  aiPersonality?: AIPersonality
+  userEntries: { symbol: string; direction: Direction }[],
+  aiPersonality: AIPersonality = "ValueHunter"
 ): Promise<Bracket> {
   try {
-    if (FEATURES.enableMockData) {
-      // Create and return a mock bracket
-      console.log('Creating mock bracket');
-      return createMockBracket(timeframe, size, entries, aiPersonality);
-    }
-
-    const { data: user } = await supabase.auth.getUser();
-    if (!user) {
-      throw new Error("No authenticated user found");
-    }
-
-    // Real implementation would create a bracket in Supabase
-    // For now, return mock data
-    return createMockBracket(timeframe, size, entries, aiPersonality);
+    // In a real implementation, this would call an API or Supabase
+    // For now, we'll create a mock bracket
+    const bracketId = `bracket-${uuidv4()}`;
+    
+    console.log(`Creating bracket with timeframe: ${timeframe}, size: ${size}, aiPersonality: ${aiPersonality}`);
+    console.log('User entries:', userEntries);
+    
+    // Generate AI entries based on the user's selections and AI personality
+    const aiEntries = await generateAIStockPicks(userEntries, size, aiPersonality);
+    console.log('AI entries:', aiEntries);
+    
+    // Format user entries
+    const formattedUserEntries: BracketEntry[] = userEntries.map((entry, index) => ({
+      id: `user-entry-${index + 1}`,
+      symbol: entry.symbol,
+      name: getStockName(entry.symbol),
+      entryType: 'stock',
+      direction: entry.direction,
+      startPrice: getRandomPrice(50, 500),
+      marketCap: getRandomMarketCap(),
+      sector: getStockSector(entry.symbol),
+      order: index + 1
+    }));
+    
+    // Create initial matches
+    const matches = generateInitialMatches(size);
+    
+    // Create the bracket object
+    const bracket: Bracket = {
+      id: bracketId,
+      userId: 'current-user', // In a real app, get from auth context
+      name: generateBracketName(timeframe, aiPersonality),
+      timeframe,
+      size,
+      status: 'pending',
+      aiPersonality,
+      userEntries: formattedUserEntries,
+      aiEntries,
+      matches,
+      startDate: new Date().toISOString(),
+      endDate: getEndDate(timeframe),
+      createdAt: new Date().toISOString(),
+      userPoints: 0,
+      aiPoints: 0
+    };
+    
+    // In a real implementation, save to database
+    console.log('Created bracket:', bracket);
+    
+    return bracket;
   } catch (error) {
-    console.error("Error creating bracket:", error);
-    throw new Error("Failed to create bracket: " + (error as Error).message);
+    console.error('Error creating bracket:', error);
+    throw new Error('Failed to create bracket');
   }
 }
 
-/**
- * Delete a bracket
- */
-export async function deleteBracket(bracketId: string): Promise<boolean> {
+// Get all brackets for the current user
+export async function getUserBrackets(): Promise<Bracket[]> {
   try {
-    if (FEATURES.enableMockData) {
-      console.log('Deleting mock bracket:', bracketId);
-      return true;
-    }
-
-    // Real implementation would delete from Supabase
-    // For now, return success
-    return true;
+    // In a real implementation, this would call an API or Supabase
+    // For now, we'll return mock data
+    return [
+      createMockBracket('bracket-1'),
+      createMockBracket('bracket-2'),
+      createMockBracket('bracket-3')
+    ];
   } catch (error) {
-    console.error("Error deleting bracket:", error);
-    return false;
+    console.error('Error getting user brackets:', error);
+    throw new Error('Failed to get user brackets');
   }
 }
 
-/**
- * Update bracket status
- */
-export async function updateBracketStatus(bracketId: string, status: BracketStatus): Promise<boolean> {
+// Get a bracket by ID
+export async function getBracketById(id: string): Promise<Bracket> {
   try {
-    if (FEATURES.enableMockData) {
-      console.log('Updating mock bracket status:', bracketId, status);
-      return true;
-    }
-
-    // Real implementation would update in Supabase
-    // For now, return success
-    return true;
+    // In a real implementation, this would call an API or Supabase
+    // For now, we'll return mock data
+    return createMockBracket(id);
   } catch (error) {
-    console.error("Error updating bracket status:", error);
-    return false;
+    console.error(`Error getting bracket ${id}:`, error);
+    throw new Error('Failed to get bracket');
   }
 }
 
-/**
- * Update bracket prices 
- */
-export async function updateBracketPrices(bracketId: string): Promise<boolean> {
+// Complete a bracket (simulate the bracket completion process)
+export async function completeBracket(id: string): Promise<Bracket> {
   try {
-    console.log('Updating mock bracket prices:', bracketId);
-    return true;
+    // Get the current bracket
+    const bracket = await getBracketById(id);
+    
+    // Update match results
+    const updatedMatches = bracket.matches.map(match => {
+      if (!match.completed) {
+        // Randomly determine a winner
+        const winner = Math.random() > 0.5 ? match.entry1Id : match.entry2Id;
+        return {
+          ...match,
+          completed: true,
+          winnerId: winner
+        };
+      }
+      return match;
+    });
+    
+    // Randomly calculate final percentages
+    const userPoints = Math.random() * 10;
+    const aiPoints = Math.random() * 10;
+    
+    // Determine overall winner
+    const winnerId = userPoints > aiPoints ? 'user' : 'ai';
+    
+    // Create updated bracket
+    const updatedBracket: Bracket = {
+      ...bracket,
+      status: 'completed' as BracketStatus,
+      matches: updatedMatches,
+      userPoints,
+      aiPoints,
+      winnerId
+    };
+    
+    // In a real implementation, save to database
+    console.log('Completed bracket:', updatedBracket);
+    
+    return updatedBracket;
   } catch (error) {
-    console.error("Error updating bracket prices:", error);
-    return false;
+    console.error(`Error completing bracket ${id}:`, error);
+    throw new Error('Failed to complete bracket');
   }
 }
 
-/**
- * Reset bracket
- */
-export async function resetBracket(bracketId: string): Promise<boolean> {
-  try {
-    console.log('Resetting mock bracket:', bracketId);
-    return true;
-  } catch (error) {
-    console.error("Error resetting bracket:", error);
-    return false;
+// Helper functions
+function generateBracketName(timeframe: BracketTimeframe, aiPersonality: AIPersonality): string {
+  const timeframeNames = {
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly'
+  };
+  
+  const themes = [
+    'Tech Showdown',
+    'Market Battle',
+    'Stock Duel',
+    'Sector Clash',
+    'Bull vs Bear',
+    'Trading Faceoff'
+  ];
+  
+  return `${timeframeNames[timeframe]} ${themes[Math.floor(Math.random() * themes.length)]}`;
+}
+
+function getEndDate(timeframe: BracketTimeframe): string {
+  const now = new Date();
+  switch (timeframe) {
+    case 'daily':
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    case 'weekly':
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    case 'monthly':
+      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    default:
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
   }
+}
+
+function generateInitialMatches(size: BracketSize) {
+  if (size === 3) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false }
+    ];
+  }
+  
+  if (size === 6) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false },
+      { roundNumber: 2, matchNumber: 1, completed: false }
+    ];
+  }
+  
+  if (size === 9) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false },
+      { roundNumber: 1, matchNumber: 4, completed: false },
+      { roundNumber: 2, matchNumber: 1, completed: false },
+      { roundNumber: 2, matchNumber: 2, completed: false },
+      { roundNumber: 3, matchNumber: 1, completed: false }
+    ];
+  }
+  
+  return [];
+}
+
+function getRandomPrice(min: number, max: number): number {
+  return parseFloat((min + Math.random() * (max - min)).toFixed(2));
+}
+
+function getRandomMarketCap(): "large" | "mid" | "small" {
+  const options: ["large", "mid", "small"] = ["large", "mid", "small"];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function getStockName(symbol: string): string {
+  const stockNames: Record<string, string> = {
+    AAPL: "Apple Inc.",
+    MSFT: "Microsoft Corporation",
+    AMZN: "Amazon.com Inc.",
+    GOOGL: "Alphabet Inc.",
+    GOOG: "Alphabet Inc.",
+    META: "Meta Platforms Inc.",
+    TSLA: "Tesla Inc.",
+    NVDA: "NVIDIA Corporation",
+    V: "Visa Inc.",
+    JPM: "JPMorgan Chase & Co.",
+    JNJ: "Johnson & Johnson",
+    UNH: "UnitedHealth Group Inc.",
+    PG: "Procter & Gamble Co.",
+    MA: "Mastercard Inc.",
+    HD: "Home Depot Inc.",
+    BAC: "Bank of America Corp.",
+    XOM: "Exxon Mobil Corporation",
+    AVGO: "Broadcom Inc.",
+    PFE: "Pfizer Inc.",
+    CSCO: "Cisco Systems Inc."
+  };
+  
+  return stockNames[symbol] || `${symbol} Inc.`;
+}
+
+function getStockSector(symbol: string): string {
+  const stockSectors: Record<string, string> = {
+    AAPL: "Technology",
+    MSFT: "Technology",
+    AMZN: "Consumer Cyclical",
+    GOOGL: "Technology",
+    GOOG: "Technology",
+    META: "Technology",
+    TSLA: "Automotive",
+    NVDA: "Technology",
+    V: "Financial Services",
+    JPM: "Financial Services",
+    JNJ: "Healthcare",
+    UNH: "Healthcare",
+    PG: "Consumer Defensive",
+    MA: "Financial Services",
+    HD: "Consumer Cyclical",
+    BAC: "Financial Services",
+    XOM: "Energy",
+    AVGO: "Technology",
+    PFE: "Healthcare",
+    CSCO: "Technology"
+  };
+  
+  return stockSectors[symbol] || "Technology";
 }

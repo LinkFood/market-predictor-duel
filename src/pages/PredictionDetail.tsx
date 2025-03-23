@@ -5,7 +5,7 @@ import { usePredictionData } from "@/hooks/usePredictionData";
 import LoadingScreen from "@/components/LoadingScreen";
 import { PredictionDetailView } from "@/components/prediction-detail/PredictionDetailView";
 import { mockPredictions, mockStockData } from "@/data/mockData";
-import { Prediction, MarketData } from "@/types";
+import { Prediction, MarketData, PredictionCategory, PredictionDirection, PredictionStatus, PredictionWinner } from "@/types";
 
 const PredictionDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -31,11 +31,11 @@ const PredictionDetail: React.FC = () => {
   // Ensure mockPredictions conform to the Prediction type
   const typedPredictions: Prediction[] = mockPredictions.map(pred => ({
     ...pred,
-    targetType: pred.targetType as any,
-    userPrediction: pred.userPrediction as any,
-    aiPrediction: pred.aiPrediction as any,
-    status: pred.status as any,
-    winner: pred.winner as any
+    targetType: pred.targetType as PredictionCategory,
+    userPrediction: pred.userPrediction as PredictionDirection,
+    aiPrediction: pred.aiPrediction as PredictionDirection,
+    status: pred.status as PredictionStatus,
+    winner: pred.winner as PredictionWinner
   }));
 
   return (

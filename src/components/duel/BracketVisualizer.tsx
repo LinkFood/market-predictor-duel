@@ -249,7 +249,7 @@ function generateRounds(
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: match?.winnerId,
+        winnerId: match?.winnerId || undefined,
         completed: match?.completed || false,
       });
     }
@@ -267,7 +267,7 @@ function generateRounds(
       round1.push({
         entry1: userEntries[i],
         entry2: aiEntries[i],
-        winnerId: match?.winnerId,
+        winnerId: match?.winnerId || undefined,
         completed: match?.completed || false,
       });
     }
@@ -289,7 +289,7 @@ function generateRounds(
     round2.push({
       entry1: finalEntry1,
       entry2: finalEntry2,
-      winnerId: finalMatch?.winnerId,
+      winnerId: finalMatch?.winnerId || undefined,
       completed: finalMatch?.completed || false,
     });
     
@@ -334,7 +334,7 @@ function generateRounds(
       round2.push({
         entry1: semifinalEntry1,
         entry2: semifinalEntry2,
-        winnerId: match?.winnerId,
+        winnerId: match?.winnerId || undefined,
         completed: match?.completed || false,
       });
     }
