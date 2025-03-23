@@ -6,22 +6,27 @@ import { Prediction as ApiPrediction } from '@/lib/prediction/types';
  * Adapts a prediction from the API format to the application format
  */
 export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
+  // Check if property exists in either camelCase or snake_case format
+  const userPredictionValue = prediction.userPrediction || prediction.user_prediction;
+  const aiPredictionValue = prediction.aiPrediction || prediction.ai_prediction;
+  const actualResultValue = prediction.actualResult || prediction.actual_result;
+  
   return {
     id: prediction.id,
-    ticker: prediction.ticker,
+    ticker: prediction.ticker || "",
     targetName: prediction.targetName || prediction.target_name || "",
-    userPrediction: (prediction.userPrediction || prediction.user_prediction || "bullish") as PredictionDirection,
-    aiPrediction: (prediction.aiPrediction || prediction.ai_prediction || "bullish") as PredictionDirection,
+    userPrediction: (userPredictionValue || "bullish") as PredictionDirection,
+    aiPrediction: (aiPredictionValue || "bullish") as PredictionDirection,
     targetType: prediction.targetType || prediction.target_type || "stock",
     startingValue: prediction.startingValue || prediction.starting_value || 0,
-    finalValue: prediction.final_value,
-    percentChange: prediction.percent_change,
+    finalValue: prediction.final_value || 0,
+    percentChange: prediction.percent_change || 0,
     createdAt: prediction.createdAt || prediction.created_at || new Date().toISOString(),
     resolvesAt: prediction.resolvesAt || prediction.resolves_at || "",
     resolvedAt: prediction.resolvedAt || prediction.resolved_at,
-    status: prediction.status,
+    status: prediction.status || "pending",
     outcome: prediction.outcome,
-    actualResult: (prediction.actualResult || prediction.actual_result || "bullish") as PredictionDirection,
+    actualResult: (actualResultValue || "bullish") as PredictionDirection,
     predictionType: (prediction.predictionType || prediction.prediction_type || "trend") as "trend" | "price",
     timeframe: (prediction.timeframe || "1d") as PredictionTimeframe,
     aiConfidence: prediction.aiConfidence || prediction.ai_confidence || 0,
@@ -32,8 +37,8 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
       counter: [],
       reasoning: ""
     },
-    endValue: prediction.endValue || prediction.endPrice,
-    winner: prediction.winner
+    endValue: prediction.endValue || prediction.endPrice || 0,
+    winner: prediction.winner || undefined
   };
 };
 
@@ -41,7 +46,8 @@ export const adaptPrediction = (prediction: ApiPrediction): AppPrediction => {
  * Adapts a prediction from the application format to the API format
  */
 export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction => {
-  return {
+  // Create a base object with all camelCase properties
+  const baseObject = {
     id: prediction.id,
     userId: prediction.userId,
     ticker: prediction.ticker,
@@ -50,20 +56,26 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     aiPrediction: prediction.aiPrediction,
     targetType: prediction.targetType,
     startingValue: prediction.startingValue,
-    final_value: prediction.finalValue,
-    percent_change: prediction.percentChange,
+    predictionType: prediction.predictionType,
+    timeframe: prediction.timeframe,
+    aiConfidence: prediction.aiConfidence,
     createdAt: prediction.createdAt,
     resolvesAt: prediction.resolvesAt,
     resolvedAt: prediction.resolvedAt,
     status: prediction.status,
     outcome: prediction.outcome,
     actualResult: prediction.actualResult,
-    predictionType: prediction.predictionType,
-    timeframe: prediction.timeframe,
-    aiConfidence: prediction.aiConfidence,
     points: prediction.points,
     aiAnalysis: prediction.aiAnalysis,
     
+    // Add properties that exist on ApiPrediction but not AppPrediction
+    final_value: prediction.finalValue,
+    endValue: prediction.endValue
+  };
+
+  // Add snake_case properties for API compatibility
+  return {
+    ...baseObject,
     // For compatibility with API expected format
     user_id: prediction.userId,
     target_name: prediction.targetName,
@@ -76,7 +88,9 @@ export const adaptToApiPrediction = (prediction: AppPrediction): ApiPrediction =
     resolves_at: prediction.resolvesAt,
     resolved_at: prediction.resolvedAt,
     actual_result: prediction.actualResult,
-    ai_confidence: prediction.aiConfidence
+    ai_confidence: prediction.aiConfidence,
+    // We need to explicitly add these fields from the app type to the API type
+    percent_change: prediction.percentChange
   };
 };
 
