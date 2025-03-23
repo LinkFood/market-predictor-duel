@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
@@ -19,7 +18,15 @@ serve(async (req) => {
 
   try {
     // Parse request body
-    const { endpoint, params } = await req.json();
+    const requestData = await req.json();
+    
+    // Handle test mode
+    if (requestData.test === true) {
+      console.log("Test mode activated");
+      return await handleTestMode(requestData.apiKey);
+    }
+    
+    const { endpoint, params } = requestData;
     
     if (!endpoint) {
       console.error("Missing required parameter: endpoint");
@@ -29,14 +36,24 @@ serve(async (req) => {
     console.log(`Processing Polygon market data request for endpoint: ${endpoint}`);
     console.log(`Request params:`, params);
     
-    // Check if API key exists and log detailed information about it
+    // Get the API key
+    let POLYGON_API_KEY;
+    
+    // If a key is provided in the request (for testing), use it
+    if (requestData.apiKey) {
+      POLYGON_API_KEY = requestData.apiKey;
+    } else {
+      // Otherwise, get it from environment or storage
+      POLYGON_API_KEY = await getPolygonApiKey();
+    }
+    
     if (!POLYGON_API_KEY) {
-      console.error("Polygon API key is not configured in environment variables");
+      console.error("Polygon API key is not configured");
       return new Response(
         JSON.stringify({ 
           error: "API_KEY_MISSING",
-          message: "Polygon API key is not configured in environment variables",
-          details: "Please check Supabase secrets configuration"
+          message: "Polygon API key is not configured",
+          details: "Please set up your Polygon API key in the settings"
         }),
         { 
           status: 500,
@@ -49,7 +66,7 @@ serve(async (req) => {
     }
     
     console.log(`Polygon API key found. Length: ${POLYGON_API_KEY.length}`);
-
+    
     // Build the URL with parameters
     let url = `${POLYGON_BASE_URL}${endpoint}`;
     
@@ -198,3 +215,132 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to get the Polygon API key
+async function getPolygonApiKey(): Promise<string> {
+  // Try to get from Deno KV first
+  try {
+    const kv = await Deno.openKv();
+    const keyEntry = await kv.get(["polygon_api_key"]);
+    if (keyEntry && keyEntry.value) {
+      console.log("Found API key in Deno KV storage");
+      return keyEntry.value as string;
+    }
+  } catch (error) {
+    console.error("Error accessing Deno KV:", error);
+  }
+  
+  // Fall back to environment variable
+  const envKey = Deno.env.get('POLYGON_API_KEY');
+  if (envKey) {
+    console.log("Using API key from environment variable");
+    return envKey;
+  }
+  
+  // No key found
+  return "";
+}
+
+// Handler for test mode
+async function handleTestMode(testApiKey?: string): Promise<Response> {
+  try {
+    // If a test API key is provided, use it, otherwise get the stored key
+    const apiKey = testApiKey || await getPolygonApiKey();
+    
+    if (!apiKey) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: "No API key provided or stored",
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+    
+    // Test the API key with a simple request
+    const testUrl = `https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${apiKey}`;
+    console.log(`Testing Polygon API connection: ${testUrl.replace(apiKey, '[REDACTED]')}`);
+    
+    const response = await fetch(testUrl);
+    const status = response.status;
+    
+    if (status === 401 || status === 403) {
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: "API key is invalid or unauthorized",
+          status,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      return new Response(
+        JSON.stringify({ 
+          success: false,
+          message: `API returned error: ${status} - ${errorText}`,
+          status,
+          timestamp: new Date().toISOString()
+        }),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json' 
+          } 
+        }
+      );
+    }
+    
+    const data = await response.json();
+    
+    return new Response(
+      JSON.stringify({ 
+        success: true,
+        message: "API connection successful",
+        testData: {
+          status: "success",
+          ticker: "AAPL",
+          responseStatus: status,
+          hasResults: Boolean(data.results && data.results.length > 0)
+        },
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
+  } catch (error) {
+    console.error("Error in test mode:", error);
+    
+    return new Response(
+      JSON.stringify({ 
+        success: false,
+        message: `Test failed: ${error.message || "Unknown error"}`,
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json' 
+        } 
+      }
+    );
+  }
+}

@@ -7,7 +7,7 @@
 // Feature flags to control app functionality
 export const FEATURES = {
   // Data source controls
-  enableRealMarketData: false,
+  enableRealMarketData: true, // Changed from false to true
   enableMockData: true,
 
   // Authentication controls

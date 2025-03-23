@@ -1,78 +1,106 @@
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ChakraProvider } from "@chakra-ui/react";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
+import { extendedTheme } from "@/lib/chakra-theme";
+import { AuthProvider } from "@/lib/auth-context";
+import { SubscriptionProvider } from "@/lib/subscription/subscription-context";
+import { MarketDataProvider } from "@/lib/market/MarketDataProvider";
 
-import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes";
-import { AuthProvider } from "./lib/auth-context";
-import { MarketDataProvider } from "./lib/market/MarketDataProvider";
-import ErrorBoundary from "./components/ErrorBoundary";
-import AppErrorBoundary from "./components/AppErrorBoundary";
-import { Toaster } from "./components/ui/toaster";
-import LoadingScreen from "./components/LoadingScreen";
-import AILearningInitializer from "./components/AILearningInitializer";
-import { SubscriptionProvider } from "./lib/subscription/subscription-context";
-import DebugBanner from "./components/subscription/DebugBanner";
-import { useState, useEffect } from "react";
-import { useSupabaseCheck } from "./hooks/use-supabase-check";
-import { HelmetProvider } from "react-helmet-async";
-import "./App.css";
+// Pages
+import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import Register from "@/pages/Register";
+import Dashboard from "@/pages/Dashboard";
+import Predictions from "@/pages/Predictions";
+import PredictionDetail from "@/pages/PredictionDetail";
+import CreatePrediction from "@/pages/CreatePrediction";
+import Markets from "@/pages/Markets";
+import Leaderboard from "@/pages/Leaderboard";
+import Profile from "@/pages/Profile";
+import Settings from "@/pages/Settings";
+import ApiSettings from "@/pages/ApiSettings";
+import AccountSettings from "@/pages/AccountSettings";
+import NotificationSettings from "@/pages/NotificationSettings";
+import PrivacySettings from "@/pages/PrivacySettings";
+import BillingSettings from "@/pages/BillingSettings";
+import CreateBracket from "@/pages/CreateBracket";
+import BracketDetail from "@/pages/BracketDetail";
+import Brackets from "@/pages/Brackets";
+import NotFound from "@/pages/NotFound";
+import TestApiIntegration from "@/pages/TestApiIntegration";
+
+// Layout components
+import AppLayout from "@/components/layout/AppLayout";
+import AuthLayout from "@/components/layout/AuthLayout";
+import MarketingLayout from "@/components/layout/MarketingLayout";
+
+// Auth components
+import RequireAuth from "@/components/auth/RequireAuth";
+import RequireSubscription from "@/components/subscription/RequireSubscription";
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [initError, setInitError] = useState<string | null>(null);
-
-  // Simple app initialization to show loading screen
-  useEffect(() => {
-    const initApp = async () => {
-      try {
-        console.log("App initialization started");
-        
-        // Check if important configurations are available
-        if (!window.SUPABASE_CONFIG?.url || !window.SUPABASE_CONFIG?.key) {
-          console.warn("Supabase configuration is missing or incomplete");
-          // Continue anyway in dev mode
-        }
-        
-        // Simulate initial loading
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        console.log("App initialization completed");
-        setIsLoading(false);
-      } catch (error) {
-        console.error("App initialization error:", error);
-        setInitError((error as Error).message || "Failed to initialize application");
-        setIsLoading(false);
-      }
-    };
-    
-    initApp();
-  }, []);
-
-  if (isLoading) {
-    return <LoadingScreen message="Initializing application..." />;
-  }
-
-  if (initError) {
-    return <LoadingScreen error={initError} />;
-  }
-
   return (
-    <ErrorBoundary>
-      <HelmetProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <SubscriptionProvider>
-              <MarketDataProvider>
-                <AILearningInitializer />
-                <AppErrorBoundary>
-                  <AppRoutes />
-                  <DebugBanner />
-                </AppErrorBoundary>
-                <Toaster />
-              </MarketDataProvider>
-            </SubscriptionProvider>
-          </AuthProvider>
-        </BrowserRouter>
-      </HelmetProvider>
-    </ErrorBoundary>
+    <ChakraProvider theme={extendedTheme}>
+      <BrowserRouter>
+        <ThemeProvider>
+          <Toaster />
+          <Routes>
+            {/* Marketing routes */}
+            <Route element={<MarketingLayout />}>
+              <Route path="/" element={<Home />} />
+            </Route>
+
+            {/* Auth routes */}
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
+
+            {/* App routes - require authentication */}
+            <Route element={
+              <AuthProvider>
+                <SubscriptionProvider>
+                  <MarketDataProvider>
+                    <RequireAuth>
+                      <AppLayout />
+                    </RequireAuth>
+                  </MarketDataProvider>
+                </SubscriptionProvider>
+              </AuthProvider>
+            }>
+              <Route path="/app/dashboard" element={<Dashboard />} />
+              <Route path="/app/predictions" element={<Predictions />} />
+              <Route path="/app/predictions/:id" element={<PredictionDetail />} />
+              <Route path="/app/predictions/create" element={<CreatePrediction />} />
+              <Route path="/app/markets" element={<Markets />} />
+              <Route path="/app/leaderboard" element={<Leaderboard />} />
+              <Route path="/app/profile" element={<Profile />} />
+              <Route path="/app/settings" element={<Settings />} />
+              <Route path="/app/settings/api" element={<ApiSettings />} />
+              <Route path="/app/settings/account" element={<AccountSettings />} />
+              <Route path="/app/settings/notifications" element={<NotificationSettings />} />
+              <Route path="/app/settings/privacy" element={<PrivacySettings />} />
+              <Route path="/app/settings/billing" element={<BillingSettings />} />
+              
+              {/* Bracket routes */}
+              <Route path="/app/brackets" element={<Brackets />} />
+              <Route path="/app/brackets/create" element={<CreateBracket />} />
+              <Route path="/app/brackets/:id" element={<BracketDetail />} />
+              
+              {/* Premium routes */}
+              <Route element={<RequireSubscription feature="apiAccess" />}>
+                <Route path="/app/api-test" element={<TestApiIntegration />} />
+              </Route>
+            </Route>
+
+            {/* 404 route */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </ThemeProvider>
+      </BrowserRouter>
+    </ChakraProvider>
   );
 }
 

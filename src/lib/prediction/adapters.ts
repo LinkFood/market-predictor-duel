@@ -1,91 +1,61 @@
-/**
- * Data adapters for converting database data to application types
- */
 
-import { LeaderboardEntry, Prediction, UserStats } from './types';
+// Adapters for converting between different prediction data formats
+import { Prediction } from "@/types";
 
 /**
- * Convert database prediction to application Prediction type
+ * Adapts a prediction from the database format to the application format
  */
-export function dbToPrediction(data: any): Prediction {
+export function adaptPrediction(dbPrediction: any): Prediction {
   return {
-    id: data.id,
-    userId: data.user_id,
-    ticker: data.ticker,
-    predictionType: data.prediction_type,
-    timeframe: data.timeframe,
-    startingValue: data.starting_value,
-    userPrediction: data.user_prediction,
-    aiPrediction: data.ai_prediction,
-    status: data.status,
-    outcome: data.outcome,
-    points: data.points,
-    createdAt: data.created_at,
-    resolvesAt: data.resolves_at,
-    resolvedAt: data.resolved_at,
-    endValue: data.final_value,
-    percentChange: data.percent_change, // Using percentChange which exists in Prediction type
-    actualResult: data.actual_result
+    id: dbPrediction.id,
+    userId: dbPrediction.user_id,
+    targetSymbol: dbPrediction.ticker,
+    targetName: dbPrediction.target_name,
+    targetType: dbPrediction.target_type || 'stock',
+    predictionType: dbPrediction.prediction_type,
+    userPrediction: dbPrediction.user_prediction,
+    aiPrediction: dbPrediction.ai_prediction,
+    aiConfidence: dbPrediction.ai_confidence,
+    timeframe: dbPrediction.timeframe,
+    startingValue: dbPrediction.starting_value,
+    finalValue: dbPrediction.final_value,
+    percentageChange: dbPrediction.percent_change, // Fixed property name to match type definition
+    actualResult: dbPrediction.actual_result,
+    outcome: dbPrediction.outcome,
+    points: dbPrediction.points,
+    status: dbPrediction.status || 'pending',
+    createdAt: dbPrediction.created_at,
+    resolvesAt: dbPrediction.resolves_at,
+    resolvedAt: dbPrediction.resolved_at,
+    aiAnalysis: dbPrediction.ai_analysis
   };
 }
 
 /**
- * Convert database user stats to application UserStats type
+ * Adapts a prediction from the application format to the database format
  */
-export function dbToUserStats(data: any): UserStats {
-  if (!data) return {
-    totalPredictions: 0,
-    completedPredictions: 0,
-    pendingPredictions: 0,
-    totalPoints: 0,
-    winRate: 0,
-    winStreak: 0,
-    bestWinStreak: 0,
-    aiVictories: 0,
-    userVictories: 0,
-    ties: 0
-  };
-
-  // Calculate win rate
-  const winRate = data.total_predictions > 0 
-    ? (data.correct_predictions / data.total_predictions) * 100 
-    : 0;
-
+export function adaptPredictionForDB(prediction: Prediction): any {
   return {
-    totalPredictions: data.total_predictions || 0,
-    completedPredictions: data.total_predictions || 0, // Will be updated with pendingPredictions if available
-    pendingPredictions: 0, // Will be set by caller
-    totalPoints: data.total_points || 0,
-    winRate: Math.round(winRate),
-    winStreak: data.current_streak || 0,
-    bestWinStreak: data.best_streak || 0,
-    aiVictories: data.wins_against_ai || 0,
-    userVictories: data.losses_against_ai || 0, // This is confusing naming in the database
-    ties: data.ties || 0
-  };
-}
-
-/**
- * Convert database leaderboard entry to application LeaderboardEntry type
- */
-export function dbToLeaderboardEntry(data: any, position: number): LeaderboardEntry {
-  // Handle the case where profiles is a nested object (from a join)
-  const profileData = data.profiles || {};
-  
-  // Calculate win rate
-  const totalPredictions = data.total_predictions || 0;
-  const correctPredictions = data.correct_predictions || 0;
-  const accuracy = totalPredictions > 0 ? (correctPredictions / totalPredictions) : 0;
-
-  return {
-    userId: data.user_id,
-    position: position + 1,
-    username: profileData.username || `User ${position + 1}`,
-    avatarUrl: profileData.avatar_url || null,
-    totalPredictions: totalPredictions,
-    accuracy: accuracy,
-    points: data.total_points || 0,
-    winsAgainstAI: data.wins_against_ai || 0,
-    joinDate: null // We don't have this in the current data structure
+    id: prediction.id,
+    user_id: prediction.userId,
+    ticker: prediction.targetSymbol,
+    target_name: prediction.targetName,
+    target_type: prediction.targetType,
+    prediction_type: prediction.predictionType,
+    user_prediction: prediction.userPrediction,
+    ai_prediction: prediction.aiPrediction,
+    ai_confidence: prediction.aiConfidence,
+    timeframe: prediction.timeframe,
+    starting_value: prediction.startingValue,
+    final_value: prediction.finalValue,
+    percent_change: prediction.percentageChange, // Fixed property name to match type definition
+    actual_result: prediction.actualResult,
+    outcome: prediction.outcome,
+    points: prediction.points,
+    status: prediction.status,
+    created_at: prediction.createdAt,
+    resolves_at: prediction.resolvesAt,
+    resolved_at: prediction.resolvedAt,
+    ai_analysis: prediction.aiAnalysis
   };
 }
