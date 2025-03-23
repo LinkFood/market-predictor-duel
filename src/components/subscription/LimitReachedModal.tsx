@@ -32,15 +32,21 @@ const LimitReachedModal: React.FC<LimitReachedModalProps> = ({
     onClose();
   };
 
+  // Set default values if usage is null
+  const predictionsThisMonth = usage?.predictionsThisMonth || 0;
+  const predictionsLimit = usage?.predictionsLimit || 0;
+  const apiCallsToday = usage?.apiCallsToday || 0;
+  const apiCallsLimit = usage?.apiCallsLimit || 0;
+  
   const limitDetails = {
     predictions: {
       title: 'Prediction Limit Reached',
-      description: `You've used ${usage.predictionsThisMonth} of your ${usage.predictionsLimit} predictions this month.`,
+      description: `You've used ${predictionsThisMonth} of your ${predictionsLimit} predictions this month.`,
       message: 'Upgrade to a premium plan to make more predictions and unlock advanced features like AI pattern recognition and detailed market insights.',
     },
     api: {
       title: 'API Call Limit Reached',
-      description: `You've used ${usage.apiCallsToday} of your ${usage.apiCallsLimit} API calls today.`,
+      description: `You've used ${apiCallsToday} of your ${apiCallsLimit} API calls today.`,
       message: 'Upgrade to a premium plan to increase your API call limits and access more market data sources.',
     }
   };
