@@ -15,8 +15,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { getUserPredictions, getUserStats, getLeaderboard } from "@/lib/prediction";
 import { Trophy } from "lucide-react";
+import { adaptPrediction } from "@/lib/prediction/prediction-adapter";
 
-// Create mocked brackets with fully typed data
 const mockBrackets: Bracket[] = [
   {
     id: "bracket-1",
@@ -54,7 +54,6 @@ const mockBrackets: Bracket[] = [
   }
 ];
 
-// Define Opportunity type for HotOpportunities component
 interface Opportunity {
   symbol: string;
   name: string;
@@ -67,7 +66,6 @@ interface Opportunity {
   icon: string;
 }
 
-// Mock opportunities data with required fields
 const mockOpportunities: Opportunity[] = [
   {
     symbol: "AAPL",
@@ -118,17 +116,15 @@ const Dashboard: React.FC = () => {
         setIsLoading(true);
         setError(null);
         
-        // Get current user
         const { data: userData } = await supabase.auth.getUser();
         if (!userData || !userData.user) {
           return;
         }
         
-        // Get user predictions
         const predictions = await getUserPredictions();
-        setRecentPredictions(predictions.slice(0, 3));
+        const adaptedPredictions = predictions.slice(0, 3).map(adaptPrediction);
+        setRecentPredictions(adaptedPredictions);
         
-        // Get leaderboard to determine user rank
         const leaderboard = await getLeaderboard();
         
         if (userData && userData.user) {
@@ -138,17 +134,12 @@ const Dashboard: React.FC = () => {
       } catch (error) {
         console.error("Error fetching user data:", error);
         setError("Could not load your data. Please try again later.");
-        toast({
-          title: "Error loading data",
-          description: "Could not load your data. Please try again later.",
-          variant: "destructive",
-        });
+        toast.error("Error loading data. Could not load your data. Please try again later.");
       } finally {
         setIsLoading(false);
       }
     };
     
-    // Fetch data or use mock data
     const timer = setTimeout(() => {
       fetchUserData().catch(() => setIsLoading(false));
     }, 800);
@@ -156,7 +147,6 @@ const Dashboard: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Convert mockStockData to MarketData format
   const marketData: MarketData[] = mockStockData.map(stock => ({
     name: stock.name,
     symbol: stock.symbol,
@@ -165,7 +155,6 @@ const Dashboard: React.FC = () => {
     changePercent: stock.changePercent
   }));
 
-  // Create a mock user with required properties
   const mockUser: User = {
     id: user?.id || "mock-user-id",
     username: user?.username || "Guest User",
@@ -186,7 +175,6 @@ const Dashboard: React.FC = () => {
     <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
       <DashboardHeader user={mockUser} />
       
-      {/* New Duel Button */}
       <div className="flex justify-center my-8">
         <Link 
           to="/app/brackets/create" 
@@ -197,15 +185,14 @@ const Dashboard: React.FC = () => {
         </Link>
       </div>
       
-      {/* Brackets Section - Moved to top */}
       <div className="mb-8">
         <ActiveBrackets brackets={mockBrackets} />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
         <div className="md:col-span-2 space-y-8">
-          <RecentPredictionsSection predictions={recentPredictions as Prediction[]} />
-          <UserStatsSection userRank={{rank: userRank, total: 100, percentile: 50}} />
+          <RecentPredictionsSection predictions={recentPredictions} />
+          <UserStatsSection userRank={userRank} />
         </div>
         <div className="space-y-8">
           <GlobalBattleStats stats={mockGlobalStats} />

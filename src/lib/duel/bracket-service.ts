@@ -1,3 +1,4 @@
+
 /**
  * Bracket Service
  * Functions for managing stock bracket tournaments
@@ -87,6 +88,7 @@ export async function createBracket(
       // Try to insert into Supabase - convert to DB format first
       const dbBracket = modelBracketToDb(bracket);
       
+      // Fixed: Use proper type for insert operation
       const { data: bracketResult, error: bracketError } = await supabase
         .from('brackets')
         .insert(dbBracket)
