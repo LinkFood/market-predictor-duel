@@ -9,7 +9,7 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
   // If target type is not provided, use a default
   const targetType = prediction.targetType || prediction.target_type || 'stock';
   
-  // Add a default ticker if needed (for library compatibility)
+  // Generate a ticker from targetName if not provided
   const ticker = prediction.ticker || prediction.targetName || prediction.target_name || '';
   
   return {
@@ -39,10 +39,7 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
             prediction.outcome === 'tie' ? 'both' : 'neither',
     resolvedAt: prediction.resolvedAt || prediction.resolved_at,
     outcome: prediction.outcome,
-    points: prediction.points,
-    
-    // Additional fields for library compatibility
-    ticker: ticker
+    points: prediction.points
   };
 }
 
@@ -53,7 +50,7 @@ export function adaptToLibPrediction(prediction: PredictionType): LibPrediction 
   return {
     id: prediction.id,
     userId: prediction.userId,
-    ticker: prediction.ticker || prediction.targetName,
+    ticker: prediction.targetName, // Use targetName as ticker if not available
     targetName: prediction.targetName,
     targetType: prediction.targetType,
     predictionType: 'trend', // Default to trend

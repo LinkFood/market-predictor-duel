@@ -21,7 +21,10 @@ const PricePrediction: React.FC<PricePredictionProps> = ({
 }) => {
   return (
     <div className="space-y-4">
-      <TimeframeSelector timeframe={timeframe} setTimeframe={setTimeframe} />
+      <TimeframeSelector 
+        timeframe={timeframe} 
+        onChange={setTimeframe}
+      />
       
       <div className="space-y-2">
         <label className="text-sm font-medium">Your price prediction</label>

@@ -48,6 +48,7 @@ const PredictionFormContent: React.FC<PredictionFormContentProps> = ({
       <div className="space-y-2">
         <label className="block text-sm font-medium">Select Market, Sector or Stock</label>
         <SearchBar 
+          onSelectStock={() => {}} // Required prop but uses onSelectTarget instead
           selectedTarget={{ name: targetName, type: targetType }}
           onSelectTarget={handleSelectTarget}
         />
@@ -55,12 +56,12 @@ const PredictionFormContent: React.FC<PredictionFormContentProps> = ({
       
       <TimeframeSelector 
         timeframe={timeframe}
-        onChange={(value) => updateField('timeframe', value)}
+        onChange={(value) => updateField('timeframe', value as PredictionTimeframe)}
       />
       
       <TrendPrediction 
         value={prediction}
-        onChange={(value) => updateField('prediction', value)}
+        onChange={(value) => updateField('prediction', value as PredictionDirection)}
       />
     </div>
   );

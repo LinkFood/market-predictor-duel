@@ -29,8 +29,14 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  // Add ticker field if missing from prediction
+  const predictionWithTicker = {
+    ...prediction,
+    ticker: prediction.ticker || prediction.targetName || ""
+  };
+  
   // Convert prediction to standard format
-  const adaptedPrediction = adaptPrediction(prediction);
+  const adaptedPrediction = adaptPrediction(predictionWithTicker);
   
   // Check if prediction is resolved
   const isResolved = isPredictionResolved(adaptedPrediction);

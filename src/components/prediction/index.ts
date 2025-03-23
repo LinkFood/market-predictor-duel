@@ -13,8 +13,8 @@ export { default as PricePrediction } from './PricePrediction';
 export { default as ApiConnectionTest } from './ApiConnectionTest';
 export { default as PredictionResult } from './result/PredictionResult';
 
-// Re-export hook
+// Re-export hooks
 export { usePredictionForm } from './hooks/usePredictionForm';
 
 // Export types
-export type { PredictionFormState, PredictionType } from './hooks/usePredictionForm';
+export type { PredictionFormState } from './hooks/usePredictionForm';

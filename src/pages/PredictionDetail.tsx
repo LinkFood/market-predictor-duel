@@ -35,8 +35,15 @@ const PredictionDetail: React.FC = () => {
             const fetchedPrediction = await getPredictionById(id);
             if (fetchedPrediction) {
               console.log("Fetched prediction from API:", fetchedPrediction);
+              
+              // Ensure ticker is set before adapting
+              const predictionWithTicker = {
+                ...fetchedPrediction,
+                ticker: fetchedPrediction.ticker || fetchedPrediction.targetName || ""
+              };
+              
               // Convert to the application's Prediction type
-              const adaptedPrediction = adaptPrediction(fetchedPrediction);
+              const adaptedPrediction = adaptPrediction(predictionWithTicker);
               console.log("Adapted prediction:", adaptedPrediction);
               setPrediction(adaptedPrediction);
               setIsLoading(false);
@@ -52,7 +59,12 @@ const PredictionDetail: React.FC = () => {
         const found = mockPredictions.find(p => p.id === id);
         if (found) {
           console.log("Using mock prediction:", found);
-          setPrediction(found);
+          // Ensure ticker is set for mock data too
+          const predictionWithTicker = {
+            ...found,
+            ticker: found.ticker || found.targetName || ""
+          };
+          setPrediction(predictionWithTicker);
         } else {
           setError("Prediction not found");
           toast.error("Prediction not found");

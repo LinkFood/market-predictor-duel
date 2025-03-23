@@ -56,7 +56,8 @@ export function usePredictionLearning() {
     
     try {
       setIsAnalyzing(true);
-      await analyzePredictionBatch();
+      // Pass the expected default argument of 30 days to analyzePredictionBatch
+      await analyzePredictionBatch(30);
       setLastAnalysis(new Date());
       await loadPatterns();
       toast.success("Analysis completed successfully");

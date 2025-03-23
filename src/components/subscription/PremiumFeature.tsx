@@ -1,3 +1,4 @@
+
 /**
  * Premium Feature Component
  * Wraps premium features and shows a lock/upgrade prompt for free users
@@ -30,8 +31,24 @@ const PremiumFeature: React.FC<PremiumFeatureProps> = ({
   const { hasAccess, hasPremium } = useSubscription();
   const navigate = useNavigate();
   
+  // Map PlanFeatures key to FeatureAvailability key
+  const getFeatureKey = (featureKey: keyof PlanFeatures): string => {
+    const featureMapping: Record<string, string> = {
+      "maxDailyPredictions": "predictions",
+      "predictionTimeframes": "extendedTimeframes",
+      "aiAnalysis": "aiAnalysis",
+      "historicalData": "historicalData",
+      "alerts": "alerts",
+      "apiAccess": "api",
+      "customDashboards": "customization"
+    };
+    
+    return featureMapping[featureKey] || featureKey;
+  };
+  
   // If user has access to this feature, show the children
-  if (hasAccess(feature)) {
+  // Cast the feature key to make TypeScript happy
+  if (hasAccess(getFeatureKey(feature) as any)) {
     return <>{children}</>;
   }
   
