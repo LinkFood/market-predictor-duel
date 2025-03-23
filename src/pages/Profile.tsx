@@ -4,7 +4,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { getUserProfile, updateUserProfile } from "@/lib/auth-service";
 import { getUserStats } from "@/lib/prediction";
 import { UserStats } from "@/lib/prediction/types";
 
@@ -21,6 +22,7 @@ interface UserProfile {
   username: string;
   joinDate: string;
   avatar_url?: string;
+  subscription_tier?: string;
 }
 
 const Profile: React.FC = () => {
@@ -56,14 +58,29 @@ const Profile: React.FC = () => {
       setIsLoading(true);
       
       try {
-        // For now just use real user info
-        setUserData({
-          username: user?.user_metadata?.username || "User",
-          joinDate: new Date(user?.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-        });
+        if (!user) return;
         
-        // Load real user stats from Supabase
-        const stats = await getUserStats(user?.id);
+        // Fetch profile data
+        const { profile, error } = await getUserProfile(user.id);
+        
+        if (error) {
+          console.error('Error loading profile:', error);
+          toast({
+            title: "Error",
+            description: "Failed to load profile data",
+            variant: "destructive"
+          });
+        } else if (profile) {
+          setUserData({
+            username: profile.username || user.user_metadata?.username || "User",
+            joinDate: new Date(profile.created_at || user.created_at || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+            avatar_url: profile.avatar_url,
+            subscription_tier: profile.subscription_tier
+          });
+        }
+        
+        // Load user stats from Supabase
+        const stats = await getUserStats(user.id);
         setUserStats(stats);
         
       } catch (error) {
@@ -80,25 +97,33 @@ const Profile: React.FC = () => {
     
     if (user) {
       loadUserProfile();
+    } else {
+      // Redirect to login if not authenticated
+      navigate('/login');
     }
-  }, [user, toast]);
+  }, [user, toast, navigate]);
   
   // Handle profile update
   const onUpdateProfile = async (data: ProfileFormData) => {
+    if (!user) return;
+    
     try {
       setIsUpdating(true);
       
-      // Update user metadata
-      const { error } = await supabase.auth.updateUser({
-        data: { username: data.username }
+      const { success, error } = await updateUserProfile(user.id, {
+        username: data.username,
+        avatar_url: data.avatarUrl
       });
       
-      if (error) throw error;
+      if (!success) {
+        throw new Error(error || 'Failed to update profile');
+      }
       
       // Update the local state
       setUserData({
         ...userData,
-        username: data.username
+        username: data.username,
+        avatar_url: data.avatarUrl
       });
       
       toast({
@@ -125,10 +150,12 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="max-w-5xl mx-auto px-4 py-8 space-y-6 animate-fade-in">
       <ProfileHeader 
         username={userData.username}
         joinDate={userData.joinDate}
+        avatarUrl={userData.avatar_url}
+        subscriptionTier={userData.subscription_tier}
         onLogout={handleLogout}
       />
 
@@ -169,6 +196,7 @@ const Profile: React.FC = () => {
           <SettingsTab
             defaultUsername={userData.username}
             defaultEmail={user?.email || ""}
+            defaultAvatarUrl={userData.avatar_url}
             isLoading={isLoading}
             isUpdating={isUpdating}
             onUpdateProfile={onUpdateProfile}

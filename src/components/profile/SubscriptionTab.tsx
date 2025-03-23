@@ -1,146 +1,236 @@
 
-/**
- * Subscription Tab Component
- * Displays user subscription details and upgrade options
- */
-import React from 'react';
-import { CreditCard, Sparkles, Zap, CheckCircle, Clock } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { SubscriptionPlan } from '@/lib/subscription/plan-features';
-import { useSubscription } from '@/lib/subscription/subscription-context';
-import PlanComparison from './PlanComparison';
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, ChevronRight, CheckCircle, Shield } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 interface SubscriptionTabProps {
-  isLoading?: boolean;
+  isLoading: boolean;
 }
 
-const SubscriptionTab: React.FC<SubscriptionTabProps> = ({ isLoading = false }) => {
-  const { plan, usage, hasPremium, canMakePrediction, refreshUsage } = useSubscription();
+interface SubscriptionPlan {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  features: string[];
+  buttonText: string;
+  popular?: boolean;
+}
+
+interface UserSubscription {
+  id: string;
+  plan: string;
+  status: string;
+  started_at: string;
+  expires_at: string | null;
+}
+
+const SubscriptionTab: React.FC<SubscriptionTabProps> = ({ isLoading }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [activeSubscription, setActiveSubscription] = useState<UserSubscription | null>(null);
+  const [loadingSubscription, setLoadingSubscription] = useState(true);
   
-  const handleUpgrade = (selectedPlan: SubscriptionPlan) => {
-    // In a real app, this would open your payment processing flow
-    console.log('User selected plan:', selectedPlan);
-    alert(`This would redirect to payment processing for the ${selectedPlan} plan. In the real app, we would integrate with Stripe or another payment provider.`);
+  // Fetch user's subscription
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('user_subscriptions')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('status', 'active')
+          .maybeSingle();
+          
+        if (error) {
+          console.error("Error fetching subscription:", error);
+          return;
+        }
+        
+        setActiveSubscription(data);
+      } catch (error) {
+        console.error("Unexpected error fetching subscription:", error);
+      } finally {
+        setLoadingSubscription(false);
+      }
+    };
+    
+    fetchSubscription();
+  }, [user]);
+
+  // Sample subscription plans
+  const subscriptionPlans: SubscriptionPlan[] = [
+    {
+      id: "free",
+      name: "Free",
+      description: "Basic features for casual traders",
+      price: "$0",
+      features: [
+        "3 AI duels per month",
+        "Basic stock predictions",
+        "Daily market updates"
+      ],
+      buttonText: "Current Plan",
+    },
+    {
+      id: "pro",
+      name: "Pro",
+      description: "Advanced features for serious traders",
+      price: "$9.99/month",
+      features: [
+        "Unlimited AI duels",
+        "Advanced prediction patterns",
+        "Priority data updates",
+        "Custom AI opponents"
+      ],
+      buttonText: "Upgrade",
+      popular: true
+    },
+    {
+      id: "enterprise",
+      name: "Enterprise",
+      description: "Full suite for professional traders",
+      price: "$49.99/month",
+      features: [
+        "Everything in Pro",
+        "API access",
+        "Team accounts",
+        "Custom integrations",
+        "Premium support"
+      ],
+      buttonText: "Contact Sales"
+    }
+  ];
+
+  const handleSubscribe = (planId: string) => {
+    // This would normally redirect to a payment page or subscription service
+    toast({
+      title: "Subscription Feature",
+      description: `The ability to subscribe to the ${planId} plan will be implemented soon!`,
+    });
   };
-  
+
+  // Check if user is on a specific plan
+  const isCurrentPlan = (planId: string) => {
+    if (!activeSubscription) return planId === "free";
+    return activeSubscription.plan === planId;
+  };
+
+  if (isLoading || loadingSubscription) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Current subscription */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center">
-            <CreditCard className="mr-2 h-5 w-5 text-muted-foreground" />
-            Current Subscription
-          </CardTitle>
-          <CardDescription>
-            {hasPremium ? 'Your premium subscription details' : 'You are currently on the free plan'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-semibold text-lg flex items-center">
-                {plan === SubscriptionPlan.FREE ? (
-                  <>
-                    <Clock className="mr-1.5 h-4 w-4 text-muted-foreground" />
-                    Free Plan
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-1.5 h-4 w-4 text-amber-500" />
-                    {plan === SubscriptionPlan.BASIC ? 'Basic Plan' : 'Pro Plan'}
-                  </>
-                )}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                {plan === SubscriptionPlan.FREE ? 'Free' : 
-                 plan === SubscriptionPlan.BASIC ? '$9.99/month' : '$29.99/month'}
-              </p>
-            </div>
-            {!isLoading && (
-              <div>
-                <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-primary text-primary-foreground">
-                  {hasPremium ? 'Active' : 'Free tier'}
-                </span>
-              </div>
-            )}
-          </div>
-          
-          {/* Usage metrics */}
-          <div className="space-y-4">
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>Predictions this month</span>
-                <span className="font-medium">{usage.predictionsThisMonth} / {usage.predictionsLimit}</span>
-              </div>
-              <Progress value={(usage.predictionsThisMonth / usage.predictionsLimit) * 100} />
-            </div>
-            
-            <div>
-              <div className="flex justify-between text-sm mb-1">
-                <span>API calls today</span>
-                <span className="font-medium">{usage.apiCallsToday} / {usage.apiCallsLimit}</span>
-              </div>
-              <Progress value={(usage.apiCallsToday / usage.apiCallsLimit) * 100} className="bg-muted" />
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t pt-4 flex justify-between">
-          <div className="text-xs text-muted-foreground">
-            Last updated: {usage.lastUpdated.toLocaleTimeString()}
-          </div>
-          <Button variant="outline" size="sm" onClick={() => refreshUsage()}>
-            Refresh
-          </Button>
-        </CardFooter>
-      </Card>
+      <div>
+        <h3 className="text-lg font-medium">Your Subscription</h3>
+        <p className="text-sm text-muted-foreground">
+          Manage your subscription and billing information
+        </p>
+      </div>
       
-      {/* Feature list */}
-      {plan === SubscriptionPlan.FREE && (
-        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg flex items-center text-amber-900">
-              <Zap className="mr-2 h-5 w-5 text-amber-500" />
-              Upgrade to Premium
-            </CardTitle>
-            <CardDescription className="text-amber-700">
-              Unlock AI-powered insights and advanced features
-            </CardDescription>
+      {activeSubscription && activeSubscription.plan !== "free" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Current Subscription</CardTitle>
+            <CardDescription>Details of your active subscription</CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 mr-2 text-green-600 shrink-0 mt-0.5" />
-                <span className="text-amber-900">Access AI reasoning and analysis</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 mr-2 text-green-600 shrink-0 mt-0.5" />
-                <span className="text-amber-900">Get personalized market insights</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 mr-2 text-green-600 shrink-0 mt-0.5" />
-                <span className="text-amber-900">Make more predictions each month</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-5 w-5 mr-2 text-green-600 shrink-0 mt-0.5" />
-                <span className="text-amber-900">Track historical patterns and trends</span>
-              </li>
-            </ul>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{activeSubscription.plan.charAt(0).toUpperCase() + activeSubscription.plan.slice(1)} Plan</p>
+                  <p className="text-sm text-muted-foreground">Started on {new Date(activeSubscription.started_at).toLocaleDateString()}</p>
+                </div>
+                <Badge variant="outline" className="text-green-600 bg-green-50">Active</Badge>
+              </div>
+              
+              {activeSubscription.expires_at && (
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Renews on {new Date(activeSubscription.expires_at).toLocaleDateString()}
+                  </p>
+                </div>
+              )}
+            </div>
           </CardContent>
-          <CardFooter className="pt-2">
-            <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
-              Upgrade Now
+          <CardFooter>
+            <Button variant="outline" className="w-full">
+              Manage Subscription
             </Button>
           </CardFooter>
         </Card>
       )}
       
-      {/* Plan comparison */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">Subscription Plans</h2>
-        <PlanComparison onSelectPlan={handleUpgrade} currentPlan={plan} />
+      <div className="grid gap-6 md:grid-cols-3">
+        {subscriptionPlans.map((plan) => (
+          <Card 
+            key={plan.id}
+            className={`relative overflow-hidden ${plan.popular ? 'border-primary shadow-md' : ''}`}
+          >
+            {plan.popular && (
+              <div className="absolute top-0 right-0 bg-primary text-primary-foreground px-3 py-1 text-xs font-medium">
+                Popular
+              </div>
+            )}
+            <CardHeader>
+              <CardTitle>{plan.name}</CardTitle>
+              <CardDescription>{plan.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <span className="text-2xl font-bold">{plan.price}</span>
+                {plan.id !== "free" && <span className="text-muted-foreground ml-1">/month</span>}
+              </div>
+              <ul className="space-y-2">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center text-sm">
+                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant={isCurrentPlan(plan.id) ? "outline" : "default"}
+                className="w-full"
+                disabled={isCurrentPlan(plan.id)}
+                onClick={() => handleSubscribe(plan.id)}
+              >
+                {isCurrentPlan(plan.id) ? (
+                  <>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Current Plan
+                  </>
+                ) : (
+                  <>
+                    {plan.buttonText}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </>
+                )}
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+      
+      <div className="mt-8 border-t pt-4">
+        <h4 className="text-sm font-medium mb-2">Need help with your subscription?</h4>
+        <p className="text-sm text-muted-foreground">
+          Contact our support team at support@stockduel.com
+        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 
-import { supabase } from './supabase';
-import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 
 // Types for authentication
@@ -17,6 +17,7 @@ export interface UserProfile {
   email?: string;
   avatar_url?: string;
   created_at?: string;
+  subscription_tier?: string;
 }
 
 /**
@@ -126,30 +127,87 @@ export const getCurrentSession = async () => {
  */
 export const getUserProfile = async (userId: string): Promise<{ profile?: UserProfile; error?: string }> => {
   try {
-    // For now we just return the basic user data since we don't have a profiles table yet
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+    // Get profile data from the profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
     
-    if (userError) {
-      console.error('Error fetching user:', userError);
-      return { error: userError.message };
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      return { error: profileError.message };
     }
     
-    if (!userData || !userData.user) {
-      return { error: 'User not found' };
+    // Get subscription data
+    const { data: subscriptionData, error: subscriptionError } = await supabase
+      .from('user_subscriptions')
+      .select('plan, status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+    
+    if (subscriptionError) {
+      console.warn('Error fetching subscription:', subscriptionError);
+      // Continue without subscription data
     }
     
+    // Combine profile and subscription data
     const profile: UserProfile = {
-      id: userData.user.id,
-      username: userData.user.user_metadata?.username,
-      email: userData.user.email,
-      avatar_url: userData.user.user_metadata?.avatar_url,
-      created_at: userData.user.created_at,
+      id: profileData.id,
+      username: profileData.username,
+      email: profileData.email,
+      avatar_url: profileData.avatar_url,
+      created_at: profileData.created_at,
+      subscription_tier: subscriptionData?.plan || 'free'
     };
     
     return { profile };
   } catch (error: any) {
     console.error('Unexpected error fetching profile:', error);
     return { error: 'An unexpected error occurred fetching user profile' };
+  }
+};
+
+/**
+ * Update user profile
+ */
+export const updateUserProfile = async (
+  userId: string,
+  updates: Partial<UserProfile>
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    // Update user metadata for items stored in auth.users
+    if (updates.username) {
+      const { error: authError } = await supabase.auth.updateUser({
+        data: { username: updates.username }
+      });
+      
+      if (authError) {
+        console.error('Update auth metadata error:', authError.message);
+        return { success: false, error: authError.message };
+      }
+    }
+    
+    // Update profile data in the profiles table
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({
+        username: updates.username,
+        avatar_url: updates.avatar_url,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', userId);
+    
+    if (profileError) {
+      console.error('Update profile error:', profileError.message);
+      return { success: false, error: profileError.message };
+    }
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error('Unexpected error updating profile:', error);
+    return { success: false, error: 'An unexpected error occurred updating user profile' };
   }
 };
 
@@ -171,28 +229,5 @@ export const resetPassword = async (email: string): Promise<{ success: boolean; 
   } catch (error: any) {
     console.error('Unexpected error during password reset:', error);
     return { success: false, error: 'An unexpected error occurred during password reset' };
-  }
-};
-
-/**
- * Update user profile
- */
-export const updateUserProfile = async (
-  updates: Partial<UserProfile>
-): Promise<{ success: boolean; error?: string }> => {
-  try {
-    const { error } = await supabase.auth.updateUser({
-      data: updates,
-    });
-    
-    if (error) {
-      console.error('Update profile error:', error.message);
-      return { success: false, error: error.message };
-    }
-    
-    return { success: true };
-  } catch (error: any) {
-    console.error('Unexpected error updating profile:', error);
-    return { success: false, error: 'An unexpected error occurred updating user profile' };
   }
 };
