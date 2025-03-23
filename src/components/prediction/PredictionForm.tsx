@@ -4,6 +4,7 @@ import { FormContainer, FormActions } from "./form";
 import { usePredictionForm } from "./hooks/usePredictionForm";
 import PredictionFormContent from "./PredictionFormContent";
 import LimitReachedModal from "../subscription/LimitReachedModal";
+import { useSubscription } from "@/lib/subscription/subscription-context";
 
 interface PredictionFormProps {
   onPredictionMade: (prediction: any) => void;
@@ -11,31 +12,35 @@ interface PredictionFormProps {
 
 const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => {
   const { 
-    isLoading,
-    error,
-    selectedStock,
-    usingMockData,
-    predictionType,
-    timeframe,
-    trendPrediction,
-    pricePrediction,
-    confirmDialogOpen,
-    setTimeframe,
-    setPredictionType,
-    setTrendPrediction,
-    setPricePrediction,
-    setConfirmDialogOpen,
-    handleSelectStock,
-    handleOpenConfirmDialog,
-    handleSubmit,
-    isFormValid,
-    // Usage limits
-    showPredictionLimitModal,
-    showApiLimitModal,
-    closePredictionLimitModal,
-    closeApiLimitModal
-  } = usePredictionForm(onPredictionMade);
-
+    formState,
+    updateField,
+    resetForm,
+    validateForm,
+    canMakePrediction
+  } = usePredictionForm();
+  
+  // Get additional state from useSubscription
+  const { showLimitWarning } = useSubscription();
+  
+  // Local state
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [showPredictionLimitModal, setShowPredictionLimitModal] = React.useState(false);
+  
+  // Handlers
+  const handleSubmit = () => {
+    if (validateForm()) {
+      onPredictionMade({
+        targetType: formState.targetType,
+        targetName: formState.targetName,
+        timeframe: formState.timeframe,
+        userPrediction: formState.prediction
+      });
+    } else {
+      setShowPredictionLimitModal(true);
+    }
+  };
+  
   return (
     <>
       <FormContainer
@@ -44,42 +49,28 @@ const PredictionForm: React.FC<PredictionFormProps> = ({ onPredictionMade }) => 
         footer={
           <FormActions 
             isLoading={isLoading} 
-            isDisabled={!isFormValid}
+            isDisabled={!formState.targetName || !canMakePrediction}
             onSubmit={handleSubmit}
-            onOpenConfirmDialog={handleOpenConfirmDialog}
+            onOpenConfirmDialog={handleSubmit}
           />
         }
       >
         <PredictionFormContent
           error={error}
-          selectedStock={selectedStock}
-          usingMockData={usingMockData}
-          predictionType={predictionType}
-          timeframe={timeframe}
-          trendPrediction={trendPrediction}
-          pricePrediction={pricePrediction}
-          confirmDialogOpen={confirmDialogOpen}
-          setTimeframe={setTimeframe}
-          setPredictionType={setPredictionType}
-          setTrendPrediction={setTrendPrediction}
-          setPricePrediction={setPricePrediction}
-          setConfirmDialogOpen={setConfirmDialogOpen}
-          handleSelectStock={handleSelectStock}
+          targetName={formState.targetName}
+          targetType={formState.targetType}
+          timeframe={formState.timeframe}
+          prediction={formState.prediction}
+          updateField={updateField}
           handleSubmit={handleSubmit}
         />
       </FormContainer>
       
-      {/* Usage Limit Modals */}
+      {/* Usage Limit Modal */}
       <LimitReachedModal 
         open={showPredictionLimitModal} 
-        onClose={closePredictionLimitModal}
+        onClose={() => setShowPredictionLimitModal(false)}
         limitType="predictions"
-      />
-      
-      <LimitReachedModal 
-        open={showApiLimitModal} 
-        onClose={closeApiLimitModal}
-        limitType="api"
       />
     </>
   );

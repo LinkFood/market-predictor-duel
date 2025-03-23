@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { Prediction } from "@/types";
+import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionHeaderProps {
   prediction: Prediction;
@@ -19,6 +20,7 @@ export const PredictionHeader: React.FC<PredictionHeaderProps> = ({
   getTimeframeText
 }) => {
   const navigate = useNavigate();
+  const isResolved = isPredictionResolved(prediction);
   
   return (
     <div className="flex flex-col space-y-2">
@@ -51,16 +53,16 @@ export const PredictionHeader: React.FC<PredictionHeaderProps> = ({
           <Calendar className="h-4 w-4 mr-1 text-indigo-500" />
           {new Date(prediction.createdAt).toLocaleDateString()}
         </span>
-        {prediction.resolved && (
+        {isResolved && (
           <>
             <Separator orientation="vertical" className="h-4" />
             <span className="inline-flex items-center">
-              {prediction.status === "correct" ? (
+              {prediction.winner === "user" || prediction.winner === "both" ? (
                 <CheckCircle className="h-4 w-4 mr-1 text-emerald-500" />
               ) : (
                 <XCircle className="h-4 w-4 mr-1 text-red-500" />
               )}
-              {prediction.status === "correct" ? "Prediction Correct" : "Prediction Incorrect"}
+              {prediction.winner === "user" || prediction.winner === "both" ? "Prediction Correct" : "Prediction Incorrect"}
             </span>
           </>
         )}

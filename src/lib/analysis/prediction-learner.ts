@@ -4,7 +4,7 @@
  * Analyzes resolved predictions to improve future AI predictions
  */
 import { Prediction } from '../prediction/types';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/lib/supabase';
 import { logError } from '../error-handling';
 
 // Types for learning system
@@ -132,54 +132,33 @@ async function analyzeGroup(groupKey: string, predictions: Prediction[]): Promis
     // Parse the group key to get components
     const [timeframe, targetType, predictionType] = groupKey.split('_');
     
+    // Prepare the pattern data
+    const patternData: PredictionPattern = {
+      group_key: groupKey,
+      timeframe,
+      target_type: targetType,
+      prediction_type: predictionType,
+      ai_accuracy: aiAccuracy,
+      user_accuracy: userAccuracy,
+      confidence_adjustment: confidenceAdjustment,
+      sample_size: totalPredictions
+    };
+    
     // Store this pattern using a custom RPC function or direct insert
     try {
-      // Try using RPC function first
-      const { error } = await supabase.rpc('upsert_prediction_pattern', {
-        group_key: groupKey,
-        timeframe,
-        target_type: targetType,
-        prediction_type: predictionType,
-        ai_accuracy: aiAccuracy,
-        user_accuracy: userAccuracy,
-        confidence_adjustment: confidenceAdjustment,
-        sample_size: totalPredictions,
-        created_at: new Date().toISOString()
-      });
+      // Try using direct table insert
+      const { error } = await supabase
+        .from('prediction_patterns')
+        .upsert(patternData, { 
+          onConflict: 'group_key'
+        });
       
       if (error) {
-        throw error; // Will be caught below and fall back to direct insert
+        console.error('Error storing prediction pattern:', error);
+        return;
       }
-    } catch (rpcError) {
-      console.log('RPC not available, using direct table insert:', rpcError);
-      
-      // Fall back to direct table access with type assertion
-      const patternData: PredictionPattern = {
-        group_key: groupKey,
-        timeframe,
-        target_type: targetType,
-        prediction_type: predictionType,
-        ai_accuracy: aiAccuracy,
-        user_accuracy: userAccuracy,
-        confidence_adjustment: confidenceAdjustment,
-        sample_size: totalPredictions
-      };
-      
-      try {
-        // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
-        const { error } = await supabase
-          .from('prediction_patterns')
-          .upsert(patternData, { 
-            onConflict: 'group_key'
-          });
-        
-        if (error) {
-          console.error('Error storing prediction pattern:', error);
-          return;
-        }
-      } catch (err) {
-        console.error('Failed to insert prediction pattern:', err);
-      }
+    } catch (err) {
+      console.error('Failed to insert prediction pattern:', err);
     }
     
     console.log(`Updated prediction pattern for group ${groupKey}: AI accuracy ${aiAccuracy.toFixed(2)}, confidence adjustment ${confidenceAdjustment.toFixed(2)}`);
@@ -203,7 +182,6 @@ export async function enhancePrediction(
     const groupKey = `${timeframe}_stock_${predictionType}`;
     
     try {
-      // @ts-ignore - intentionally ignoring type errors for tables not in types.ts
       const { data, error } = await supabase
         .from('prediction_patterns')
         .select('*')
@@ -282,7 +260,7 @@ export function scheduleRoutineAnalysis(intervalMinutes = 60): () => void {
           createdAt: item.created_at,
           resolvesAt: item.resolves_at,
           resolvedAt: item.resolved_at,
-          actual_result: item.actual_result,
+          actualResult: item.actual_result,
           aiAnalysis: item.ai_analysis,
         } as unknown as Prediction));
         

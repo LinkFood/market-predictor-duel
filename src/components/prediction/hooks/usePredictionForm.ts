@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { PredictionTimeframe, PredictionCategory, PredictionDirection } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth-context';
-import { trackEvent } from '@/lib/analytics';
-import { useUsageLimits } from '@/lib/subscription/use-usage-limits';
+import { useSubscription } from '@/lib/subscription/subscription-context';
+
+// Define prediction type for form state (string enum)
+export type PredictionType = 'trend' | 'price';
 
 // Define the form state interface
 export interface PredictionFormState {
@@ -28,7 +30,7 @@ export const usePredictionForm = () => {
   const [formState, setFormState] = useState<PredictionFormState>(defaultFormState);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { canMakePrediction, showLimitWarning } = useUsageLimits();
+  const { isPremium, hasFeatureAccess } = useSubscription();
   
   // Update a single field in the form
   const updateField = <K extends keyof PredictionFormState>(
@@ -63,8 +65,12 @@ export const usePredictionForm = () => {
       return false;
     }
     
-    if (!canMakePrediction) {
-      showLimitWarning('predictions');
+    if (!hasFeatureAccess('predictions')) {
+      toast({
+        title: "Limit reached",
+        description: "You've reached your prediction limit for today",
+        variant: "destructive"
+      });
       return false;
     }
     
@@ -76,6 +82,6 @@ export const usePredictionForm = () => {
     updateField,
     resetForm,
     validateForm,
-    canMakePrediction
+    canMakePrediction: hasFeatureAccess('predictions')
   };
 };

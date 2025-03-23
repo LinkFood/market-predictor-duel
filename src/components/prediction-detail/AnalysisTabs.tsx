@@ -1,8 +1,10 @@
+
 import React from "react";
 import { ArrowUp, ArrowDown, Newspaper } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Prediction } from "@/types";
+import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
 
 interface AnalysisTabsProps {
   prediction: Prediction;
@@ -37,6 +39,9 @@ export const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ prediction }) => {
     }
   ];
 
+  // Check if the prediction is resolved
+  const isResolved = isPredictionResolved(prediction);
+
   return (
     <Tabs defaultValue="supporting" className="w-full">
       <TabsList className="w-full">
@@ -56,7 +61,7 @@ export const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ prediction }) => {
           }`} />
           Counter Factors
         </TabsTrigger>
-        {prediction.resolved && <TabsTrigger value="news" className="flex-1">
+        {isResolved && <TabsTrigger value="news" className="flex-1">
           <Newspaper className="h-4 w-4 mr-2 text-indigo-500" />
           Market Context
         </TabsTrigger>}
@@ -96,7 +101,7 @@ export const AnalysisTabs: React.FC<AnalysisTabsProps> = ({ prediction }) => {
         </div>
       </TabsContent>
       
-      {prediction.resolved && (
+      {isResolved && (
         <TabsContent value="news" className="mt-4 border rounded-lg p-4 bg-white dark:bg-slate-950">
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground mb-3">

@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { mockPredictions, mockStockData } from "@/data/mockData";
-import { Prediction } from "@/lib/prediction/types";
+import { Prediction } from "@/types";
 import { cn } from "@/lib/utils";
 import { PredictionHeader } from "@/components/prediction-detail/PredictionHeader";
 import { PredictionSummaryCard } from "@/components/prediction-detail/PredictionSummaryCard";
@@ -14,6 +14,7 @@ import { SimilarPredictionsCard } from "@/components/prediction-detail/SimilarPr
 import { getPredictionById } from "@/lib/prediction/user-predictions";
 import { toast } from "sonner";
 import LoadingScreen from "@/components/LoadingScreen";
+import { adaptPrediction } from "@/lib/prediction/prediction-adapter";
 
 const PredictionDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,7 +35,8 @@ const PredictionDetail: React.FC = () => {
             const fetchedPrediction = await getPredictionById(id);
             if (fetchedPrediction) {
               console.log("Fetched prediction from API:", fetchedPrediction);
-              setPrediction(fetchedPrediction);
+              // Convert to the application's Prediction type
+              setPrediction(adaptPrediction(fetchedPrediction));
               setIsLoading(false);
               return;
             }
@@ -48,8 +50,7 @@ const PredictionDetail: React.FC = () => {
         const found = mockPredictions.find(p => p.id === id);
         if (found) {
           console.log("Using mock prediction:", found);
-          // Need to adapt mockPredictions format to lib/prediction/types.Prediction format
-          setPrediction(found as unknown as Prediction);
+          setPrediction(found);
         } else {
           setError("Prediction not found");
           toast.error("Prediction not found");
@@ -138,7 +139,7 @@ const PredictionDetail: React.FC = () => {
     }
     
     if (prediction.status === "complete" || prediction.status === "completed") {
-      if (prediction.outcome === "user_win") {
+      if (prediction.winner === "user" || prediction.winner === "both") {
         return (
           <Badge variant="outline" className="flex items-center gap-1 font-normal bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
             <CheckCircle className="h-3 w-3" />

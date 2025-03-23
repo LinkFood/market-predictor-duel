@@ -1,138 +1,195 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from '@/lib/auth-context';
-import { toast } from '@/components/ui/use-toast';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/auth-context';
 
-// Define subscription plans enum (same as in plan-features.ts)
+// Subscription plans
 export enum SubscriptionPlan {
   FREE = 'free',
   BASIC = 'basic',
   PRO = 'pro'
 }
 
-// Interface for subscription data
-interface UserSubscription {
-  id: string;
-  userId: string;
-  plan: SubscriptionPlan;
-  status: 'active' | 'trialing' | 'canceled' | 'past_due' | 'incomplete';
-  currentPeriodEnd: string;
-  createdAt: string;
-}
-
-// Feature limits for each plan
+// Feature limits by plan
 interface FeatureLimits {
-  predictionsPerDay: number;
-  historyRetention: number;
-  customStocks: boolean;
-  detailedAnalysis: boolean;
-  prioritySupport: boolean;
-  maxPredictionTimeframe: '1d' | '1w' | '1m';
+  predictions: {
+    daily: number;
+    monthly: number;
+  };
+  apiCalls: {
+    daily: number;
+    monthly: number;
+  };
+  historicalData: {
+    days: number;
+  };
 }
 
-// Plan limits by subscription type
-const PLAN_LIMITS: Record<SubscriptionPlan, FeatureLimits> = {
+// Feature availability by plan
+interface FeatureAvailability {
+  aiAnalysisAccess: boolean;
+  advancedCharts: boolean;
+  exportData: boolean;
+  customAlerts: boolean;
+  prioritySupport: boolean;
+  beta: boolean;
+}
+
+// Available features and their accessibility per plan
+const PLAN_FEATURES: Record<SubscriptionPlan, FeatureAvailability> = {
   [SubscriptionPlan.FREE]: {
-    predictionsPerDay: 3,
-    historyRetention: 7,
-    customStocks: false,
-    detailedAnalysis: false,
+    aiAnalysisAccess: false,
+    advancedCharts: false,
+    exportData: false,
+    customAlerts: false,
     prioritySupport: false,
-    maxPredictionTimeframe: '1d'
+    beta: false
   },
   [SubscriptionPlan.BASIC]: {
-    predictionsPerDay: 10,
-    historyRetention: 30,
-    customStocks: true,
-    detailedAnalysis: false,
+    aiAnalysisAccess: true,
+    advancedCharts: true,
+    exportData: true,
+    customAlerts: false,
     prioritySupport: false,
-    maxPredictionTimeframe: '1w'
+    beta: false
   },
   [SubscriptionPlan.PRO]: {
-    predictionsPerDay: 50,
-    historyRetention: 90,
-    customStocks: true,
-    detailedAnalysis: true,
+    aiAnalysisAccess: true,
+    advancedCharts: true,
+    exportData: true,
+    customAlerts: true,
     prioritySupport: true,
-    maxPredictionTimeframe: '1m'
+    beta: true
   }
 };
 
-// Add the missing getFeatureValue function
-export function getFeatureValue(plan: SubscriptionPlan, feature: keyof FeatureLimits): any {
-  return PLAN_LIMITS[plan][feature];
-}
-
-// Add the missing getPlanComparisonData function
-export function getPlanComparisonData() {
-  return [
-    {
-      feature: 'Predictions per day',
-      free: PLAN_LIMITS.free.predictionsPerDay,
-      basic: PLAN_LIMITS.basic.predictionsPerDay,
-      pro: PLAN_LIMITS.pro.predictionsPerDay
+// Limits per plan
+const PLAN_LIMITS: Record<SubscriptionPlan, FeatureLimits> = {
+  [SubscriptionPlan.FREE]: {
+    predictions: {
+      daily: 5,
+      monthly: 100
     },
-    {
-      feature: 'History retention (days)',
-      free: PLAN_LIMITS.free.historyRetention,
-      basic: PLAN_LIMITS.basic.historyRetention,
-      pro: PLAN_LIMITS.pro.historyRetention
+    apiCalls: {
+      daily: 50,
+      monthly: 1000
     },
-    {
-      feature: 'Custom stock selection',
-      free: PLAN_LIMITS.free.customStocks,
-      basic: PLAN_LIMITS.basic.customStocks,
-      pro: PLAN_LIMITS.pro.customStocks
-    },
-    {
-      feature: 'Detailed analysis',
-      free: PLAN_LIMITS.free.detailedAnalysis,
-      basic: PLAN_LIMITS.basic.detailedAnalysis,
-      pro: PLAN_LIMITS.pro.detailedAnalysis
-    },
-    {
-      feature: 'Priority support',
-      free: PLAN_LIMITS.free.prioritySupport,
-      basic: PLAN_LIMITS.basic.prioritySupport,
-      pro: PLAN_LIMITS.pro.prioritySupport
+    historicalData: {
+      days: 30
     }
-  ];
+  },
+  [SubscriptionPlan.BASIC]: {
+    predictions: {
+      daily: 20,
+      monthly: 500
+    },
+    apiCalls: {
+      daily: 500,
+      monthly: 10000
+    },
+    historicalData: {
+      days: 180
+    }
+  },
+  [SubscriptionPlan.PRO]: {
+    predictions: {
+      daily: 100,
+      monthly: 2000
+    },
+    apiCalls: {
+      daily: 2000,
+      monthly: 50000
+    },
+    historicalData: {
+      days: 365
+    }
+  }
+};
+
+// Usage data type
+interface UsageData {
+  predictions?: {
+    used: number;
+    limit: number;
+  };
+  apiCalls?: {
+    used: number;
+    limit: number;
+  };
 }
 
-// Context type definition
-interface SubscriptionContextType {
+// Context type
+export interface SubscriptionContextType {
   currentPlan: SubscriptionPlan;
   isLoading: boolean;
-  subscription: UserSubscription | null;
+  error: string | null;
+  expiresAt: string | null;
   isPremium: boolean;
-  getFeatureLimit: <K extends keyof FeatureLimits>(feature: K) => FeatureLimits[K];
-  upgradePlan: (newPlan: SubscriptionPlan) => Promise<void>;
+  isProPlan: boolean;
+  usageData: UsageData | null;
+  refreshUsage: () => Promise<void>;
+  hasFeatureAccess: (feature: keyof FeatureAvailability) => boolean;
+  getFeatureValue: <T extends keyof FeatureLimits>(feature: T, subFeature?: keyof FeatureLimits[T]) => any;
+  showLimitWarning: (limitType: string) => void;
+  // Added for backward compatibility with PlanBadge
+  plan: SubscriptionPlan;
+  // Added for backward compatibility with PremiumFeature
+  hasPremium: boolean;
+  hasAccess: (feature: keyof FeatureAvailability) => boolean;
+  isFeatureAvailable: (feature: keyof FeatureAvailability) => boolean;
+  // Added for backward compatibility with usage hooks
+  canMakePrediction: boolean;
+  usage: UsageData | null;
 }
 
-// Create the context
-const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
+// Create context with default values
+const SubscriptionContext = createContext<SubscriptionContextType>({
+  currentPlan: SubscriptionPlan.FREE,
+  isLoading: true,
+  error: null,
+  expiresAt: null,
+  isPremium: false,
+  isProPlan: false,
+  usageData: null,
+  refreshUsage: async () => {},
+  hasFeatureAccess: () => false,
+  getFeatureValue: () => null,
+  showLimitWarning: () => {},
+  // For backward compatibility
+  plan: SubscriptionPlan.FREE,
+  hasPremium: false,
+  hasAccess: () => false,
+  isFeatureAvailable: () => false,
+  canMakePrediction: false,
+  usage: null
+});
 
-export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
+export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const { user } = useAuth();
   const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>(SubscriptionPlan.FREE);
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // Fetch subscription data on user change
+  const [error, setError] = useState<string | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string | null>(null);
+  const [usageData, setUsageData] = useState<UsageData | null>(null);
+  
+  // Calculated properties
+  const isPremium = currentPlan !== SubscriptionPlan.FREE;
+  const isProPlan = currentPlan === SubscriptionPlan.PRO;
+  
+  // Fetch subscription data
   useEffect(() => {
     const fetchSubscription = async () => {
       if (!user) {
         setCurrentPlan(SubscriptionPlan.FREE);
-        setSubscription(null);
         setIsLoading(false);
         return;
       }
       
       try {
         setIsLoading(true);
+        setError(null);
         
-        // Fetch from subscriptions table
+        // Fetch subscription from Supabase
         const { data, error } = await supabase
           .from('subscriptions')
           .select('*')
@@ -143,27 +200,31 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
           .single();
         
         if (error) {
-          if (error.code !== 'PGRST116') { // Not found error code
-            console.error('Error fetching subscription:', error);
-          }
+          console.error('Error fetching subscription:', error);
+          setError('Failed to fetch subscription data');
           setCurrentPlan(SubscriptionPlan.FREE);
-          setSubscription(null);
         } else if (data) {
           setCurrentPlan(data.plan as SubscriptionPlan);
-          setSubscription({
-            id: data.id,
-            userId: data.user_id,
-            plan: data.plan,
-            status: data.status,
-            currentPeriodEnd: data.current_period_end,
-            createdAt: data.created_at
-          });
+          setExpiresAt(data.expires_at);
         } else {
           setCurrentPlan(SubscriptionPlan.FREE);
-          setSubscription(null);
         }
-      } catch (error) {
-        console.error('Error in fetchSubscription:', error);
+        
+        // Generate mock usage data for now
+        setUsageData({
+          predictions: {
+            used: 2,
+            limit: PLAN_LIMITS[data?.plan as SubscriptionPlan || SubscriptionPlan.FREE].predictions.daily
+          },
+          apiCalls: {
+            used: 15,
+            limit: PLAN_LIMITS[data?.plan as SubscriptionPlan || SubscriptionPlan.FREE].apiCalls.daily
+          }
+        });
+      } catch (err) {
+        console.error('Unexpected error fetching subscription:', err);
+        setError('An unexpected error occurred');
+        setCurrentPlan(SubscriptionPlan.FREE);
       } finally {
         setIsLoading(false);
       }
@@ -171,82 +232,81 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     
     fetchSubscription();
   }, [user]);
-
-  // Check if the user has a premium plan
-  const isPremium = currentPlan !== SubscriptionPlan.FREE;
-
-  // Get feature limit based on current plan
-  const getFeatureLimit = <K extends keyof FeatureLimits>(feature: K): FeatureLimits[K] => {
-    return PLAN_LIMITS[currentPlan][feature];
+  
+  // Check if a feature is available for the current plan
+  const hasFeatureAccess = (feature: keyof FeatureAvailability): boolean => {
+    if (isLoading || !PLAN_FEATURES[currentPlan]) return false;
+    return PLAN_FEATURES[currentPlan][feature];
   };
-
-  // Upgrade plan (mock implementation)
-  const upgradePlan = async (newPlan: SubscriptionPlan): Promise<void> => {
+  
+  // Get a specific feature value/limit
+  const getFeatureValue = <T extends keyof FeatureLimits>(
+    feature: T, 
+    subFeature?: keyof FeatureLimits[T]
+  ): any => {
+    if (isLoading || !PLAN_LIMITS[currentPlan]) return null;
+    
+    const featureObj = PLAN_LIMITS[currentPlan][feature];
+    if (subFeature && typeof featureObj === 'object') {
+      return featureObj[subFeature as keyof typeof featureObj];
+    }
+    return featureObj;
+  };
+  
+  // Show a limit warning
+  const showLimitWarning = (limitType: string) => {
+    console.log(`Warning: ${limitType} limit reached for ${currentPlan} plan`);
+    // This would show a toast or modal in a real implementation
+  };
+  
+  // Refresh usage data
+  const refreshUsage = async (): Promise<void> => {
+    if (!user) return;
+    
     try {
-      // In a real app, this would integrate with a payment provider
-      // and then update the subscription in the database
-      
-      // Mock implementation for development
-      if (!user) {
-        toast({
-          title: 'Authentication Required',
-          description: 'Please sign in to upgrade your plan.',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      setIsLoading(true);
-      
-      // This is just for demo/development - in a real app you would:
-      // 1. Process payment with Stripe/other payment provider
-      // 2. Create subscription record after payment is confirmed
-      
-      const { error } = await supabase
-        .from('subscriptions')
-        .upsert({
-          user_id: user.id,
-          plan: newPlan,
-          status: 'active',
-          current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-        });
-        
-      if (error) {
-        console.error('Error upgrading plan:', error);
-        toast({
-          title: 'Upgrade Failed',
-          description: 'There was an error upgrading your plan. Please try again.',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      // Update local state
-      setCurrentPlan(newPlan);
-      
-      toast({
-        title: 'Plan Upgraded',
-        description: `You have successfully upgraded to the ${newPlan} plan.`,
+      // In a real implementation, this would hit an API endpoint
+      // For now, we'll just update the mock data slightly
+      setUsageData(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          predictions: {
+            used: Math.min((prev.predictions?.used || 0) + 1, 
+                          PLAN_LIMITS[currentPlan].predictions.daily),
+            limit: PLAN_LIMITS[currentPlan].predictions.daily
+          }
+        };
       });
-    } catch (error) {
-      console.error('Error in upgradePlan:', error);
-      toast({
-        title: 'Upgrade Failed',
-        description: 'An unexpected error occurred. Please try again.',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
+    } catch (err) {
+      console.error('Error refreshing usage data:', err);
     }
   };
   
-  const value = {
+  // Check if can make prediction based on usage
+  const canMakePrediction = usageData ? 
+    usageData.predictions !== undefined && 
+    usageData.predictions.used < usageData.predictions.limit : true;
+  
+  // Value object for the context
+  const value: SubscriptionContextType = {
     currentPlan,
     isLoading,
-    subscription,
+    error,
+    expiresAt,
     isPremium,
-    getFeatureLimit,
-    upgradePlan
+    isProPlan,
+    usageData,
+    refreshUsage,
+    hasFeatureAccess,
+    getFeatureValue,
+    showLimitWarning,
+    // For backward compatibility
+    plan: currentPlan,
+    hasPremium: isPremium,
+    hasAccess: hasFeatureAccess,
+    isFeatureAvailable: hasFeatureAccess,
+    canMakePrediction,
+    usage: usageData
   };
   
   return (
@@ -254,15 +314,6 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       {children}
     </SubscriptionContext.Provider>
   );
-}
+};
 
-// Custom hook for using the subscription context
-export function useSubscription() {
-  const context = useContext(SubscriptionContext);
-  
-  if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  
-  return context;
-}
+export const useSubscription = () => useContext(SubscriptionContext);

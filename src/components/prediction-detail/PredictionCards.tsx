@@ -4,7 +4,8 @@ import { TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Prediction } from "@/lib/prediction/types";
+import { Prediction } from "@/types";
+import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionCardsProps {
   prediction: Prediction;
@@ -16,20 +17,20 @@ export const PredictionCards: React.FC<PredictionCardsProps> = ({ prediction }) 
     pred === "bullish" || pred === "uptrend";
   
   // Helper to determine if a prediction was correct
-  const wasCorrect = (actualTrend: string | undefined, predictedTrend: string) => {
-    if (!actualTrend) return false;
+  const wasCorrect = (actualResult: string | undefined, predictedTrend: string) => {
+    if (!actualResult) return false;
     
-    const actualBullish = actualTrend === "uptrend" || actualTrend === "bullish";
+    const actualBullish = actualResult === "uptrend" || actualResult === "bullish";
     const predictionBullish = isBullish(predictedTrend);
     
     return actualBullish === predictionBullish;
   };
   
-  // Get actual result from appropriate property (handle both new and legacy properties)
-  const actualResult = prediction.actual_result || 
-    ((prediction.status === "complete" || prediction.status === "completed") && 
-    prediction.endValue && prediction.startingValue &&
-    prediction.endValue > prediction.startingValue ? "uptrend" : "downtrend");
+  // Get actual result 
+  const actualResult = prediction.actualResult;
+  
+  // Check if prediction is resolved
+  const isResolved = isPredictionResolved(prediction);
   
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-2">
@@ -48,10 +49,10 @@ export const PredictionCards: React.FC<PredictionCardsProps> = ({ prediction }) 
         <CardHeader className="p-4 pb-2">
           <CardTitle className="text-base flex items-center gap-2">
             Your Prediction
-            {(prediction.status === "complete" || prediction.status === "completed") && wasCorrect(actualResult, prediction.userPrediction) && (
+            {isResolved && wasCorrect(actualResult, prediction.userPrediction) && (
               <Badge className="bg-emerald-500 text-xs">Correct</Badge>
             )}
-            {(prediction.status === "complete" || prediction.status === "completed") && !wasCorrect(actualResult, prediction.userPrediction) && (
+            {isResolved && !wasCorrect(actualResult, prediction.userPrediction) && (
               <Badge className="bg-red-500 text-xs">Incorrect</Badge>
             )}
           </CardTitle>
@@ -95,10 +96,10 @@ export const PredictionCards: React.FC<PredictionCardsProps> = ({ prediction }) 
           <CardTitle className="text-base flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-indigo-500" />
             AI Prediction
-            {(prediction.status === "complete" || prediction.status === "completed") && wasCorrect(actualResult, prediction.aiPrediction) && (
+            {isResolved && wasCorrect(actualResult, prediction.aiPrediction) && (
               <Badge className="bg-emerald-500 text-xs">Correct</Badge>
             )}
-            {(prediction.status === "complete" || prediction.status === "completed") && !wasCorrect(actualResult, prediction.aiPrediction) && (
+            {isResolved && !wasCorrect(actualResult, prediction.aiPrediction) && (
               <Badge className="bg-red-500 text-xs">Incorrect</Badge>
             )}
           </CardTitle>
