@@ -11,69 +11,61 @@ export type Database = {
     Tables: {
       brackets: {
         Row: {
-          id: string
-          user_id: string
-          name: string
-          timeframe: string
-          size: number
-          status: string
-          ai_personality: string
-          user_entries: Json
           ai_entries: Json
-          matches: Json
-          winner_id: string | null
-          start_date: string
-          end_date: string
-          created_at: string | null
-          user_points: number | null
+          ai_personality: string
           ai_points: number | null
+          created_at: string | null
+          end_date: string
+          id: string
+          matches: Json
+          name: string
+          size: number
+          start_date: string
+          status: string
+          timeframe: string
+          user_entries: Json
+          user_id: string
+          user_points: number | null
+          winner_id: string | null
         }
         Insert: {
-          id?: string
-          user_id: string
-          name: string
-          timeframe: string
-          size: number
-          status: string
-          ai_personality: string
-          user_entries?: Json
           ai_entries?: Json
-          matches?: Json
-          winner_id?: string | null
-          start_date: string
-          end_date: string
-          created_at?: string | null
-          user_points?: number | null
+          ai_personality: string
           ai_points?: number | null
+          created_at?: string | null
+          end_date: string
+          id?: string
+          matches?: Json
+          name: string
+          size: number
+          start_date: string
+          status: string
+          timeframe: string
+          user_entries?: Json
+          user_id: string
+          user_points?: number | null
+          winner_id?: string | null
         }
         Update: {
-          id?: string
-          user_id?: string
-          name?: string
-          timeframe?: string
-          size?: number
-          status?: string
-          ai_personality?: string
-          user_entries?: Json
           ai_entries?: Json
-          matches?: Json
-          winner_id?: string | null
-          start_date?: string
-          end_date?: string
-          created_at?: string | null
-          user_points?: number | null
+          ai_personality?: string
           ai_points?: number | null
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          matches?: Json
+          name?: string
+          size?: number
+          start_date?: string
+          status?: string
+          timeframe?: string
+          user_entries?: Json
+          user_id?: string
+          user_points?: number | null
+          winner_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "brackets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      },
+        Relationships: []
+      }
       prediction_patterns: {
         Row: {
           ai_accuracy: number
@@ -314,12 +306,74 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          metadata: Json | null
+          payment_id: string | null
+          payment_provider: string | null
+          plan: string
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_id?: string | null
+          payment_provider?: string | null
+          plan?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          metadata?: Json | null
+          payment_id?: string | null
+          payment_provider?: string | null
+          plan?: string
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      user_usage_summary: {
+        Row: {
+          ai_views_count: number | null
+          api_calls_count: number | null
+          month: string | null
+          predictions_count: number | null
+          total_events: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_api_usage: {
+        Args: {
+          user_id_param: string
+          days_param?: number
+        }
+        Returns: {
+          day: string
+          api_calls: number
+          predictions: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
