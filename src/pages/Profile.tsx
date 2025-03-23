@@ -28,7 +28,6 @@ interface UserProfile {
 const Profile: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   
@@ -101,7 +100,7 @@ const Profile: React.FC = () => {
       // Redirect to login if not authenticated
       navigate('/login');
     }
-  }, [user, toast, navigate]);
+  }, [user, navigate]);
   
   // Handle profile update
   const onUpdateProfile = async (data: ProfileFormData) => {

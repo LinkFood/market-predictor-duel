@@ -156,7 +156,8 @@ export const getUserProfile = async (userId: string): Promise<{ profile?: UserPr
     const profile: UserProfile = {
       id: profileData.id,
       username: profileData.username,
-      email: profileData.email,
+      // Only access email if it exists in profileData
+      ...(profileData.email && { email: profileData.email }),
       avatar_url: profileData.avatar_url,
       created_at: profileData.created_at,
       subscription_tier: subscriptionData?.plan || 'free'
