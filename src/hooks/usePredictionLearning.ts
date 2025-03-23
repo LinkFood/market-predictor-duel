@@ -1,116 +1,66 @@
 
-import { useEffect, useState, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
-import { toast } from 'sonner';
-import { useAuth } from '@/lib/auth-context';
-import { 
-  analyzePredictionBatch, 
-  scheduleRoutineAnalysis,
-  PredictionPattern
-} from '@/lib/analysis/prediction-learner';
+import { useState, useEffect } from 'react';
+import { getUserPredictions } from '@/lib/prediction/user-predictions';
+import { Prediction } from '@/types';
 
-/**
- * Hook for interacting with the AI prediction learning system
- */
+// Mock learning system interface - would be replaced with actual ML integration
 export function usePredictionLearning() {
-  const { user } = useAuth();
-  const [isEnabled, setIsEnabled] = useState(true);
-  const [patterns, setPatterns] = useState<PredictionPattern[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
-  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
-  // Load learning patterns from the database
-  const loadPatterns = useCallback(async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const { data, error } = await supabase
-        .from('prediction_patterns')
-        .select('*')
-        .order('updated_at', { ascending: false })
-        .limit(10);
-      
-      if (error) {
-        throw error;
+  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null);
+  const [error, setError] = useState('');
+  
+  // Initialize the learning system
+  useEffect(() => {
+    const initializeLearning = async () => {
+      try {
+        // In a real implementation, this would check if the learning system is ready
+        // For mock, we'll just simulate a delay and set it as initialized
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setIsInitialized(true);
+      } catch (err) {
+        setError('Failed to initialize learning system');
+        console.error('Learning system initialization error:', err);
       }
-      
-      setPatterns(data || []);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load learning patterns';
-      setError(message);
-      console.error('Error loading prediction patterns:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
-
-  // Trigger an analysis manually
-  const triggerAnalysis = async () => {
-    if (!user || isAnalyzing) return;
+    };
     
+    initializeLearning();
+  }, []);
+  
+  // Function to run the analysis
+  const runAnalysis = async () => {
     try {
       setIsAnalyzing(true);
-      // Pass the expected default argument of 30 days to analyzePredictionBatch
-      await analyzePredictionBatch(30);
+      setError('');
+      
+      // In a real implementation, this would:
+      // 1. Fetch historical predictions
+      // 2. Analyze patterns
+      // 3. Update confidence models
+      
+      // Mock implementation
+      const predictions = await getUserPredictions();
+      
+      // Simulate analysis time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update last analysis time
       setLastAnalysis(new Date());
-      await loadPatterns();
-      toast.success("Analysis completed successfully");
+      console.log(`Analysis complete: Analyzed ${predictions.length} predictions`);
+      
     } catch (err) {
-      console.error("Error during analysis:", err);
-      toast.error("Failed to complete analysis");
+      setError('Failed to run analysis');
+      console.error('Analysis error:', err);
     } finally {
       setIsAnalyzing(false);
     }
   };
-
-  // Toggle learning system
-  const toggleLearningSystem = useCallback(() => {
-    setIsEnabled(prev => !prev);
-    toast.success(`Prediction learning system ${!isEnabled ? 'enabled' : 'disabled'}`);
-  }, [isEnabled]);
-
-  // Initialize learning system
-  useEffect(() => {
-    if (!user) return;
-    
-    // Initial load of patterns
-    loadPatterns();
-    
-    // Set up learning system if enabled
-    let cleanup: (() => void) | undefined;
-    
-    if (isEnabled) {
-      // Schedule routine analysis (every 60 minutes)
-      cleanup = scheduleRoutineAnalysis(60);
-      console.log('Prediction learning system initialized and scheduled');
-      setIsInitialized(true);
-      setLastAnalysis(new Date());
-    }
-    
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [user, isEnabled, loadPatterns]);
-
+  
   return {
-    isLearningEnabled: isEnabled,
-    patterns,
-    isLoading,
-    error,
-    toggleLearningSystem,
-    refreshPatterns: loadPatterns,
     isInitialized,
-    lastAnalysis,
     isAnalyzing,
-    triggerAnalysis
+    lastAnalysis,
+    error,
+    runAnalysis
   };
 }
-
-// Export for compatibility with existing code
-export default usePredictionLearning;

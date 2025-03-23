@@ -5,40 +5,18 @@
  */
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
-import { Brain, TrendingUp, Zap, BarChart3 } from 'lucide-react';
+import { Brain } from 'lucide-react';
 import { usePredictionLearning } from '@/hooks/usePredictionLearning';
-import { Button } from '@/components/ui/button';
-
-interface PatternSummary {
-  totalPatterns: number;
-  averageAiAccuracy: number;
-  averageUserAccuracy: number;
-  largestAdjustment: number;
-  mostAnalyzedPattern: string;
-  sampleSize: number;
-}
-
-// Define type for prediction patterns from the database
-interface PredictionPattern {
-  id: string;
-  group_key: string;
-  timeframe: string;
-  target_type: string;
-  prediction_type: string;
-  ai_accuracy: number;
-  user_accuracy: number;
-  confidence_adjustment: number;
-  sample_size: number;
-  market_condition?: string;
-  sector?: string;
-  created_at: string;
-  updated_at: string;
-}
+import PatternSummaryCard from '@/components/dashboard/ai-insights/PatternSummaryCard';
+import AccuracyComparisonCard from '@/components/dashboard/ai-insights/AccuracyComparisonCard';
+import AdjustmentInsightCard from '@/components/dashboard/ai-insights/AdjustmentInsightCard';
+import AnalysisButton from '@/components/dashboard/ai-insights/AnalysisButton';
+import EmptyStateView from '@/components/dashboard/ai-insights/EmptyStateView';
+import { PatternSummary, PredictionPattern } from '@/components/dashboard/ai-insights/types';
 
 const AIPredictionInsights = () => {
-  const { isInitialized, isAnalyzing, lastAnalysis, triggerAnalysis } = usePredictionLearning();
+  const { isInitialized, isAnalyzing, lastAnalysis, runAnalysis } = usePredictionLearning();
   const [patternSummary, setPatternSummary] = useState<PatternSummary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -98,7 +76,7 @@ const AIPredictionInsights = () => {
   }, [lastAnalysis]);
 
   const handleRunAnalysis = async () => {
-    await triggerAnalysis();
+    await runAnalysis();
   };
 
   return (
@@ -114,102 +92,57 @@ const AIPredictionInsights = () => {
       </CardHeader>
       <CardContent>
         {isLoading ? (
-          <div className="py-6 flex justify-center">
-            <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="space-y-4">
+            <PatternSummaryCard 
+              totalPatterns={0} 
+              sampleSize={0} 
+              isLoading={true} 
+            />
+            <AccuracyComparisonCard 
+              averageAiAccuracy={0} 
+              averageUserAccuracy={0} 
+              isLoading={true} 
+            />
+            <AdjustmentInsightCard 
+              largestAdjustment={0} 
+              mostAnalyzedPattern="" 
+              isLoading={true} 
+            />
           </div>
         ) : patternSummary ? (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500 mb-1 flex items-center">
-                  <BarChart3 className="h-3.5 w-3.5 mr-1 text-indigo-500" />
-                  Learning Patterns
-                </div>
-                <div className="text-2xl font-bold">{patternSummary.totalPatterns}</div>
-              </div>
-              <div className="bg-gray-50 p-3 rounded-md">
-                <div className="text-sm text-gray-500 mb-1 flex items-center">
-                  <Zap className="h-3.5 w-3.5 mr-1 text-amber-500" />
-                  Predictions Analyzed
-                </div>
-                <div className="text-2xl font-bold">{patternSummary.sampleSize}</div>
-              </div>
-            </div>
+            <PatternSummaryCard 
+              totalPatterns={patternSummary.totalPatterns} 
+              sampleSize={patternSummary.sampleSize} 
+              isLoading={false} 
+            />
             
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm mb-1">
-                <span className="text-gray-500">AI vs Human Accuracy</span>
-                <span className="font-medium">
-                  {(patternSummary.averageAiAccuracy * 100).toFixed(1)}% vs {(patternSummary.averageUserAccuracy * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="relative pt-1">
-                <div className="flex mb-2 items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-indigo-600 bg-indigo-200">
-                      AI
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-amber-600 bg-amber-200">
-                      Human
-                    </span>
-                  </div>
-                </div>
-                <div className="overflow-hidden h-2 mb-4 flex rounded bg-gray-200">
-                  <div 
-                    style={{ width: `${patternSummary.averageAiAccuracy * 100}%` }} 
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-indigo-500"
-                  ></div>
-                  <div
-                    style={{ width: `${Math.max(0, patternSummary.averageUserAccuracy * 100 - patternSummary.averageAiAccuracy * 100)}%` }}
-                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-amber-500"
-                  ></div>
-                </div>
-              </div>
-            </div>
+            <AccuracyComparisonCard 
+              averageAiAccuracy={patternSummary.averageAiAccuracy} 
+              averageUserAccuracy={patternSummary.averageUserAccuracy} 
+              isLoading={false} 
+            />
             
-            <div className="pt-2">
-              <div className="text-sm font-medium">Most Significant Adjustment</div>
-              <div className="text-sm text-gray-600 mt-1">
-                Confidence {patternSummary.largestAdjustment > 0 ? 'increased' : 'decreased'} by up to{' '}
-                <span className={patternSummary.largestAdjustment > 0 ? 'text-green-600' : 'text-red-600'}>
-                  {Math.abs(patternSummary.largestAdjustment).toFixed(1)}%
-                </span>{' '}
-                for {patternSummary.mostAnalyzedPattern} predictions
-              </div>
-            </div>
+            <AdjustmentInsightCard 
+              largestAdjustment={patternSummary.largestAdjustment} 
+              mostAnalyzedPattern={patternSummary.mostAnalyzedPattern} 
+              isLoading={false} 
+            />
             
-            {lastAnalysis && (
-              <div className="text-xs text-gray-500 pt-2">
-                Last analyzed: {lastAnalysis.toLocaleString()}
-              </div>
-            )}
-            
-            <div className="pt-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRunAnalysis}
-                disabled={isAnalyzing || !isInitialized}
-                className="w-full"
-              >
-                {isAnalyzing ? 'Analyzing...' : 'Run Analysis Now'}
-              </Button>
-            </div>
+            <AnalysisButton 
+              isAnalyzing={isAnalyzing} 
+              isInitialized={isInitialized} 
+              onRunAnalysis={handleRunAnalysis} 
+              lastAnalysis={lastAnalysis} 
+              className="pt-2" 
+            />
           </div>
         ) : (
-          <div className="py-4 text-center text-gray-500">
-            <p className="mb-4">No prediction patterns analyzed yet</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRunAnalysis}
-              disabled={isAnalyzing || !isInitialized}
-            >
-              {isAnalyzing ? 'Analyzing...' : 'Run Initial Analysis'}
-            </Button>
-          </div>
+          <EmptyStateView 
+            isAnalyzing={isAnalyzing} 
+            isInitialized={isInitialized} 
+            onRunAnalysis={handleRunAnalysis} 
+          />
         )}
       </CardContent>
     </Card>

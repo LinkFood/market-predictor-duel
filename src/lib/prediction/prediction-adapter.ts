@@ -12,6 +12,9 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
   // Generate a ticker from targetName if not provided
   const ticker = prediction.ticker || prediction.targetName || prediction.target_name || '';
   
+  // Ensure predictionType is set
+  const predictionType = prediction.predictionType || prediction.prediction_type || 'trend';
+  
   return {
     id: prediction.id,
     userId: prediction.userId || prediction.user_id,
@@ -39,7 +42,9 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
             prediction.outcome === 'tie' ? 'both' : 'neither',
     resolvedAt: prediction.resolvedAt || prediction.resolved_at,
     outcome: prediction.outcome,
-    points: prediction.points
+    points: prediction.points,
+    ticker: ticker, // Ensure ticker is always set
+    predictionType: predictionType, // Ensure predictionType is always set
   };
 }
 
@@ -50,10 +55,10 @@ export function adaptToLibPrediction(prediction: PredictionType): LibPrediction 
   return {
     id: prediction.id,
     userId: prediction.userId,
-    ticker: prediction.targetName, // Use targetName as ticker if not available
+    ticker: prediction.ticker || prediction.targetName || "", // Ensure ticker is set
     targetName: prediction.targetName,
     targetType: prediction.targetType,
-    predictionType: 'trend', // Default to trend
+    predictionType: prediction.predictionType || 'trend', // Default to trend
     userPrediction: prediction.userPrediction,
     aiPrediction: prediction.aiPrediction,
     aiConfidence: prediction.aiConfidence,

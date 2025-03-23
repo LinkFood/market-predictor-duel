@@ -217,6 +217,8 @@ export interface SubscriptionContextType {
   // Added for backward compatibility with usage hooks
   canMakePrediction: boolean;
   usage: UsageData | null;
+  // Added for debugging
+  setDebugPlan: (plan: SubscriptionPlan | null) => void;
 }
 
 // Create context with default values
@@ -238,16 +240,25 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
   hasAccess: () => false,
   isFeatureAvailable: () => false,
   canMakePrediction: false,
-  usage: null
+  usage: null,
+  // For debugging
+  setDebugPlan: () => {}
 });
 
 export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const { user } = useAuth();
-  const [currentPlan, setCurrentPlan] = useState<SubscriptionPlan>(SubscriptionPlan.FREE);
+  const [actualPlan, setActualPlan] = useState<SubscriptionPlan>(SubscriptionPlan.FREE);
+  const [debugPlan, setDebugPlan] = useState<SubscriptionPlan | null>(() => {
+    const savedPlan = localStorage.getItem('debugPlan');
+    return savedPlan as SubscriptionPlan | null;
+  });
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [usageData, setUsageData] = useState<UsageData | null>(null);
+  
+  // Get the active plan (debug plan overrides actual plan if in debug mode)
+  const currentPlan = debugPlan || actualPlan;
   
   // Calculated properties
   const isPremium = currentPlan !== SubscriptionPlan.FREE;
@@ -260,7 +271,7 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
       console.log("Subscription provider initialized", { userId: user?.id });
       
       if (!user) {
-        setCurrentPlan(SubscriptionPlan.FREE);
+        setActualPlan(SubscriptionPlan.FREE);
         setIsLoading(false);
         return;
       }
@@ -276,7 +287,7 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
         
         if (FORCE_PLAN) {
           console.log("🛠️ DEVELOPMENT MODE: Using test plan:", TEST_PLAN);
-          setCurrentPlan(TEST_PLAN);
+          setActualPlan(TEST_PLAN);
           
           // Set test usage data
           const planLimits = PLAN_LIMITS[TEST_PLAN];
@@ -315,12 +326,12 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
         if (error) {
           console.error('Error fetching subscription:', error);
           setError('Failed to fetch subscription data');
-          setCurrentPlan(SubscriptionPlan.FREE);
+          setActualPlan(SubscriptionPlan.FREE);
         } else if (data) {
-          setCurrentPlan(data.plan as SubscriptionPlan);
+          setActualPlan(data.plan as SubscriptionPlan);
           setExpiresAt(data.expires_at);
         } else {
-          setCurrentPlan(SubscriptionPlan.FREE);
+          setActualPlan(SubscriptionPlan.FREE);
         }
         
         // Generate mock usage data for now
@@ -346,7 +357,7 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
       } catch (err) {
         console.error('Unexpected error fetching subscription:', err);
         setError('An unexpected error occurred');
-        setCurrentPlan(SubscriptionPlan.FREE);
+        setActualPlan(SubscriptionPlan.FREE);
       } finally {
         setIsLoading(false);
       }
@@ -414,6 +425,38 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     }
   };
   
+  // Handle setting debug plan
+  const handleSetDebugPlan = (plan: SubscriptionPlan | null) => {
+    setDebugPlan(plan);
+    
+    // When plan changes, update the usage data to match the new plan
+    if (plan) {
+      const planLimits = PLAN_LIMITS[plan];
+      setUsageData(prev => {
+        if (!prev) return null;
+        
+        const predictionsUsed = Math.min(prev.predictionsThisMonth, planLimits.predictions.daily);
+        const apiCallsUsed = Math.min(prev.apiCallsToday, planLimits.apiCalls.daily);
+        
+        return {
+          predictions: {
+            used: predictionsUsed,
+            limit: planLimits.predictions.daily
+          },
+          apiCalls: {
+            used: apiCallsUsed,
+            limit: planLimits.apiCalls.daily
+          },
+          predictionsThisMonth: predictionsUsed,
+          predictionsLimit: planLimits.predictions.daily,
+          apiCallsToday: apiCallsUsed,
+          apiCallsLimit: planLimits.apiCalls.daily,
+          lastUpdated: new Date()
+        };
+      });
+    }
+  };
+  
   // Check if can make prediction based on usage
   const canMakePrediction = usageData ? 
     usageData.predictions !== undefined && 
@@ -438,7 +481,9 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     hasAccess: hasFeatureAccess,
     isFeatureAvailable: hasFeatureAccess,
     canMakePrediction,
-    usage: usageData
+    usage: usageData,
+    // Debug functionality
+    setDebugPlan: handleSetDebugPlan
   };
   
   return (

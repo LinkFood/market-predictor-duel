@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -7,7 +8,6 @@ import SearchOverlay from "./SearchOverlay";
 import MenuOverlay from "./MenuOverlay";
 import AppHeader from "./AppHeader";
 import Sidebar from "./Sidebar";
-import SubscriptionDebugger from "./subscription/SubscriptionDebugger";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 // App Navigation Component with shared layout
@@ -70,9 +70,6 @@ const AppLayout: React.FC = () => {
             {showSearch && <SearchOverlay isOpen={showSearch} onClose={() => setShowSearch(false)} />}
             {showMenu && <MenuOverlay isOpen={showMenu} onClose={() => setShowMenu(false)} />}
           </AnimatePresence>
-          
-          {/* Subscription debugger */}
-          <SubscriptionDebugger />
         </div>
       </div>
     </SidebarProvider>
