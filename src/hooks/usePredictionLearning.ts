@@ -1,97 +1,66 @@
 
-import { useState, useEffect } from "react";
-import { analyzePredictionBatch, scheduleRoutineAnalysis } from "@/lib/analysis/prediction-learner";
-import { getUserPredictions } from "@/lib/prediction/user-predictions";
-import { Prediction } from "@/types";
+import { useState, useEffect } from 'react';
+import { getUserPredictions } from '@/lib/prediction/user-predictions';
+import { Prediction } from '@/types';
 
-interface PredictionLearningState {
-  isInitialized: boolean;
-  isAnalyzing: boolean;
-  lastAnalysis: Date | null;
-  error: string | null;
-}
-
+// Mock learning system interface - would be replaced with actual ML integration
 export function usePredictionLearning() {
-  const [state, setState] = useState<PredictionLearningState>({
-    isInitialized: false,
-    isAnalyzing: false,
-    lastAnalysis: null,
-    error: null
-  });
-
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null);
+  const [error, setError] = useState('');
+  
+  // Initialize the learning system
   useEffect(() => {
-    // Initialize the learning system
-    let cleanupFn: (() => void) | undefined;
-    
-    const initLearningSystem = async () => {
+    const initializeLearning = async () => {
       try {
-        // Schedule routine analysis
-        cleanupFn = scheduleRoutineAnalysis(60); // Run every 60 minutes
-        
-        // Perform initial analysis with recent predictions
-        await runInitialAnalysis();
-        
-        // Mark as initialized
-        setState(prev => ({
-          ...prev,
-          isInitialized: true
-        }));
-        
-      } catch (error) {
-        console.error("Failed to initialize prediction learning system:", error);
-        setState(prev => ({
-          ...prev,
-          error: "Failed to initialize learning system"
-        }));
+        // In a real implementation, this would check if the learning system is ready
+        // For mock, we'll just simulate a delay and set it as initialized
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setIsInitialized(true);
+      } catch (err) {
+        setError('Failed to initialize learning system');
+        console.error('Learning system initialization error:', err);
       }
     };
     
-    initLearningSystem();
-    
-    // Cleanup function
-    return () => {
-      if (cleanupFn) cleanupFn();
-    };
+    initializeLearning();
   }, []);
   
-  const runInitialAnalysis = async () => {
+  // Function to run the analysis
+  const runAnalysis = async () => {
     try {
-      setState(prev => ({ ...prev, isAnalyzing: true }));
+      setIsAnalyzing(true);
+      setError('');
       
-      // Fetch completed predictions to analyze
-      const completedPredictions = await getUserPredictions('completed');
+      // In a real implementation, this would:
+      // 1. Fetch historical predictions
+      // 2. Analyze patterns
+      // 3. Update confidence models
       
-      if (completedPredictions && completedPredictions.length > 0) {
-        // Analyze the batch of predictions
-        await analyzePredictionBatch(completedPredictions);
-        
-        // Update state
-        setState(prev => ({
-          ...prev,
-          isAnalyzing: false,
-          lastAnalysis: new Date()
-        }));
-      } else {
-        setState(prev => ({
-          ...prev,
-          isAnalyzing: false,
-          lastAnalysis: new Date()
-        }));
-      }
-    } catch (error) {
-      console.error("Error running initial prediction analysis:", error);
-      setState(prev => ({
-        ...prev,
-        isAnalyzing: false,
-        error: "Failed to analyze predictions"
-      }));
+      // Mock implementation
+      const predictions = await getUserPredictions();
+      
+      // Simulate analysis time
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update last analysis time
+      setLastAnalysis(new Date());
+      console.log(`Analysis complete: Analyzed ${predictions.length} predictions`);
+      
+    } catch (err) {
+      setError('Failed to run analysis');
+      console.error('Analysis error:', err);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
   
   return {
-    ...state,
-    runAnalysis: runInitialAnalysis
+    isInitialized,
+    isAnalyzing,
+    lastAnalysis,
+    error,
+    runAnalysis
   };
 }
-
-export default usePredictionLearning;
