@@ -132,8 +132,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const hasMatch = entry1 && entry2;
   
   // Determine if entry1 won (if completed)
-  const entry1Won = isCompleted && completed && winnerId === entry1?.id;
-  const entry2Won = isCompleted && completed && winnerId === entry2?.id;
+  const entry1Won = isCompleted && completed && winnerId && entry1?.id && winnerId === entry1.id;
+  const entry2Won = isCompleted && completed && winnerId && entry2?.id && winnerId === entry2.id;
   
   return (
     <Card className="overflow-hidden border-2 hover:shadow-md transition-shadow">

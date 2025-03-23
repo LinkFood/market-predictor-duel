@@ -73,6 +73,55 @@ export interface Database {
           resolved_at?: string;
         };
       };
+      brackets: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          timeframe: string;
+          size: number;
+          status: string;
+          ai_personality: string;
+          user_entries: any[];
+          ai_entries: any[];
+          matches: any[];
+          winner_id?: string;
+          start_date: string;
+          end_date: string;
+          created_at: string;
+          user_points: number;
+          ai_points: number;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          timeframe: string;
+          size: number;
+          status: string;
+          ai_personality: string;
+          user_entries: any[];
+          ai_entries: any[];
+          matches: any[];
+          winner_id?: string;
+          start_date: string;
+          end_date: string;
+          created_at?: string;
+          user_points?: number;
+          ai_points?: number;
+        };
+        Update: {
+          name?: string;
+          status?: string;
+          user_entries?: any[];
+          ai_entries?: any[];
+          matches?: any[];
+          winner_id?: string;
+          end_date?: string;
+          user_points?: number;
+          ai_points?: number;
+        };
+      };
       user_stats: {
         Row: {
           user_id: string;
@@ -148,6 +197,92 @@ export interface Database {
           last_updated?: string;
         };
       };
+      user_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          plan: string;
+          status: string;
+          started_at: string;
+          expires_at?: string;
+          payment_provider?: string;
+          payment_id?: string;
+          metadata?: any;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          plan?: string;
+          status?: string;
+          started_at?: string;
+          expires_at?: string;
+          payment_provider?: string;
+          payment_id?: string;
+          metadata?: any;
+        };
+        Update: {
+          plan?: string;
+          status?: string;
+          expires_at?: string;
+          payment_provider?: string;
+          payment_id?: string;
+          metadata?: any;
+        };
+      };
+      usage_events: {
+        Row: {
+          id: string;
+          user_id: string;
+          event_type: string;
+          resource_id?: string;
+          plan: string;
+          metadata?: any;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          event_type: string;
+          resource_id?: string;
+          plan: string;
+          metadata?: any;
+        };
+        Update: {
+          event_type?: string;
+          resource_id?: string;
+          plan?: string;
+          metadata?: any;
+        };
+      };
+      prediction_patterns: {
+        Row: {
+          id: string;
+          pattern_name: string;
+          ticker: string;
+          description: string;
+          confidence: number;
+          factors: any[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          pattern_name: string;
+          ticker: string;
+          description: string;
+          confidence: number;
+          factors: any[];
+        };
+        Update: {
+          pattern_name?: string;
+          description?: string;
+          confidence?: number;
+          factors?: any[];
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       leaderboard: {
@@ -161,9 +296,29 @@ export interface Database {
           rank: number;
         };
       };
+      user_usage_summary: {
+        Row: {
+          user_id: string;
+          month: string;
+          predictions_count: number;
+          api_calls_count: number;
+          ai_views_count: number;
+          total_events: number;
+        };
+      };
     };
     Functions: {
-      // Add any custom PostgreSQL functions here
+      get_user_api_usage: {
+        Args: {
+          user_id_param: string;
+          days_param?: number;
+        };
+        Returns: {
+          day: string;
+          api_calls: number;
+          predictions: number;
+        }[];
+      };
     };
   };
 }

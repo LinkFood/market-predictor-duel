@@ -101,4 +101,13 @@ export interface GlobalStats {
   marketPredictions: number;
   sectorPredictions: number;
   stockPredictions: number;
+  totalDuels: number;
+  humansWon: number;
+  aiWon: number;
+  humanWinRate: number;
+  humanTrendAccuracy?: number;
+  aiTrendAccuracy?: number;
+  recentHumanAdvantage?: number;
+  topHumanScore: number;
+  topAiScore?: number;
 }

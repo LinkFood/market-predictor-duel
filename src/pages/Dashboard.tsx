@@ -205,7 +205,7 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
         <div className="md:col-span-2 space-y-6">
           <RecentPredictionsSection predictions={recentPredictions as Prediction[]} />
-          <UserStatsSection userRank={userRank} />
+          <UserStatsSection userRank={{rank: userRank, total: 100, percentile: 50}} />
         </div>
         <div className="space-y-6">
           <GlobalBattleStats stats={mockGlobalStats} />

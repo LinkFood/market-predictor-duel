@@ -14,10 +14,10 @@ interface GlobalBattleStatsProps {
 }
 
 const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
-  // Calculate human win rate
-  const humanWinRate = stats.totalPredictions > 0 
+  // Get human win rate from stats or calculate it
+  const humanWinRate = stats.humanWinRate || (stats.totalPredictions > 0 
     ? Math.round((stats.humanWins / stats.totalPredictions) * 100)
-    : 0;
+    : 0);
     
   // Calculate AI win rate
   const aiWinRate = stats.totalPredictions > 0
@@ -64,6 +64,17 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
                 <span className="text-xs font-medium text-purple-600">{stats.aiWins.toLocaleString()}</span>
               </div>
             </div>
+            
+            {stats.totalDuels > 0 && (
+              <div className="flex items-center justify-between mt-2">
+                <span className="text-xs text-gray-500">Duels</span>
+                <div className="flex items-center space-x-1">
+                  <span className="text-xs font-medium text-blue-600">{stats.humansWon?.toLocaleString() || 0}</span>
+                  <span className="text-xs">:</span>
+                  <span className="text-xs font-medium text-purple-600">{stats.aiWon?.toLocaleString() || 0}</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
