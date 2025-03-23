@@ -43,7 +43,7 @@ export const MARKET_CONFIG = {
   polygon: {
     enabled: false,
     baseUrl: "https://api.polygon.io",
-    apiKey: process.env.POLYGON_API_KEY || "demo"
+    apiKey: import.meta.env.VITE_POLYGON_API_KEY || "demo"
   },
   refreshInterval: 60000, // 1 minute refresh interval
   retryAttempts: 3,
@@ -71,8 +71,8 @@ export const config = {
     baseUrl: "https://api.polygon.io"
   },
   supabase: {
-    url: process.env.SUPABASE_URL || "",
-    anonKey: process.env.SUPABASE_ANON_KEY || ""
+    url: import.meta.env.VITE_SUPABASE_URL || "",
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || ""
   }
 };
 
