@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Mock user rank data
+  // Mock user rank data - using number
   const userRank = 42;
 
   // Convert mockStockData to MarketData format

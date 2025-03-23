@@ -1,7 +1,7 @@
 
 // Import necessary types
 import { GlobalStats, Prediction, MarketData, User } from "@/types";
-// Don't import StockData to avoid conflict, define it locally
+import { Bracket, BracketTimeframe, BracketStatus, BracketSize, AIPersonality } from "@/lib/duel/types";
 
 // Stock data interface - locally defined to avoid conflict 
 export interface StockData {
@@ -13,20 +13,21 @@ export interface StockData {
   sector?: string;
   marketCap?: number;
   volume?: number;
+  datetime?: string;
 }
 
 // Create mock bracket with specified ID
-export function createMockBracket(id: string) {
+export function createMockBracket(id: string): Bracket {
   return {
     id,
     name: "Weekly Tech Showdown",
-    status: "active",
-    aiPersonality: "ValueHunter", 
-    timeframe: "weekly",
+    status: "active" as BracketStatus,
+    aiPersonality: "ValueHunter" as AIPersonality, 
+    timeframe: "weekly" as BracketTimeframe,
     startDate: new Date().toISOString(),
     endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
     userId: "user-1",
-    size: 3,
+    size: 3 as BracketSize,
     userEntries: [],
     aiEntries: [],
     matches: [],

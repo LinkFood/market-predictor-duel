@@ -132,7 +132,7 @@ export async function completeBracket(id: string): Promise<Bracket> {
     // Create updated bracket
     const updatedBracket: Bracket = {
       ...bracket,
-      status: 'completed',
+      status: 'completed' as BracketStatus,
       matches: updatedMatches,
       userPoints,
       aiPoints,

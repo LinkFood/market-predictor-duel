@@ -1,195 +1,152 @@
 /**
  * AI Stock Picker
- * Functions for generating AI stock picks for bracket tournaments
+ * 
+ * This module generates AI stock picks for tournaments based on AI personality
  */
-import { v4 as uuidv4 } from 'uuid';
-import { BracketEntry, Direction, AIPersonality, EntryType } from './types';
-
-// Stock data interface
-interface StockData {
-  symbol: string;
-  name: string;
-  price: number;
-  change: number;
-  changePercent: number;
-  sector?: string;
-}
-
-// Mock stock data for different sectors
-const techStocks: StockData[] = [
-  { symbol: 'AAPL', name: 'Apple Inc.', price: 178.72, change: 2.35, changePercent: 1.33, sector: 'Technology' },
-  { symbol: 'MSFT', name: 'Microsoft Corporation', price: 403.78, change: 3.45, changePercent: 0.86, sector: 'Technology' },
-  { symbol: 'GOOGL', name: 'Alphabet Inc.', price: 173.34, change: 1.87, changePercent: 1.09, sector: 'Technology' },
-  { symbol: 'NVDA', name: 'NVIDIA Corporation', price: 885.64, change: 15.23, changePercent: 1.75, sector: 'Technology' },
-  { symbol: 'AVGO', name: 'Broadcom Inc.', price: 1323.85, change: 18.54, changePercent: 1.42, sector: 'Technology' }
-];
-
-const financialStocks: StockData[] = [
-  { symbol: 'JPM', name: 'JPMorgan Chase & Co.', price: 197.45, change: 0.68, changePercent: 0.35, sector: 'Financial Services' },
-  { symbol: 'BAC', name: 'Bank of America Corp.', price: 37.92, change: -0.28, changePercent: -0.73, sector: 'Financial Services' },
-  { symbol: 'WFC', name: 'Wells Fargo & Co.', price: 57.43, change: 0.32, changePercent: 0.56, sector: 'Financial Services' },
-  { symbol: 'GS', name: 'Goldman Sachs Group Inc.', price: 456.98, change: 3.21, changePercent: 0.71, sector: 'Financial Services' },
-  { symbol: 'MS', name: 'Morgan Stanley', price: 97.23, change: 0.56, changePercent: 0.58, sector: 'Financial Services' }
-];
-
-const healthcareStocks: StockData[] = [
-  { symbol: 'JNJ', name: 'Johnson & Johnson', price: 152.67, change: -1.23, changePercent: -0.80, sector: 'Healthcare' },
-  { symbol: 'PFE', name: 'Pfizer Inc.', price: 28.12, change: 0.34, changePercent: 1.22, sector: 'Healthcare' },
-  { symbol: 'UNH', name: 'UnitedHealth Group Inc.', price: 527.89, change: 4.32, changePercent: 0.83, sector: 'Healthcare' },
-  { symbol: 'ABBV', name: 'AbbVie Inc.', price: 167.94, change: 1.05, changePercent: 0.63, sector: 'Healthcare' },
-  { symbol: 'LLY', name: 'Eli Lilly and Company', price: 889.17, change: 12.45, changePercent: 1.42, sector: 'Healthcare' }
-];
-
-const energyStocks: StockData[] = [
-  { symbol: 'XOM', name: 'Exxon Mobil Corporation', price: 114.98, change: -0.87, changePercent: -0.75, sector: 'Energy' },
-  { symbol: 'CVX', name: 'Chevron Corporation', price: 154.63, change: -1.23, changePercent: -0.79, sector: 'Energy' },
-  { symbol: 'COP', name: 'ConocoPhillips', price: 114.43, change: 0.56, changePercent: 0.49, sector: 'Energy' },
-  { symbol: 'SLB', name: 'Schlumberger Limited', price: 48.23, change: 0.34, changePercent: 0.71, sector: 'Energy' },
-  { symbol: 'EOG', name: 'EOG Resources Inc.', price: 124.56, change: 1.23, changePercent: 1.00, sector: 'Energy' }
-];
-
-const consumerStocks: StockData[] = [
-  { symbol: 'AMZN', name: 'Amazon.com Inc.', price: 178.75, change: 1.87, changePercent: 1.06, sector: 'Consumer Cyclical' },
-  { symbol: 'HD', name: 'Home Depot Inc.', price: 342.78, change: 2.34, changePercent: 0.69, sector: 'Consumer Cyclical' },
-  { symbol: 'PG', name: 'Procter & Gamble Co.', price: 163.57, change: 0.45, changePercent: 0.28, sector: 'Consumer Defensive' },
-  { symbol: 'KO', name: 'Coca-Cola Company', price: 60.87, change: 0.23, changePercent: 0.38, sector: 'Consumer Defensive' },
-  { symbol: 'PEP', name: 'PepsiCo Inc.', price: 173.32, change: 0.67, changePercent: 0.39, sector: 'Consumer Defensive' }
-];
-
-// AI Personality preferences map
-const aiPreferences: Record<AIPersonality, {
-  preferredSectors: string[],
-  riskTolerance: 'low' | 'medium' | 'high',
-  favorsBullish: boolean
-}> = {
-  'ValueHunter': {
-    preferredSectors: ['Financial Services', 'Consumer Defensive'],
-    riskTolerance: 'low',
-    favorsBullish: false
-  },
-  'MomentumTrader': {
-    preferredSectors: ['Technology', 'Energy'],
-    riskTolerance: 'high',
-    favorsBullish: true
-  },
-  'TrendFollower': {
-    preferredSectors: ['Technology', 'Consumer Cyclical'],
-    riskTolerance: 'medium',
-    favorsBullish: true
-  },
-  'ContraThinker': {
-    preferredSectors: ['Energy', 'Healthcare'],
-    riskTolerance: 'high',
-    favorsBullish: false
-  },
-  'GrowthSeeker': {
-    preferredSectors: ['Technology', 'Healthcare'],
-    riskTolerance: 'medium',
-    favorsBullish: true
-  },
-  'DividendCollector': {
-    preferredSectors: ['Consumer Defensive', 'Financial Services'],
-    riskTolerance: 'low',
-    favorsBullish: false
-  }
-};
-
-// Combine all stocks
-const allStocks = [
-  ...techStocks,
-  ...financialStocks,
-  ...healthcareStocks,
-  ...energyStocks,
-  ...consumerStocks
-];
+import { BracketEntry, BracketSize, Direction, AIPersonality, EntryType } from './types';
 
 /**
- * Generate AI stock picks based on the user's selections and AI personality
+ * Generate AI stock picks based on user entries and AI personality
  */
 export async function generateAIStockPicks(
-  userSelections: { symbol: string; direction: Direction }[],
-  size: number,
+  userEntries: { symbol: string; direction: Direction }[],
+  size: BracketSize,
   aiPersonality: AIPersonality
 ): Promise<BracketEntry[]> {
-  console.log('Generating AI picks for', aiPersonality, 'with size', size);
+  // In a real implementation, this would use an API or algorithm based on the AI personality
+  // For now, we'll create mock entries
   
-  // Get AI preferences
-  const preferences = aiPreferences[aiPersonality];
+  // Define some stocks the AI might pick based on personality
+  const stocksByPersonality: Record<AIPersonality, string[]> = {
+    ValueHunter: ['JPM', 'PG', 'JNJ', 'CSCO', 'KO', 'VZ', 'PFE', 'IBM', 'CVX', 'MRK'],
+    MomentumTrader: ['NVDA', 'TSLA', 'AMD', 'PYPL', 'SQ', 'SHOP', 'COIN', 'ETSY', 'SNAP', 'UBER'],
+    TrendFollower: ['AAPL', 'MSFT', 'GOOGL', 'META', 'AMZN', 'V', 'MA', 'CRM', 'ADBE', 'NFLX'],
+    ContraThinker: ['GE', 'T', 'F', 'BAC', 'C', 'WFC', 'DIS', 'INTC', 'MU', 'XOM'],
+    GrowthSeeker: ['PLTR', 'NET', 'DDOG', 'ZS', 'CRWD', 'SNOW', 'OKTA', 'TTD', 'TWLO', 'ROKU'],
+    DividendCollector: ['JNJ', 'PG', 'KO', 'XOM', 'VZ', 'T', 'PFE', 'MRK', 'CVX', 'IBM']
+  };
   
-  // Avoid picking the same stocks as the user
-  const userSymbols = userSelections.map(s => s.symbol);
-  const availableStocks = allStocks.filter(stock => !userSymbols.includes(stock.symbol));
+  // Shuffle and select stocks
+  const potentialStocks = shuffleArray([...stocksByPersonality[aiPersonality]]);
   
-  // Prioritize stocks from preferred sectors
-  const preferredStocks = availableStocks.filter(stock => 
-    preferences.preferredSectors.includes(stock.sector || 'Other')
-  );
+  // Get sectors for differentiation
+  const sectors = ['Technology', 'Financial', 'Healthcare', 'Energy', 'Consumer', 'Telecom', 'Industrial'];
   
-  // Select stocks based on AI personality
-  let selectedStocks: StockData[] = [];
-  
-  // Start with preferred sector stocks
-  if (preferredStocks.length >= size) {
-    // If we have enough preferred stocks, randomly select from them
-    selectedStocks = getRandomElements(preferredStocks, size);
-  } else {
-    // Otherwise, take all preferred stocks and add others until we reach the size
-    selectedStocks = [
-      ...preferredStocks,
-      ...getRandomElements(
-        availableStocks.filter(stock => !preferredStocks.includes(stock)), 
-        size - preferredStocks.length
-      )
-    ];
-  }
-  
-  // Convert stocks to bracket entries
-  return selectedStocks.map((stock, index): BracketEntry => {
-    // Determine direction based on AI personality and recent performance
-    // Higher risk tolerance AIs are more likely to go against the trend
-    let direction: Direction;
-    
-    if (preferences.riskTolerance === 'high') {
-      // High risk tolerance - more likely to make contrarian bets
-      direction = preferences.favorsBullish ? 'bullish' : 'bearish';
-    } else if (preferences.riskTolerance === 'medium') {
-      // Medium risk tolerance - mix of following trends and contrarian bets
-      direction = stock.changePercent > 0 ? 'bullish' : 'bearish';
-      // 30% chance to flip direction for medium risk
-      if (Math.random() < 0.3) {
-        direction = direction === 'bullish' ? 'bearish' : 'bullish';
-      }
-    } else {
-      // Low risk tolerance - more likely to follow trends
-      direction = stock.changePercent > 0 ? 'bullish' : 'bearish';
+  // Create entries based on size
+  const entries: BracketEntry[] = [];
+  for (let i = 0; i < size; i++) {
+    // Get a stock that is different from user picks if possible
+    let stockSymbol = potentialStocks[i % potentialStocks.length];
+    if (userEntries.some(e => e.symbol === stockSymbol)) {
+      stockSymbol = potentialStocks[(i + potentialStocks.length / 2) % potentialStocks.length];
     }
     
-    return {
-      id: `ai-entry-${index + 1}`,
-      symbol: stock.symbol,
-      name: stock.name,
+    // Determine direction based on AI personality and user choice
+    let direction: Direction;
+    const userPick = userEntries[i];
+    
+    if (aiPersonality === 'ContraThinker') {
+      // ContraThinker tends to go against the user
+      direction = userPick?.direction === 'bullish' ? 'bearish' : 'bullish';
+    } else if (aiPersonality === 'TrendFollower') {
+      // TrendFollower tends to follow market sentiment
+      direction = Math.random() > 0.3 ? 'bullish' : 'bearish'; // Biased towards bullish
+    } else {
+      // Others have their own strategy
+      direction = Math.random() > 0.5 ? 'bullish' : 'bearish';
+    }
+    
+    // Create the entry
+    entries.push({
+      id: `ai-entry-${i + 1}`,
+      symbol: stockSymbol,
+      name: getStockName(stockSymbol),
       entryType: 'stock',
       direction,
-      startPrice: stock.price,
-      marketCap: getMarketCapCategory(stock.symbol),
-      sector: stock.sector || 'Other',
-      order: index + 1
-    };
-  });
-}
-
-// Helper function to get random elements from an array
-function getRandomElements<T>(array: T[], count: number): T[] {
-  const shuffled = [...array].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, count);
-}
-
-// Helper function to determine market cap category
-function getMarketCapCategory(symbol: string): 'large' | 'mid' | 'small' {
-  const largeCapSymbols = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'JPM', 'JNJ', 'PG', 'XOM', 'UNH', 'LLY'];
-  const midCapSymbols = ['GS', 'MS', 'SLB', 'EOG', 'ABBV', 'COP', 'HD', 'PEP', 'KO'];
+      startPrice: getRandomPrice(50, 500),
+      marketCap: getRandomMarketCap(),
+      sector: getStockSector(stockSymbol),
+      order: i + 1
+    });
+  }
   
-  if (largeCapSymbols.includes(symbol)) return 'large';
-  if (midCapSymbols.includes(symbol)) return 'mid';
-  return 'small';
+  return entries;
+}
+
+// Helper function to shuffle an array
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
+// Helper function to get a random price
+function getRandomPrice(min: number, max: number): number {
+  return parseFloat((min + Math.random() * (max - min)).toFixed(2));
+}
+
+// Helper function to get a random market cap
+function getRandomMarketCap(): "large" | "mid" | "small" {
+  const options: ["large", "mid", "small"] = ["large", "mid", "small"];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+// Helper function to get stock name
+function getStockName(symbol: string): string {
+  const stockNames: Record<string, string> = {
+    AAPL: "Apple Inc.",
+    MSFT: "Microsoft Corporation",
+    AMZN: "Amazon.com Inc.",
+    GOOGL: "Alphabet Inc.",
+    GOOG: "Alphabet Inc.",
+    META: "Meta Platforms Inc.",
+    TSLA: "Tesla Inc.",
+    NVDA: "NVIDIA Corporation",
+    AMD: "Advanced Micro Devices, Inc.",
+    PYPL: "PayPal Holdings, Inc.",
+    SQ: "Block, Inc.",
+    SHOP: "Shopify Inc.",
+    COIN: "Coinbase Global, Inc.",
+    ETSY: "Etsy, Inc.",
+    SNAP: "Snap Inc.",
+    UBER: "Uber Technologies, Inc.",
+    V: "Visa Inc.",
+    JPM: "JPMorgan Chase & Co.",
+    JNJ: "Johnson & Johnson",
+    UNH: "UnitedHealth Group Inc.",
+    PG: "Procter & Gamble Co.",
+    MA: "Mastercard Inc.",
+    HD: "Home Depot Inc.",
+    BAC: "Bank of America Corp.",
+    XOM: "Exxon Mobil Corporation",
+    // ...more stocks
+  };
+  
+  return stockNames[symbol] || `${symbol} Inc.`;
+}
+
+// Helper function to get stock sector
+function getStockSector(symbol: string): string {
+  const stockSectors: Record<string, string> = {
+    AAPL: "Technology",
+    MSFT: "Technology",
+    AMZN: "Consumer Cyclical",
+    GOOGL: "Technology",
+    META: "Technology",
+    TSLA: "Automotive",
+    NVDA: "Technology",
+    AMD: "Technology",
+    PYPL: "Financial Technology",
+    V: "Financial Services",
+    JPM: "Financial Services",
+    JNJ: "Healthcare",
+    PG: "Consumer Defensive",
+    MA: "Financial Services",
+    // ...more sectors
+  };
+  
+  return stockSectors[symbol] || "Technology";
 }
