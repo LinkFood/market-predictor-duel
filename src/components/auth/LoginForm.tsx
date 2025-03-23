@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -57,18 +58,25 @@ const LoginForm: React.FC = () => {
       console.log("Attempting login with:", data.email);
       console.log("Remember Me:", data.remember);
       
+      // The signInWithPassword method doesn't accept data in options
+      // Store the remember preference in localStorage or other state management 
+      // instead of trying to pass it to Supabase
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        options: {
-          data: { remember: data.remember }
-        }
       });
       
       if (authError) {
         console.error("Login error:", authError);
         setError(authError.message);
         return;
+      }
+      
+      // If remember me is checked, we could store this preference locally
+      if (data.remember) {
+        localStorage.setItem('rememberUser', 'true');
+      } else {
+        localStorage.removeItem('rememberUser');
       }
       
       setSuccess("Login successful");
