@@ -4,7 +4,7 @@ import AppLayout from "@/components/AppLayout";
 import Dashboard from "@/pages/Dashboard";
 import Leaderboard from "@/pages/Leaderboard";
 import MakePrediction from "@/pages/MakePrediction";
-import PredictionsHistory from "@/pages/PredictionsHistory"; // Import the new component
+import PredictionsHistory from "@/pages/PredictionsHistory";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import ForgotPassword from "@/pages/ForgotPassword";
@@ -15,6 +15,10 @@ import Index from "@/pages/Index";
 import Markets from "@/pages/Markets";
 import Terms from "@/pages/Terms";
 import Privacy from "@/pages/Privacy";
+// Import new bracket pages
+import Brackets from "@/pages/Brackets";
+import CreateBracket from "@/pages/CreateBracket";
+import BracketDetail from "@/pages/BracketDetail";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense, useEffect } from "react";
@@ -116,9 +120,14 @@ const AppRoutes = () => {
           <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="predict" element={<MakePrediction />} />
           <Route path="markets" element={<Markets />} />
-          <Route path="predictions/history" element={<PredictionsHistory />} /> {/* Update with actual component */}
+          <Route path="predictions/history" element={<PredictionsHistory />} />
           <Route path="predictions/:id" element={<PredictionDetail />} />
           <Route path="profile" element={<Profile />} />
+          
+          {/* Stock Duel bracket routes */}
+          <Route path="brackets" element={<Brackets />} />
+          <Route path="brackets/create" element={<CreateBracket />} />
+          <Route path="brackets/:id" element={<BracketDetail />} />
         </Route>
         
         {/* Catch-all route */}

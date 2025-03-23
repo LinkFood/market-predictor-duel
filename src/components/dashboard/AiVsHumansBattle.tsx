@@ -51,12 +51,12 @@ const AiVsHumansBattle: React.FC<AiVsHumansBattleProps> = ({ stats }) => {
         </div>
         
         <div className="flex justify-between items-center">
-          <p className="caption">{stats.totalPredictions} total predictions</p>
+          <p className="caption">{stats.totalPredictions} total competitions</p>
           <Link 
-            to="/app/predict" 
+            to="/app/brackets/create" 
             className="btn-primary btn-sm"
           >
-            Join Battle
+            Create Bracket
           </Link>
         </div>
       </div>

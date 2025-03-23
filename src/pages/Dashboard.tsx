@@ -19,6 +19,7 @@ import PredictionOpportunities from "@/components/dashboard/PredictionOpportunit
 import RecentPredictionsSection from "@/components/dashboard/RecentPredictionsSection";
 import CommunityStats from "@/components/dashboard/CommunityStats";
 import AIPredictionInsights from "@/components/dashboard/AIPredictionInsights";
+import ActiveBrackets from "@/components/dashboard/ActiveBrackets";
 
 // Dashboard Component
 const Dashboard: React.FC = () => {
@@ -27,6 +28,7 @@ const Dashboard: React.FC = () => {
   
   // State for real data
   const [recentPredictions, setRecentPredictions] = useState<Prediction[]>([]);
+  const [activeBrackets, setActiveBrackets] = useState<any[]>([]);
   const [userRank, setUserRank] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

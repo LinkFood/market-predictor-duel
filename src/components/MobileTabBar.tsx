@@ -5,7 +5,8 @@ import {
   TrendingUp, 
   LineChart, 
   Trophy, 
-  User
+  User,
+  GitFork
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,14 +19,14 @@ const tabs = [
     exact: true
   },
   {
+    icon: GitFork,
+    label: 'Brackets',
+    path: '/app/brackets',
+  },
+  {
     icon: TrendingUp,
     label: 'Predict',
     path: '/app/predict',
-  },
-  {
-    icon: LineChart,
-    label: 'History',
-    path: '/app/predictions/history',
   },
   {
     icon: Trophy,

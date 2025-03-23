@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 
 const menuItems = [
   { label: "Dashboard", path: "/app" },
+  { label: "Brackets", path: "/app/brackets" },
   { label: "Make Prediction", path: "/app/predict" },
   { label: "My Predictions", path: "/app/predictions/history" },
   { label: "Leaderboard", path: "/app/leaderboard" },
