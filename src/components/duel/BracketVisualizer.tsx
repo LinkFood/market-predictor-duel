@@ -1,3 +1,4 @@
+
 /**
  * BracketVisualizer Component
  * Visual display of a stock bracket tournament
@@ -131,8 +132,8 @@ const MatchCard: React.FC<MatchCardProps> = ({
   const hasMatch = entry1 && entry2;
   
   // Determine if entry1 won (if completed)
-  const entry1Won = isCompleted && winnerId === entry1?.id;
-  const entry2Won = isCompleted && winnerId === entry2?.id;
+  const entry1Won = isCompleted && completed && winnerId === entry1?.id;
+  const entry2Won = isCompleted && completed && winnerId === entry2?.id;
   
   return (
     <Card className="overflow-hidden border-2 hover:shadow-md transition-shadow">
@@ -310,7 +311,7 @@ function generateRounds(
       round1.push({
         entry1: userEntries[entry1Index],
         entry2: aiEntries[entry2Index],
-        winnerId: match.winnerId,
+        winnerId: match.winnerId || undefined,
         completed: match.completed,
       });
     }
@@ -355,7 +356,7 @@ function generateRounds(
     round3.push({
       entry1: finalEntry1,
       entry2: finalEntry2,
-      winnerId: finalMatch?.winnerId,
+      winnerId: finalMatch?.winnerId || undefined,
       completed: finalMatch?.completed || false,
     });
     

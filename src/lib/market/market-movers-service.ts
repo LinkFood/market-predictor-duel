@@ -1,11 +1,12 @@
+
 /**
  * Market Movers Service
  * Fetches top gaining and losing stocks
  */
 
-import { StockData } from '../types';
+import { StockData } from './types';
 import { callPolygonApi, getDateXDaysAgo } from './api/polygon-api-service';
-import { getMockGainers, getMockLosers } from '@/data/mockData';
+import { getMockTopMovers } from './mock-data-utils';
 import { FEATURES, API_ERRORS } from '../config';
 
 /**
@@ -18,9 +19,10 @@ export async function getTopMovers(): Promise<{
 }> {
   if (FEATURES.enableMockData) {
     console.log('Using mock data for top movers');
+    const { gainers, losers } = getMockTopMovers();
     return {
-      gainers: getMockGainers(),
-      losers: getMockLosers(),
+      gainers,
+      losers,
       usingMockData: true
     };
   }
@@ -44,9 +46,10 @@ export async function getTopMovers(): Promise<{
   } catch (error: any) {
     if (error.name === 'PolygonApiKeyError') {
       console.error('Polygon API key error:', error);
+      const { gainers, losers } = getMockTopMovers();
       return {
-        gainers: getMockGainers(),
-        losers: getMockLosers(),
+        gainers,
+        losers,
         usingMockData: true
       };
     }

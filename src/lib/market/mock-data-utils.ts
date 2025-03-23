@@ -1,3 +1,4 @@
+
 /**
  * Mock Data Utilities
  * Helper functions for generating and managing mock market data
@@ -20,18 +21,19 @@ export function getMockStockData(symbol: string): StockData {
     return {
       symbol: symbol.toUpperCase(),
       name: mockStock.name,
-      price: mockStock.value,
-      change: mockStock.value * (mockStock.changePercent / 100),
+      price: mockStock.price || 150,
+      change: (mockStock.price || 150) * (mockStock.changePercent / 100),
       changePercent: mockStock.changePercent,
       marketCap: Math.random() * 1000000000,
       volume: Math.floor(Math.random() * 10000000),
       pe: 15 + Math.random() * 10,
-      high52Week: mockStock.value * 1.2,
-      low52Week: mockStock.value * 0.8,
+      high52Week: (mockStock.price || 150) * 1.2,
+      low52Week: (mockStock.price || 150) * 0.8,
       avgVolume: Math.floor(Math.random() * 8000000),
       yield: Math.random() * 3,
       beta: 0.8 + Math.random() * 0.7,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
+      sector: mockStock.sector || "Technology"
     };
   }
   
@@ -50,7 +52,8 @@ export function getMockStockData(symbol: string): StockData {
     avgVolume: 6000000,
     yield: 1.2,
     beta: 1.1,
-    datetime: new Date().toISOString()
+    datetime: new Date().toISOString(),
+    sector: "Technology"
   };
 }
 
@@ -68,7 +71,7 @@ export function getMockHistoricalData(
     stock.symbol?.toLowerCase() === symbol.toLowerCase()
   );
   
-  let basePrice = mockStock ? mockStock.value : 150;
+  let basePrice = mockStock ? (mockStock.price || 150) : 150;
   const volatility = 0.02; // 2% daily volatility
   
   // Generate random price series with a slight upward trend
@@ -112,10 +115,13 @@ export function searchMockStocks(query: string): StockData[] {
     .map(stock => ({
       symbol: stock.symbol || stock.name.substring(0, 4).toUpperCase(),
       name: stock.name,
-      price: stock.value,
-      change: stock.value * (stock.changePercent / 100),
+      price: stock.price || 150,
+      change: (stock.price || 150) * (stock.changePercent / 100),
       changePercent: stock.changePercent,
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
+      sector: stock.sector || "Technology",
+      marketCap: Math.random() * 1000000000,
+      volume: Math.floor(Math.random() * 10000000)
     }));
 }
 
@@ -134,11 +140,13 @@ export function getMockTopMovers(): { gainers: StockData[]; losers: StockData[] 
       return {
         symbol,
         name: mockStock.name,
-        price: mockStock.value,
-        change: mockStock.value * (mockStock.changePercent / 100),
+        price: mockStock.price || 150,
+        change: (mockStock.price || 150) * (mockStock.changePercent / 100),
         changePercent: mockStock.changePercent,
         volume: Math.floor(Math.random() * 10000000),
-        datetime: new Date().toISOString()
+        datetime: new Date().toISOString(),
+        sector: mockStock.sector || "Technology",
+        marketCap: Math.random() * 1000000000
       };
     }
     
@@ -154,7 +162,9 @@ export function getMockTopMovers(): { gainers: StockData[]; losers: StockData[] 
       change,
       changePercent,
       volume: Math.floor(Math.random() * 10000000),
-      datetime: new Date().toISOString()
+      datetime: new Date().toISOString(),
+      sector: "Technology",
+      marketCap: Math.random() * 1000000000
     };
   });
   
