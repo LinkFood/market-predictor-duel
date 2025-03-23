@@ -88,10 +88,26 @@ export async function createBracket(
       // Try to insert into Supabase - convert to DB format first
       const dbBracket = modelBracketToDb(bracket);
       
-      // Fixed: Use proper type for insert operation
+      // Fixed: Create a flat object instead of using Record<string, any>
       const { data: bracketResult, error: bracketError } = await supabase
         .from('brackets')
-        .insert(dbBracket)
+        .insert({
+          user_id: dbBracket.user_id,
+          name: dbBracket.name,
+          timeframe: dbBracket.timeframe,
+          size: dbBracket.size,
+          status: dbBracket.status,
+          ai_personality: dbBracket.ai_personality,
+          user_entries: dbBracket.user_entries,
+          ai_entries: dbBracket.ai_entries,
+          matches: dbBracket.matches,
+          winner_id: dbBracket.winner_id,
+          start_date: dbBracket.start_date,
+          end_date: dbBracket.end_date,
+          created_at: dbBracket.created_at,
+          user_points: dbBracket.user_points,
+          ai_points: dbBracket.ai_points
+        })
         .select('*')
         .single();
       

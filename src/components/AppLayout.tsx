@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
@@ -44,8 +45,12 @@ const navItems = [
   }
 ];
 
+interface AppLayoutProps {
+  children?: React.ReactNode;
+}
+
 // Main App Layout Component with responsive design
-const AppLayout: React.FC = () => {
+const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [scrolled, setScrolled] = useState(false);
   const { pageTransitionVariants } = useAnimations();
   const location = useLocation();
@@ -174,7 +179,7 @@ const AppLayout: React.FC = () => {
         animate="enter"
         exit="exit"
       >
-        <Outlet />
+        {children || <Outlet />}
       </motion.main>
       
       {/* Bottom navigation - Mobile only */}
