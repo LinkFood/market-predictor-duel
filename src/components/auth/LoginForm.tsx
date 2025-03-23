@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAuth } from "@/lib/auth-context";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client"; // Import directly from client
+import FormAlerts from "@/components/auth/FormAlerts";
+import { useSupabaseCheck } from "@/hooks/use-supabase-check";
 
 // Define validation schema
 const loginSchema = z.object({
@@ -22,12 +24,13 @@ const loginSchema = z.object({
 export type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginForm: React.FC = () => {
-  const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const { supabaseError } = useSupabaseCheck();
   
   // Get redirect path from location state
   const from = location.state?.from?.pathname || '/app';
@@ -49,17 +52,23 @@ const LoginForm: React.FC = () => {
     try {
       setIsLoading(true);
       setError(null);
+      setSuccess(null);
       
       console.log("Attempting login with:", data.email);
       
-      const { error } = await signIn(data.email, data.password);
+      // Use Supabase client directly for authentication
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password
+      });
       
-      if (error) {
-        console.error("Login error:", error);
-        setError(typeof error === 'string' ? error : 'Failed to sign in');
+      if (authError) {
+        console.error("Login error:", authError);
+        setError(authError.message);
         return;
       }
       
+      setSuccess("Login successful");
       toast({
         title: "Login successful",
         description: "Welcome back to StockDuel!",
@@ -69,7 +78,7 @@ const LoginForm: React.FC = () => {
       navigate(from, { replace: true });
     } catch (err) {
       console.error("Unexpected error during login:", err);
-      setError('An unexpected error occurred');
+      setError('An unexpected error occurred during login');
     } finally {
       setIsLoading(false);
     }
@@ -78,11 +87,12 @@ const LoginForm: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        {error && (
-          <Alert variant="destructive">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+        <FormAlerts 
+          error={error} 
+          success={success} 
+          supabaseError={supabaseError}
+        />
+        
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input 
@@ -96,6 +106,7 @@ const LoginForm: React.FC = () => {
             <p className="text-sm text-red-500">{errors.email.message}</p>
           )}
         </div>
+        
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
@@ -116,6 +127,7 @@ const LoginForm: React.FC = () => {
             <p className="text-sm text-red-500">{errors.password.message}</p>
           )}
         </div>
+        
         <div className="flex items-center space-x-2">
           <Checkbox 
             id="remember" 
