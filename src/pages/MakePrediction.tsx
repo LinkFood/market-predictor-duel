@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, AlertCircle, Server, Brain } from "lucide-react";
@@ -13,10 +12,12 @@ import { getPredictionById } from "@/lib/prediction/user-predictions";
 import {
   PredictionForm,
   AnalyzingProgress,
-  PredictionResult,
   PredictionSidebar,
-  ApiConnectionTest
 } from "@/components/prediction";
+
+// Import direct path for components not in the index
+import PredictionResult from "@/components/prediction/result/PredictionResult";
+import ApiConnectionTest from "@/components/prediction/ApiConnectionTest";
 
 const MakePrediction: React.FC = () => {
   const navigate = useNavigate();

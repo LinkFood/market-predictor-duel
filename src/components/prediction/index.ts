@@ -10,9 +10,11 @@ export { default as StockInfo } from './StockInfo';
 export { default as TimeframeSelector } from './TimeframeSelector';
 export { default as TrendPrediction } from './TrendPrediction';
 export { default as PricePrediction } from './PricePrediction';
+export { default as ApiConnectionTest } from './ApiConnectionTest';
+export { default as PredictionResult } from './result/PredictionResult';
 
 // Re-export hook
 export { usePredictionForm } from './hooks/usePredictionForm';
 
 // Export types
-export type { PredictionFormState } from './hooks/usePredictionForm';
+export type { PredictionFormState, PredictionType } from './hooks/usePredictionForm';

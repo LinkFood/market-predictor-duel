@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Prediction } from "@/types";
+import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
 
 interface SimilarPredictionsCardProps {
   prediction: Prediction;
@@ -19,6 +20,39 @@ export const SimilarPredictionsCard: React.FC<SimilarPredictionsCardProps> = ({
   getTimeframeText
 }) => {
   const navigate = useNavigate();
+  
+  // Helper function to determine prediction status badge
+  const getStatusBadge = (pred: Prediction) => {
+    if (pred.status === "pending") {
+      return (
+        <Badge variant="outline" className="text-xs">
+          Pending
+        </Badge>
+      );
+    }
+    
+    if (isPredictionResolved(pred)) {
+      if (pred.winner === "user" || pred.winner === "both") {
+        return (
+          <Badge className="text-xs">
+            Correct
+          </Badge>
+        );
+      } else {
+        return (
+          <Badge variant="destructive" className="text-xs">
+            Incorrect
+          </Badge>
+        );
+      }
+    }
+    
+    return (
+      <Badge variant="outline" className="text-xs">
+        {pred.status}
+      </Badge>
+    );
+  };
   
   return (
     <Card className="shadow-sm border-0">
@@ -41,12 +75,7 @@ export const SimilarPredictionsCard: React.FC<SimilarPredictionsCardProps> = ({
               >
                 <div className="flex justify-between items-center mb-1">
                   <span className="font-medium">{pred.targetName}</span>
-                  <Badge 
-                    variant={pred.status === "correct" ? "default" : pred.status === "incorrect" ? "destructive" : "outline"}
-                    className="text-xs"
-                  >
-                    {pred.status === "pending" ? "Pending" : pred.status === "correct" ? "Correct" : "Incorrect"}
-                  </Badge>
+                  {getStatusBadge(pred)}
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>{getTimeframeText(pred.timeframe)}</span>

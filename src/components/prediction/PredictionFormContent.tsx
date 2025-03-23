@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { PredictionTimeframe, PredictionCategory, PredictionDirection } from '@/types';
-import { TimeframeSelector } from './TimeframeSelector';
-import { TrendPrediction } from './TrendPrediction';
-import { SearchBar } from './SearchBar';
+import TimeframeSelector from './TimeframeSelector';
+import TrendPrediction from './TrendPrediction';
+import SearchBar from './SearchBar';
 
 interface PredictionFormContentProps {
   error: string | null;

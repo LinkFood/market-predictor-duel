@@ -4,6 +4,7 @@ import { PredictionTimeframe, PredictionCategory, PredictionDirection } from '@/
 import { useToast } from '@/components/ui/use-toast';
 import { useAuth } from '@/lib/auth-context';
 import { useSubscription } from '@/lib/subscription/subscription-context';
+import { trackEvent, trackFeatureUsage } from '@/lib/analytics';
 
 // Define prediction type for form state (string enum)
 export type PredictionType = 'trend' | 'price';
@@ -72,6 +73,15 @@ export const usePredictionForm = () => {
         variant: "destructive"
       });
       return false;
+    }
+    
+    // Track the prediction attempt
+    if (user) {
+      trackEvent('prediction_form_submitted', {
+        userId: user.id,
+        targetType: formState.targetType,
+        timeframe: formState.timeframe
+      });
     }
     
     return true;

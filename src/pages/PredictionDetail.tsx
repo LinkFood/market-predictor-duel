@@ -36,7 +36,9 @@ const PredictionDetail: React.FC = () => {
             if (fetchedPrediction) {
               console.log("Fetched prediction from API:", fetchedPrediction);
               // Convert to the application's Prediction type
-              setPrediction(adaptPrediction(fetchedPrediction));
+              const adaptedPrediction = adaptPrediction(fetchedPrediction);
+              console.log("Adapted prediction:", adaptedPrediction);
+              setPrediction(adaptedPrediction);
               setIsLoading(false);
               return;
             }

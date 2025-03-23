@@ -11,7 +11,7 @@ import { PredictionComparison } from "./PredictionComparison";
 import { PredictionResults } from "./PredictionResults";
 import { AIAnalysisCard } from "./AIAnalysisCard";
 import { Prediction } from "@/types";
-import { isPredictionResolved } from "@/lib/prediction/prediction-adapter";
+import { isPredictionResolved, adaptToLibPrediction } from "@/lib/prediction/prediction-adapter";
 import { adaptPrediction } from "@/lib/prediction/prediction-adapter";
 
 interface PredictionSummaryCardProps {
@@ -34,6 +34,9 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
   
   // Check if prediction is resolved
   const isResolved = isPredictionResolved(adaptedPrediction);
+  
+  // If needed for any lib function that expects the lib prediction type
+  const libPrediction = adaptToLibPrediction(adaptedPrediction);
   
   return (
     <Card className="shadow-md border-0 overflow-hidden">
@@ -59,7 +62,7 @@ export const PredictionSummaryCard: React.FC<PredictionSummaryCardProps> = ({
           
           <PredictionCards prediction={adaptedPrediction} />
           
-          <PredictionComparison prediction={adaptedPrediction} />
+          <PredictionComparison prediction={libPrediction} />
           
           {isResolved && adaptedPrediction.endValue && (
             <PredictionResults 

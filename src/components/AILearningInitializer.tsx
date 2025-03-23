@@ -1,9 +1,10 @@
+
 /**
  * AI Learning System Initializer
  * Loads and initializes the AI learning system without rendering any UI
  */
 import { useEffect } from 'react';
-import usePredictionLearning from '@/hooks/usePredictionLearning';
+import { usePredictionLearning } from '@/hooks/usePredictionLearning';
 
 const AILearningInitializer = () => {
   // Initialize the learning system

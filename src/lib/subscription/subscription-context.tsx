@@ -26,13 +26,14 @@ interface FeatureLimits {
 }
 
 // Feature availability by plan
-interface FeatureAvailability {
+export interface FeatureAvailability {
   aiAnalysisAccess: boolean;
   advancedCharts: boolean;
   exportData: boolean;
   customAlerts: boolean;
   prioritySupport: boolean;
   beta: boolean;
+  predictions: boolean; // Added for compatibility
 }
 
 // Available features and their accessibility per plan
@@ -43,7 +44,8 @@ const PLAN_FEATURES: Record<SubscriptionPlan, FeatureAvailability> = {
     exportData: false,
     customAlerts: false,
     prioritySupport: false,
-    beta: false
+    beta: false,
+    predictions: true
   },
   [SubscriptionPlan.BASIC]: {
     aiAnalysisAccess: true,
@@ -51,7 +53,8 @@ const PLAN_FEATURES: Record<SubscriptionPlan, FeatureAvailability> = {
     exportData: true,
     customAlerts: false,
     prioritySupport: false,
-    beta: false
+    beta: false,
+    predictions: true
   },
   [SubscriptionPlan.PRO]: {
     aiAnalysisAccess: true,
@@ -59,7 +62,8 @@ const PLAN_FEATURES: Record<SubscriptionPlan, FeatureAvailability> = {
     exportData: true,
     customAlerts: true,
     prioritySupport: true,
-    beta: true
+    beta: true,
+    predictions: true
   }
 };
 
@@ -106,8 +110,76 @@ const PLAN_LIMITS: Record<SubscriptionPlan, FeatureLimits> = {
   }
 };
 
+// For plan comparison table
+export interface PlanFeature {
+  feature: string;
+  free: string | number | boolean;
+  basic: string | number | boolean;
+  pro: string | number | boolean;
+}
+
+// Plan comparison data for display
+export function getPlanComparisonData(): PlanFeature[] {
+  return [
+    {
+      feature: "Daily predictions",
+      free: PLAN_LIMITS[SubscriptionPlan.FREE].predictions.daily,
+      basic: PLAN_LIMITS[SubscriptionPlan.BASIC].predictions.daily,
+      pro: PLAN_LIMITS[SubscriptionPlan.PRO].predictions.daily
+    },
+    {
+      feature: "API calls per day",
+      free: PLAN_LIMITS[SubscriptionPlan.FREE].apiCalls.daily,
+      basic: PLAN_LIMITS[SubscriptionPlan.BASIC].apiCalls.daily,
+      pro: PLAN_LIMITS[SubscriptionPlan.PRO].apiCalls.daily
+    },
+    {
+      feature: "Historical data access",
+      free: PLAN_LIMITS[SubscriptionPlan.FREE].historicalData.days + " days",
+      basic: PLAN_LIMITS[SubscriptionPlan.BASIC].historicalData.days + " days",
+      pro: PLAN_LIMITS[SubscriptionPlan.PRO].historicalData.days + " days"
+    },
+    {
+      feature: "AI analysis insights",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].aiAnalysisAccess,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].aiAnalysisAccess,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].aiAnalysisAccess
+    },
+    {
+      feature: "Advanced charting",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].advancedCharts,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].advancedCharts,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].advancedCharts
+    },
+    {
+      feature: "Data export",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].exportData,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].exportData,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].exportData
+    },
+    {
+      feature: "Custom alerts",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].customAlerts,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].customAlerts,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].customAlerts
+    },
+    {
+      feature: "Priority support",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].prioritySupport,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].prioritySupport,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].prioritySupport
+    },
+    {
+      feature: "Beta features access",
+      free: PLAN_FEATURES[SubscriptionPlan.FREE].beta,
+      basic: PLAN_FEATURES[SubscriptionPlan.BASIC].beta,
+      pro: PLAN_FEATURES[SubscriptionPlan.PRO].beta
+    }
+  ];
+}
+
 // Usage data type
-interface UsageData {
+export interface UsageData {
   predictions?: {
     used: number;
     limit: number;
@@ -116,6 +188,11 @@ interface UsageData {
     used: number;
     limit: number;
   };
+  predictionsThisMonth: number;
+  predictionsLimit: number;
+  apiCallsToday: number;
+  apiCallsLimit: number;
+  lastUpdated: Date;
 }
 
 // Context type
@@ -211,15 +288,24 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
         }
         
         // Generate mock usage data for now
+        const planLimits = PLAN_LIMITS[data?.plan as SubscriptionPlan || SubscriptionPlan.FREE];
+        const predictionsUsed = 2;
+        const apiCallsUsed = 15;
+        
         setUsageData({
           predictions: {
-            used: 2,
-            limit: PLAN_LIMITS[data?.plan as SubscriptionPlan || SubscriptionPlan.FREE].predictions.daily
+            used: predictionsUsed,
+            limit: planLimits.predictions.daily
           },
           apiCalls: {
-            used: 15,
-            limit: PLAN_LIMITS[data?.plan as SubscriptionPlan || SubscriptionPlan.FREE].apiCalls.daily
-          }
+            used: apiCallsUsed,
+            limit: planLimits.apiCalls.daily
+          },
+          predictionsThisMonth: predictionsUsed,
+          predictionsLimit: planLimits.predictions.daily,
+          apiCallsToday: apiCallsUsed,
+          apiCallsLimit: planLimits.apiCalls.daily,
+          lastUpdated: new Date()
         });
       } catch (err) {
         console.error('Unexpected error fetching subscription:', err);
@@ -266,16 +352,26 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     try {
       // In a real implementation, this would hit an API endpoint
       // For now, we'll just update the mock data slightly
-      setUsageData(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          predictions: {
-            used: Math.min((prev.predictions?.used || 0) + 1, 
-                          PLAN_LIMITS[currentPlan].predictions.daily),
-            limit: PLAN_LIMITS[currentPlan].predictions.daily
-          }
-        };
+      const planLimits = PLAN_LIMITS[currentPlan];
+      const predictionsUsed = Math.min((usageData?.predictions?.used || 0) + 1, 
+                                      planLimits.predictions.daily);
+      const apiCallsUsed = Math.min((usageData?.apiCalls?.used || 0) + 1,
+                                   planLimits.apiCalls.daily);
+      
+      setUsageData({
+        predictions: {
+          used: predictionsUsed,
+          limit: planLimits.predictions.daily
+        },
+        apiCalls: {
+          used: apiCallsUsed,
+          limit: planLimits.apiCalls.daily
+        },
+        predictionsThisMonth: predictionsUsed,
+        predictionsLimit: planLimits.predictions.daily,
+        apiCallsToday: apiCallsUsed,
+        apiCallsLimit: planLimits.apiCalls.daily,
+        lastUpdated: new Date()
       });
     } catch (err) {
       console.error('Error refreshing usage data:', err);

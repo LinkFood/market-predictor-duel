@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { Brain, TrendingUp, Zap, BarChart3 } from 'lucide-react';
-import usePredictionLearning from '@/hooks/usePredictionLearning';
+import { usePredictionLearning } from '@/hooks/usePredictionLearning';
 import { Button } from '@/components/ui/button';
 
 interface PatternSummary {

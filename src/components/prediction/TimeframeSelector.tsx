@@ -4,14 +4,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 interface TimeframeSelectorProps {
   timeframe: string;
-  setTimeframe: (value: string) => void;
+  onChange: (value: string) => void;
 }
 
-const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({ timeframe, setTimeframe }) => {
+const TimeframeSelector: React.FC<TimeframeSelectorProps> = ({ timeframe, onChange }) => {
   return (
     <div className="space-y-2">
       <label className="text-sm font-medium">Prediction timeframe</label>
-      <Select value={timeframe} onValueChange={setTimeframe}>
+      <Select value={timeframe} onValueChange={onChange}>
         <SelectTrigger>
           <SelectValue placeholder="Select timeframe" />
         </SelectTrigger>

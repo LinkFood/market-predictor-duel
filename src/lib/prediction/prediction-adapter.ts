@@ -6,10 +6,16 @@ import { Prediction as LibPrediction } from '@/lib/prediction/types';
  * Converts between different Prediction type formats to ensure compatibility across the application
  */
 export function adaptPrediction(prediction: LibPrediction | any): PredictionType {
+  // If target type is not provided, use a default
+  const targetType = prediction.targetType || prediction.target_type || 'stock';
+  
+  // Add a default ticker if needed (for library compatibility)
+  const ticker = prediction.ticker || prediction.targetName || prediction.target_name || '';
+  
   return {
     id: prediction.id,
     userId: prediction.userId || prediction.user_id,
-    targetType: prediction.targetType || prediction.target_type,
+    targetType: targetType,
     targetName: prediction.targetName || prediction.target_name || prediction.stockName,
     userPrediction: prediction.userPrediction || prediction.user_prediction,
     aiPrediction: prediction.aiPrediction || prediction.ai_prediction,
@@ -34,6 +40,36 @@ export function adaptPrediction(prediction: LibPrediction | any): PredictionType
     resolvedAt: prediction.resolvedAt || prediction.resolved_at,
     outcome: prediction.outcome,
     points: prediction.points,
+    
+    // Additional fields for library compatibility
+    ticker: ticker
+  };
+}
+
+/**
+ * Adapts from application Prediction type to library Prediction type
+ */
+export function adaptToLibPrediction(prediction: PredictionType): LibPrediction {
+  return {
+    id: prediction.id,
+    userId: prediction.userId,
+    ticker: prediction.ticker || prediction.targetName,
+    targetName: prediction.targetName,
+    targetType: prediction.targetType,
+    predictionType: 'trend', // Default to trend
+    userPrediction: prediction.userPrediction,
+    aiPrediction: prediction.aiPrediction,
+    aiConfidence: prediction.aiConfidence,
+    timeframe: prediction.timeframe,
+    startingValue: prediction.startingValue,
+    endValue: prediction.finalValue || prediction.endValue,
+    status: prediction.status,
+    points: prediction.points,
+    createdAt: prediction.createdAt,
+    resolvesAt: prediction.resolvesAt,
+    resolvedAt: prediction.resolvedAt,
+    aiAnalysis: prediction.aiAnalysis,
+    outcome: prediction.outcome
   };
 }
 

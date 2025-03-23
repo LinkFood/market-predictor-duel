@@ -18,6 +18,9 @@ export function usePredictionLearning() {
   const [patterns, setPatterns] = useState<PredictionPattern[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [lastAnalysis, setLastAnalysis] = useState<Date | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Load learning patterns from the database
   const loadPatterns = useCallback(async () => {
@@ -47,6 +50,24 @@ export function usePredictionLearning() {
     }
   }, [user]);
 
+  // Trigger an analysis manually
+  const triggerAnalysis = async () => {
+    if (!user || isAnalyzing) return;
+    
+    try {
+      setIsAnalyzing(true);
+      await analyzePredictionBatch();
+      setLastAnalysis(new Date());
+      await loadPatterns();
+      toast.success("Analysis completed successfully");
+    } catch (err) {
+      console.error("Error during analysis:", err);
+      toast.error("Failed to complete analysis");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   // Toggle learning system
   const toggleLearningSystem = useCallback(() => {
     setIsEnabled(prev => !prev);
@@ -67,6 +88,8 @@ export function usePredictionLearning() {
       // Schedule routine analysis (every 60 minutes)
       cleanup = scheduleRoutineAnalysis(60);
       console.log('Prediction learning system initialized and scheduled');
+      setIsInitialized(true);
+      setLastAnalysis(new Date());
     }
     
     return () => {
@@ -80,6 +103,13 @@ export function usePredictionLearning() {
     isLoading,
     error,
     toggleLearningSystem,
-    refreshPatterns: loadPatterns
+    refreshPatterns: loadPatterns,
+    isInitialized,
+    lastAnalysis,
+    isAnalyzing,
+    triggerAnalysis
   };
 }
+
+// Export for compatibility with existing code
+export default usePredictionLearning;
