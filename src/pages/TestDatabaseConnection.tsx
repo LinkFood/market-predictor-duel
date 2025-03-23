@@ -2,7 +2,7 @@
 import React from 'react';
 import TestSupabaseConnection from '../components/TestSupabaseConnection';
 import TestBracketsTable from '../components/TestBracketsTable';
-import { AppLayout } from '../components/AppLayout';
+import AppLayout from '../components/AppLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const TestDatabaseConnection = () => {

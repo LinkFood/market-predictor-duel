@@ -10,6 +10,7 @@ import { generateAIStockPicks } from './ai-stock-picker';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { logError } from '../error-handling';
+import { dbBracketToModel, modelBracketToDb } from './bracket-adapter';
 
 // Create a new bracket
 export async function createBracket(
@@ -83,25 +84,12 @@ export async function createBracket(
     };
     
     try {
-      // Try to insert into Supabase
+      // Try to insert into Supabase - convert to DB format first
+      const dbBracket = modelBracketToDb(bracket);
+      
       const { data: bracketResult, error: bracketError } = await supabase
         .from('brackets')
-        .insert({
-          user_id: userId,
-          name: bracket.name,
-          timeframe: bracket.timeframe,
-          size: bracket.size,
-          status: bracket.status,
-          ai_personality: bracket.aiPersonality,
-          user_entries: bracket.userEntries,
-          ai_entries: bracket.aiEntries,
-          matches: bracket.matches,
-          start_date: bracket.startDate,
-          end_date: bracket.endDate,
-          created_at: bracket.createdAt,
-          user_points: 0,
-          ai_points: 0
-        })
+        .insert(dbBracket)
         .select('*')
         .single();
       
@@ -110,23 +98,7 @@ export async function createBracket(
       }
       
       // Convert database record to application model
-      return {
-        id: bracketResult.id,
-        userId: bracketResult.user_id,
-        name: bracketResult.name,
-        timeframe: bracketResult.timeframe,
-        size: bracketResult.size,
-        status: bracketResult.status,
-        aiPersonality: bracketResult.ai_personality,
-        userEntries: bracketResult.user_entries,
-        aiEntries: bracketResult.ai_entries,
-        matches: bracketResult.matches,
-        startDate: bracketResult.start_date,
-        endDate: bracketResult.end_date,
-        createdAt: bracketResult.created_at,
-        userPoints: 0,
-        aiPoints: 0
-      };
+      return dbBracketToModel(bracketResult);
     } catch (dbError) {
       console.warn("Using mock bracket storage due to Supabase error:", dbError);
       
@@ -179,24 +151,7 @@ export async function getUserBrackets(): Promise<Bracket[]> {
       }
       
       // Convert database records to application models
-      const brackets: Bracket[] = bracketsData.map(bracket => ({
-        id: bracket.id,
-        userId: bracket.user_id,
-        name: bracket.name,
-        timeframe: bracket.timeframe,
-        size: bracket.size,
-        status: bracket.status,
-        aiPersonality: bracket.ai_personality,
-        userEntries: bracket.user_entries,
-        aiEntries: bracket.ai_entries,
-        matches: bracket.matches,
-        winnerId: bracket.winner_id,
-        startDate: bracket.start_date,
-        endDate: bracket.end_date,
-        createdAt: bracket.created_at,
-        userPoints: bracket.user_points || 0,
-        aiPoints: bracket.ai_points || 0
-      }));
+      const brackets: Bracket[] = bracketsData.map(dbBracketToModel);
       
       return brackets;
     } catch (dbError) {
@@ -229,6 +184,467 @@ export async function getUserBrackets(): Promise<Bracket[]> {
     
     throw error;
   }
+}
+
+// Get a single bracket by ID
+export async function getBracketById(bracketId: string): Promise<Bracket> {
+  try {
+    try {
+      // Try to get bracket from Supabase
+      const { data: bracket, error } = await supabase
+        .from('brackets')
+        .select('*')
+        .eq('id', bracketId)
+        .single();
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (!bracket) {
+        throw new Error(`Bracket with ID ${bracketId} not found`);
+      }
+      
+      // Convert database record to application model
+      return dbBracketToModel(bracket);
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Check localStorage for mock brackets
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const bracket = mockBrackets.find((b: Bracket) => b.id === bracketId);
+        
+        if (bracket) {
+          return bracket;
+        }
+      } catch (e) {
+        console.error("Error reading mock brackets from localStorage:", e);
+      }
+      
+      // For demo/development, check if this is a demo bracket ID
+      if (bracketId === 'bracket-demo1' || bracketId === 'bracket-demo2') {
+        const demoUserId = "user-123";
+        const demoBrackets = generateDemoBrackets(demoUserId);
+        const demoBracket = demoBrackets.find(b => b.id === bracketId);
+        
+        if (demoBracket) {
+          return demoBracket;
+        }
+      }
+      
+      // Fallback to mock bracket for development
+      return createMockBracket(bracketId);
+    }
+  } catch (error) {
+    console.error(`Error getting bracket ${bracketId}:`, error);
+    throw new Error('Failed to get bracket');
+  }
+}
+
+// Complete a bracket (simulate the bracket completion process)
+export async function completeBracket(id: string): Promise<Bracket> {
+  try {
+    // Get the current bracket
+    const bracket = await getBracketById(id);
+    
+    // Update match results
+    const updatedMatches = bracket.matches.map(match => {
+      if (!match.completed) {
+        // Randomly determine a winner
+        const winner = Math.random() > 0.5 ? match.entry1Id : match.entry2Id;
+        return {
+          ...match,
+          completed: true,
+          winnerId: winner
+        };
+      }
+      return match;
+    });
+    
+    // Randomly calculate final percentages
+    const userPoints = Math.random() * 10;
+    const aiPoints = Math.random() * 10;
+    
+    // Determine overall winner
+    const winnerId = userPoints > aiPoints ? 'user' : 'ai';
+    
+    // Create updated bracket
+    const updatedBracket: Bracket = {
+      ...bracket,
+      status: 'completed' as BracketStatus,
+      matches: updatedMatches,
+      userPoints,
+      aiPoints,
+      winnerId
+    };
+    
+    try {
+      // Try to update in Supabase
+      const dbBracket = modelBracketToDb(updatedBracket);
+      
+      const { error } = await supabase
+        .from('brackets')
+        .update({
+          status: dbBracket.status,
+          winner_id: dbBracket.winner_id,
+          user_points: dbBracket.user_points,
+          ai_points: dbBracket.ai_points,
+          matches: dbBracket.matches,
+          user_entries: dbBracket.user_entries,
+          ai_entries: dbBracket.ai_entries
+        })
+        .eq('id', id);
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Update in localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
+          b.id === id ? updatedBracket : b
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
+      } catch (localStorageError) {
+        console.error("Error updating mock bracket in localStorage:", localStorageError);
+      }
+    }
+    
+    // In a real implementation, save to database
+    console.log('Completed bracket:', updatedBracket);
+    
+    return updatedBracket;
+  } catch (error) {
+    console.error(`Error completing bracket ${id}:`, error);
+    throw new Error('Failed to complete bracket');
+  }
+}
+
+// Update bracket with new market data
+export async function updateBracketPrices(bracketId: string): Promise<Bracket> {
+  try {
+    // Get the bracket
+    const bracket = await getBracketById(bracketId);
+    
+    // Skip if bracket is already completed
+    if (bracket.status === 'completed') {
+      return bracket;
+    }
+    
+    // Update user entries with current prices
+    for (const entry of bracket.userEntries) {
+      // In a real implementation, we would fetch the latest stock prices
+      // but for now, simulate by generating random prices
+      entry.endPrice = getRandomPrice(entry.startPrice * 0.9, entry.startPrice * 1.1);
+      entry.percentChange = calculatePercentChange(entry.startPrice, entry.endPrice);
+    }
+    
+    // Update AI entries with current prices
+    for (const entry of bracket.aiEntries) {
+      // In a real implementation, we would fetch the latest stock prices
+      // but for now, simulate by generating random prices
+      entry.endPrice = getRandomPrice(entry.startPrice * 0.9, entry.startPrice * 1.1);
+      entry.percentChange = calculatePercentChange(entry.startPrice, entry.endPrice);
+    }
+    
+    // Check if the bracket should be completed
+    const now = new Date();
+    const endDate = new Date(bracket.endDate);
+    
+    if (now >= endDate) {
+      bracket.status = 'completed';
+      
+      // Calculate results and determine winner
+      const userPoints = calculateTotalPoints(bracket.userEntries);
+      const aiPoints = calculateTotalPoints(bracket.aiEntries);
+      
+      bracket.userPoints = userPoints;
+      bracket.aiPoints = aiPoints;
+      bracket.winnerId = userPoints > aiPoints ? 'user' : 'ai';
+    } else if (bracket.status === 'pending') {
+      // Activate the bracket if it's past the start date
+      const startDate = new Date(bracket.startDate);
+      if (now >= startDate) {
+        bracket.status = 'active';
+      }
+    }
+    
+    try {
+      // Try to update in Supabase - convert to DB format first
+      const dbBracket = modelBracketToDb(bracket);
+      
+      const { error } = await supabase
+        .from('brackets')
+        .update({
+          status: dbBracket.status,
+          winner_id: dbBracket.winner_id,
+          user_points: dbBracket.user_points,
+          ai_points: dbBracket.ai_points,
+          matches: dbBracket.matches,
+          user_entries: dbBracket.user_entries,
+          ai_entries: dbBracket.ai_entries
+        })
+        .eq('id', bracketId);
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Update in localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
+          b.id === bracketId ? bracket : b
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
+      } catch (localStorageError) {
+        console.error("Error updating mock bracket in localStorage:", localStorageError);
+      }
+    }
+    
+    return bracket;
+  } catch (error) {
+    console.error(`Error updating bracket ${bracketId}:`, error);
+    throw error;
+  }
+}
+
+// Delete a bracket by ID
+export async function deleteBracket(bracketId: string): Promise<boolean> {
+  try {
+    // Attempt to get current user from Supabase
+    let userId = "user-123"; // Default user ID for mock mode
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (!userError && userData.user) {
+        userId = userData.user.id;
+      } else {
+        console.warn("Using mock user authentication");
+      }
+    } catch (e) {
+      console.warn("Using mock user authentication, Supabase error:", e);
+    }
+    
+    try {
+      // Try to delete from Supabase
+      const { error } = await supabase
+        .from('brackets')
+        .delete()
+        .eq('id', bracketId)
+        .eq('user_id', userId); // Ensure the bracket belongs to the user
+      
+      if (error) {
+        throw error;
+      }
+    } catch (dbError) {
+      console.warn("Using mock bracket storage due to Supabase error:", dbError);
+      
+      // Delete from localStorage if using mock storage
+      try {
+        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
+        const filteredBrackets = mockBrackets.filter((b: Bracket) => 
+          !(b.id === bracketId && b.userId === userId)
+        );
+        localStorage.setItem('mockBrackets', JSON.stringify(filteredBrackets));
+      } catch (localStorageError) {
+        console.error("Error deleting mock bracket from localStorage:", localStorageError);
+        throw localStorageError;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`Error deleting bracket ${bracketId}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Determine market cap category
+ */
+function determineMarketCap(marketCap: number): "large" | "mid" | "small" {
+  if (marketCap >= 10000000000) { // $10B+
+    return "large";
+  } else if (marketCap >= 2000000000) { // $2B+
+    return "mid";
+  } else {
+    return "small";
+  }
+}
+
+/**
+ * Helper functions
+ */
+function generateBracketName(timeframe: BracketTimeframe, aiPersonality: AIPersonality): string {
+  const timeframeNames = {
+    daily: 'Daily',
+    weekly: 'Weekly',
+    monthly: 'Monthly'
+  };
+  
+  const themes = [
+    'Tech Showdown',
+    'Market Battle',
+    'Stock Duel',
+    'Sector Clash',
+    'Bull vs Bear',
+    'Trading Faceoff'
+  ];
+  
+  return `${timeframeNames[timeframe]} ${themes[Math.floor(Math.random() * themes.length)]}`;
+}
+
+function getEndDate(timeframe: BracketTimeframe): string {
+  const now = new Date();
+  switch (timeframe) {
+    case 'daily':
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    case 'weekly':
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    case 'monthly':
+      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
+    default:
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  }
+}
+
+function calculateEndDate(timeframe: BracketTimeframe): Date {
+  const now = new Date();
+  switch (timeframe) {
+    case 'daily':
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    case 'weekly':
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    case 'monthly':
+      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    default:
+      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+}
+
+function generateInitialMatches(size: BracketSize) {
+  if (size === 3) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false }
+    ];
+  }
+  
+  if (size === 6) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false },
+      { roundNumber: 2, matchNumber: 1, completed: false }
+    ];
+  }
+  
+  if (size === 9) {
+    return [
+      { roundNumber: 1, matchNumber: 1, completed: false },
+      { roundNumber: 1, matchNumber: 2, completed: false },
+      { roundNumber: 1, matchNumber: 3, completed: false },
+      { roundNumber: 1, matchNumber: 4, completed: false },
+      { roundNumber: 2, matchNumber: 1, completed: false },
+      { roundNumber: 2, matchNumber: 2, completed: false },
+      { roundNumber: 3, matchNumber: 1, completed: false }
+    ];
+  }
+  
+  return [];
+}
+
+function getRandomPrice(min: number, max: number): number {
+  return parseFloat((min + Math.random() * (max - min)).toFixed(2));
+}
+
+function getRandomMarketCap(): "large" | "mid" | "small" {
+  const options: ["large", "mid", "small"] = ["large", "mid", "small"];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function getStockName(symbol: string): string {
+  const stockNames: Record<string, string> = {
+    AAPL: "Apple Inc.",
+    MSFT: "Microsoft Corporation",
+    AMZN: "Amazon.com Inc.",
+    GOOGL: "Alphabet Inc.",
+    GOOG: "Alphabet Inc.",
+    META: "Meta Platforms Inc.",
+    TSLA: "Tesla Inc.",
+    NVDA: "NVIDIA Corporation",
+    V: "Visa Inc.",
+    JPM: "JPMorgan Chase & Co.",
+    JNJ: "Johnson & Johnson",
+    UNH: "UnitedHealth Group Inc.",
+    PG: "Procter & Gamble Co.",
+    MA: "Mastercard Inc.",
+    HD: "Home Depot Inc.",
+    BAC: "Bank of America Corp.",
+    XOM: "Exxon Mobil Corporation",
+    AVGO: "Broadcom Inc.",
+    PFE: "Pfizer Inc.",
+    CSCO: "Cisco Systems Inc."
+  };
+  
+  return stockNames[symbol] || `${symbol} Inc.`;
+}
+
+function getStockSector(symbol: string): string {
+  const stockSectors: Record<string, string> = {
+    AAPL: "Technology",
+    MSFT: "Technology",
+    AMZN: "Consumer Cyclical",
+    GOOGL: "Technology",
+    GOOG: "Technology",
+    META: "Technology",
+    TSLA: "Automotive",
+    NVDA: "Technology",
+    V: "Financial Services",
+    JPM: "Financial Services",
+    JNJ: "Healthcare",
+    UNH: "Healthcare",
+    PG: "Consumer Defensive",
+    MA: "Financial Services",
+    HD: "Consumer Cyclical",
+    BAC: "Financial Services",
+    XOM: "Energy",
+    AVGO: "Technology",
+    PFE: "Healthcare",
+    CSCO: "Technology"
+  };
+  
+  return stockSectors[symbol] || "Technology";
+}
+
+/**
+ * Calculate percent change between two prices
+ */
+function calculatePercentChange(startPrice: number, endPrice: number): number {
+  return ((endPrice - startPrice) / startPrice) * 100;
+}
+
+/**
+ * Calculate total points for a set of entries
+ */
+function calculateTotalPoints(entries: BracketEntry[]): number {
+  return entries.reduce((total, entry) => {
+    if (entry.percentChange === undefined) return total;
+    
+    // For bearish predictions, invert the percent change
+    const adjustedChange = entry.direction === 'bearish' 
+      ? -entry.percentChange 
+      : entry.percentChange;
+    
+    return total + adjustedChange;
+  }, 0);
 }
 
 /**
@@ -506,482 +922,4 @@ function generateDemoBrackets(userId: string): Bracket[] {
       aiPoints: 2.14
     }
   ];
-}
-
-/**
- * Get a single bracket by ID
- */
-export async function getBracketById(bracketId: string): Promise<Bracket> {
-  try {
-    try {
-      // Try to get bracket from Supabase
-      const { data: bracket, error } = await supabase
-        .from('brackets')
-        .select('*')
-        .eq('id', bracketId)
-        .single();
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (!bracket) {
-        throw new Error(`Bracket with ID ${bracketId} not found`);
-      }
-      
-      // Convert database record to application model
-      return {
-        id: bracket.id,
-        userId: bracket.user_id,
-        name: bracket.name,
-        timeframe: bracket.timeframe,
-        size: bracket.size,
-        status: bracket.status,
-        aiPersonality: bracket.ai_personality,
-        userEntries: bracket.user_entries,
-        aiEntries: bracket.ai_entries,
-        matches: bracket.matches,
-        winnerId: bracket.winner_id,
-        startDate: bracket.start_date,
-        endDate: bracket.end_date,
-        createdAt: bracket.created_at,
-        userPoints: bracket.user_points || 0,
-        aiPoints: bracket.ai_points || 0
-      };
-    } catch (dbError) {
-      console.warn("Using mock bracket storage due to Supabase error:", dbError);
-      
-      // Check localStorage for mock brackets
-      try {
-        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
-        const bracket = mockBrackets.find((b: Bracket) => b.id === bracketId);
-        
-        if (bracket) {
-          return bracket;
-        }
-      } catch (e) {
-        console.error("Error reading mock brackets from localStorage:", e);
-      }
-      
-      // For demo/development, check if this is a demo bracket ID
-      if (bracketId === 'bracket-demo1' || bracketId === 'bracket-demo2') {
-        const demoUserId = "user-123";
-        const demoBrackets = generateDemoBrackets(demoUserId);
-        const demoBracket = demoBrackets.find(b => b.id === bracketId);
-        
-        if (demoBracket) {
-          return demoBracket;
-        }
-      }
-      
-      // Fallback to mock bracket for development
-      return createMockBracket(bracketId);
-    }
-  } catch (error) {
-    console.error(`Error getting bracket ${bracketId}:`, error);
-    throw new Error('Failed to get bracket');
-  }
-}
-
-// Complete a bracket (simulate the bracket completion process)
-export async function completeBracket(id: string): Promise<Bracket> {
-  try {
-    // Get the current bracket
-    const bracket = await getBracketById(id);
-    
-    // Update match results
-    const updatedMatches = bracket.matches.map(match => {
-      if (!match.completed) {
-        // Randomly determine a winner
-        const winner = Math.random() > 0.5 ? match.entry1Id : match.entry2Id;
-        return {
-          ...match,
-          completed: true,
-          winnerId: winner
-        };
-      }
-      return match;
-    });
-    
-    // Randomly calculate final percentages
-    const userPoints = Math.random() * 10;
-    const aiPoints = Math.random() * 10;
-    
-    // Determine overall winner
-    const winnerId = userPoints > aiPoints ? 'user' : 'ai';
-    
-    // Create updated bracket
-    const updatedBracket: Bracket = {
-      ...bracket,
-      status: 'completed' as BracketStatus,
-      matches: updatedMatches,
-      userPoints,
-      aiPoints,
-      winnerId
-    };
-    
-    try {
-      // Try to update in Supabase
-      const { error } = await supabase
-        .from('brackets')
-        .update({
-          user_entries: updatedBracket.userEntries,
-          ai_entries: updatedBracket.aiEntries,
-          status: updatedBracket.status,
-          winner_id: updatedBracket.winnerId,
-          user_points: updatedBracket.userPoints,
-          ai_points: updatedBracket.aiPoints,
-          matches: updatedBracket.matches
-        })
-        .eq('id', id);
-      
-      if (error) {
-        throw error;
-      }
-    } catch (dbError) {
-      console.warn("Using mock bracket storage due to Supabase error:", dbError);
-      
-      // Update in localStorage if using mock storage
-      try {
-        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
-        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
-          b.id === id ? updatedBracket : b
-        );
-        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
-      } catch (localStorageError) {
-        console.error("Error updating mock bracket in localStorage:", localStorageError);
-      }
-    }
-    
-    // In a real implementation, save to database
-    console.log('Completed bracket:', updatedBracket);
-    
-    return updatedBracket;
-  } catch (error) {
-    console.error(`Error completing bracket ${id}:`, error);
-    throw new Error('Failed to complete bracket');
-  }
-}
-
-// Helper functions
-function generateBracketName(timeframe: BracketTimeframe, aiPersonality: AIPersonality): string {
-  const timeframeNames = {
-    daily: 'Daily',
-    weekly: 'Weekly',
-    monthly: 'Monthly'
-  };
-  
-  const themes = [
-    'Tech Showdown',
-    'Market Battle',
-    'Stock Duel',
-    'Sector Clash',
-    'Bull vs Bear',
-    'Trading Faceoff'
-  ];
-  
-  return `${timeframeNames[timeframe]} ${themes[Math.floor(Math.random() * themes.length)]}`;
-}
-
-function getEndDate(timeframe: BracketTimeframe): string {
-  const now = new Date();
-  switch (timeframe) {
-    case 'daily':
-      return new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-    case 'weekly':
-      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    case 'monthly':
-      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
-    default:
-      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
-  }
-}
-
-function calculateEndDate(timeframe: BracketTimeframe): Date {
-  const now = new Date();
-  switch (timeframe) {
-    case 'daily':
-      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    case 'weekly':
-      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    case 'monthly':
-      return new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-    default:
-      return new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  }
-}
-
-function generateInitialMatches(size: BracketSize) {
-  if (size === 3) {
-    return [
-      { roundNumber: 1, matchNumber: 1, completed: false },
-      { roundNumber: 1, matchNumber: 2, completed: false },
-      { roundNumber: 1, matchNumber: 3, completed: false }
-    ];
-  }
-  
-  if (size === 6) {
-    return [
-      { roundNumber: 1, matchNumber: 1, completed: false },
-      { roundNumber: 1, matchNumber: 2, completed: false },
-      { roundNumber: 1, matchNumber: 3, completed: false },
-      { roundNumber: 2, matchNumber: 1, completed: false }
-    ];
-  }
-  
-  if (size === 9) {
-    return [
-      { roundNumber: 1, matchNumber: 1, completed: false },
-      { roundNumber: 1, matchNumber: 2, completed: false },
-      { roundNumber: 1, matchNumber: 3, completed: false },
-      { roundNumber: 1, matchNumber: 4, completed: false },
-      { roundNumber: 2, matchNumber: 1, completed: false },
-      { roundNumber: 2, matchNumber: 2, completed: false },
-      { roundNumber: 3, matchNumber: 1, completed: false }
-    ];
-  }
-  
-  return [];
-}
-
-function getRandomPrice(min: number, max: number): number {
-  return parseFloat((min + Math.random() * (max - min)).toFixed(2));
-}
-
-function getRandomMarketCap(): "large" | "mid" | "small" {
-  const options: ["large", "mid", "small"] = ["large", "mid", "small"];
-  return options[Math.floor(Math.random() * options.length)];
-}
-
-function getStockName(symbol: string): string {
-  const stockNames: Record<string, string> = {
-    AAPL: "Apple Inc.",
-    MSFT: "Microsoft Corporation",
-    AMZN: "Amazon.com Inc.",
-    GOOGL: "Alphabet Inc.",
-    GOOG: "Alphabet Inc.",
-    META: "Meta Platforms Inc.",
-    TSLA: "Tesla Inc.",
-    NVDA: "NVIDIA Corporation",
-    V: "Visa Inc.",
-    JPM: "JPMorgan Chase & Co.",
-    JNJ: "Johnson & Johnson",
-    UNH: "UnitedHealth Group Inc.",
-    PG: "Procter & Gamble Co.",
-    MA: "Mastercard Inc.",
-    HD: "Home Depot Inc.",
-    BAC: "Bank of America Corp.",
-    XOM: "Exxon Mobil Corporation",
-    AVGO: "Broadcom Inc.",
-    PFE: "Pfizer Inc.",
-    CSCO: "Cisco Systems Inc."
-  };
-  
-  return stockNames[symbol] || `${symbol} Inc.`;
-}
-
-function getStockSector(symbol: string): string {
-  const stockSectors: Record<string, string> = {
-    AAPL: "Technology",
-    MSFT: "Technology",
-    AMZN: "Consumer Cyclical",
-    GOOGL: "Technology",
-    GOOG: "Technology",
-    META: "Technology",
-    TSLA: "Automotive",
-    NVDA: "Technology",
-    V: "Financial Services",
-    JPM: "Financial Services",
-    JNJ: "Healthcare",
-    UNH: "Healthcare",
-    PG: "Consumer Defensive",
-    MA: "Financial Services",
-    HD: "Consumer Cyclical",
-    BAC: "Financial Services",
-    XOM: "Energy",
-    AVGO: "Technology",
-    PFE: "Healthcare",
-    CSCO: "Technology"
-  };
-  
-  return stockSectors[symbol] || "Technology";
-}
-
-/**
- * Determine market cap category
- */
-function determineMarketCap(marketCap: number): "large" | "mid" | "small" {
-  if (marketCap >= 10000000000) { // $10B+
-    return "large";
-  } else if (marketCap >= 2000000000) { // $2B+
-    return "mid";
-  } else {
-    return "small";
-  }
-}
-
-/**
- * Update bracket with new market data
- */
-export async function updateBracketPrices(bracketId: string): Promise<Bracket> {
-  try {
-    // Get the bracket
-    const bracket = await getBracketById(bracketId);
-    
-    // Skip if bracket is already completed
-    if (bracket.status === 'completed') {
-      return bracket;
-    }
-    
-    // Update user entries with current prices
-    for (const entry of bracket.userEntries) {
-      // In a real implementation, we would fetch the latest stock prices
-      // but for now, simulate by generating random prices
-      entry.endPrice = getRandomPrice(entry.startPrice * 0.9, entry.startPrice * 1.1);
-      entry.percentChange = calculatePercentChange(entry.startPrice, entry.endPrice);
-    }
-    
-    // Update AI entries with current prices
-    for (const entry of bracket.aiEntries) {
-      // In a real implementation, we would fetch the latest stock prices
-      // but for now, simulate by generating random prices
-      entry.endPrice = getRandomPrice(entry.startPrice * 0.9, entry.startPrice * 1.1);
-      entry.percentChange = calculatePercentChange(entry.startPrice, entry.endPrice);
-    }
-    
-    // Check if the bracket should be completed
-    const now = new Date();
-    const endDate = new Date(bracket.endDate);
-    
-    if (now >= endDate) {
-      bracket.status = 'completed';
-      
-      // Calculate results and determine winner
-      const userPoints = calculateTotalPoints(bracket.userEntries);
-      const aiPoints = calculateTotalPoints(bracket.aiEntries);
-      
-      bracket.userPoints = userPoints;
-      bracket.aiPoints = aiPoints;
-      bracket.winnerId = userPoints > aiPoints ? 'user' : 'ai';
-    } else if (bracket.status === 'pending') {
-      // Activate the bracket if it's past the start date
-      const startDate = new Date(bracket.startDate);
-      if (now >= startDate) {
-        bracket.status = 'active';
-      }
-    }
-    
-    try {
-      // Try to update in Supabase
-      const { error } = await supabase
-        .from('brackets')
-        .update({
-          user_entries: bracket.userEntries,
-          ai_entries: bracket.aiEntries,
-          status: bracket.status,
-          winner_id: bracket.winnerId,
-          user_points: bracket.userPoints,
-          ai_points: bracket.aiPoints,
-          matches: bracket.matches
-        })
-        .eq('id', bracketId);
-      
-      if (error) {
-        throw error;
-      }
-    } catch (dbError) {
-      console.warn("Using mock bracket storage due to Supabase error:", dbError);
-      
-      // Update in localStorage if using mock storage
-      try {
-        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
-        const updatedMockBrackets = mockBrackets.map((b: Bracket) => 
-          b.id === bracketId ? bracket : b
-        );
-        localStorage.setItem('mockBrackets', JSON.stringify(updatedMockBrackets));
-      } catch (localStorageError) {
-        console.error("Error updating mock bracket in localStorage:", localStorageError);
-      }
-    }
-    
-    return bracket;
-  } catch (error) {
-    console.error(`Error updating bracket ${bracketId}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Calculate percent change between two prices
- */
-function calculatePercentChange(startPrice: number, endPrice: number): number {
-  return ((endPrice - startPrice) / startPrice) * 100;
-}
-
-/**
- * Calculate total points for a set of entries
- */
-function calculateTotalPoints(entries: BracketEntry[]): number {
-  return entries.reduce((total, entry) => {
-    if (entry.percentChange === undefined) return total;
-    
-    // For bearish predictions, invert the percent change
-    const adjustedChange = entry.direction === 'bearish' 
-      ? -entry.percentChange 
-      : entry.percentChange;
-    
-    return total + adjustedChange;
-  }, 0);
-}
-
-/**
- * Delete a bracket by ID
- */
-export async function deleteBracket(bracketId: string): Promise<boolean> {
-  try {
-    // Attempt to get current user from Supabase
-    let userId = "user-123"; // Default user ID for mock mode
-    try {
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (!userError && userData.user) {
-        userId = userData.user.id;
-      } else {
-        console.warn("Using mock user authentication");
-      }
-    } catch (e) {
-      console.warn("Using mock user authentication, Supabase error:", e);
-    }
-    
-    try {
-      // Try to delete from Supabase
-      const { error } = await supabase
-        .from('brackets')
-        .delete()
-        .eq('id', bracketId)
-        .eq('user_id', userId); // Ensure the bracket belongs to the user
-      
-      if (error) {
-        throw error;
-      }
-    } catch (dbError) {
-      console.warn("Using mock bracket storage due to Supabase error:", dbError);
-      
-      // Delete from localStorage if using mock storage
-      try {
-        const mockBrackets = JSON.parse(localStorage.getItem('mockBrackets') || '[]');
-        const filteredBrackets = mockBrackets.filter((b: Bracket) => 
-          !(b.id === bracketId && b.userId === userId)
-        );
-        localStorage.setItem('mockBrackets', JSON.stringify(filteredBrackets));
-      } catch (localStorageError) {
-        console.error("Error deleting mock bracket from localStorage:", localStorageError);
-        throw localStorageError;
-      }
-    }
-    
-    return true;
-  } catch (error) {
-    console.error(`Error deleting bracket ${bracketId}:`, error);
-    throw error;
-  }
 }

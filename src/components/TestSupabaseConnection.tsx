@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -24,15 +25,10 @@ const TestSupabaseConnection = () => {
       });
 
       // Get list of tables
-      const { data: tablesData, error: tablesError } = await supabase
-        .from('pg_catalog.pg_tables')
-        .select('tablename')
-        .eq('schemaname', 'public');
-      
-      if (tablesError) throw tablesError;
+      const { data: tablesData } = await supabase.rpc('get_tables');
       
       if (tablesData) {
-        setTables(tablesData.map(t => t.tablename));
+        setTables(tablesData);
       }
     } catch (error) {
       console.error('Error testing connection:', error);
@@ -69,8 +65,8 @@ const TestSupabaseConnection = () => {
         <div className="mt-4">
           <h3 className="text-lg font-semibold mb-2">Available Tables:</h3>
           <ul className="list-disc pl-5">
-            {tables.map(table => (
-              <li key={table}>{table}</li>
+            {tables.map((table, index) => (
+              <li key={index}>{table}</li>
             ))}
           </ul>
         </div>

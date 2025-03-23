@@ -4,14 +4,14 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brackets } from '@/lib/duel/types';
+import { Bracket } from '@/lib/duel/types';
 import { Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const TestBracketsTable: React.FC = () => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [brackets, setBrackets] = useState<Brackets[]>([]);
+  const [brackets, setBrackets] = useState<Bracket[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const testConnection = async () => {
