@@ -87,7 +87,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({
           
           <button 
             onClick={onOpenMenu}
-            className="btn-icon btn-ghost"
+            className="btn-icon btn-ghost lg:hidden"
             aria-label="Menu"
           >
             <Menu className="h-5 w-5" />
