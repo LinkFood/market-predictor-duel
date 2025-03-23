@@ -9,6 +9,71 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brackets: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          timeframe: string
+          size: number
+          status: string
+          ai_personality: string
+          user_entries: Json
+          ai_entries: Json
+          matches: Json
+          winner_id: string | null
+          start_date: string
+          end_date: string
+          created_at: string | null
+          user_points: number | null
+          ai_points: number | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          timeframe: string
+          size: number
+          status: string
+          ai_personality: string
+          user_entries?: Json
+          ai_entries?: Json
+          matches?: Json
+          winner_id?: string | null
+          start_date: string
+          end_date: string
+          created_at?: string | null
+          user_points?: number | null
+          ai_points?: number | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          timeframe?: string
+          size?: number
+          status?: string
+          ai_personality?: string
+          user_entries?: Json
+          ai_entries?: Json
+          matches?: Json
+          winner_id?: string | null
+          start_date?: string
+          end_date?: string
+          created_at?: string | null
+          user_points?: number | null
+          ai_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brackets_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      },
       prediction_patterns: {
         Row: {
           ai_accuracy: number

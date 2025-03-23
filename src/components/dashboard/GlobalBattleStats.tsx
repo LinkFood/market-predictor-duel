@@ -6,8 +6,9 @@ import {
   CardHeader, 
   CardTitle 
 } from "@/components/ui/card";
-import { Shield, Users, Zap, Award } from "lucide-react";
+import { Shield, Users, Zap, Trophy } from "lucide-react";
 import { GlobalStats } from "@/types";
+import { motion } from "framer-motion";
 
 interface GlobalBattleStatsProps {
   stats: GlobalStats;
@@ -25,57 +26,97 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
     : 0;
     
   return (
-    <Card className="shadow-sm border-0">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold flex items-center">
-          <Shield className="w-5 h-5 mr-2 text-primary" />
+    <Card className="shadow-lg border-0 overflow-hidden bg-gradient-to-br from-white to-slate-50">
+      <CardHeader className="pb-2 border-b border-slate-100">
+        <CardTitle className="text-base sm:text-lg font-semibold flex items-center">
+          <Shield className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-indigo-600" />
           Global Battle Stats
         </CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Users className="w-4 h-4 mr-2 text-blue-500" />
-              <span className="text-sm font-medium">Traders</span>
-            </div>
-            <span className="text-sm font-medium">{humanWinRate}% win rate</span>
-          </div>
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <Zap className="w-4 h-4 mr-2 text-purple-500" />
-              <span className="text-sm font-medium">AI</span>
-            </div>
-            <span className="text-sm font-medium">{aiWinRate}% win rate</span>
-          </div>
-          
-          <div className="pt-2 border-t">
+      <CardContent className="p-4 sm:p-6">
+        <div className="space-y-5">
+          {/* Win Rate Visualization */}
+          <div className="space-y-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-gray-500">Total Predictions</span>
-              <span className="text-xs font-medium">{stats.totalPredictions.toLocaleString()}</span>
+              <div className="flex items-center">
+                <Users className="w-4 h-4 mr-2 text-blue-500" />
+                <span className="text-sm font-medium">Traders</span>
+              </div>
+              <span className="text-sm font-bold text-blue-600">{humanWinRate}%</span>
             </div>
             
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500">Humans vs AI</span>
-              <div className="flex items-center space-x-1">
-                <span className="text-xs font-medium text-blue-600">{stats.humanWins.toLocaleString()}</span>
-                <span className="text-xs">:</span>
-                <span className="text-xs font-medium text-purple-600">{stats.aiWins.toLocaleString()}</span>
+            <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-blue-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${humanWinRate}%` }}
+                transition={{ duration: 1, delay: 0.2 }}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center">
+                <Zap className="w-4 h-4 mr-2 text-purple-600" />
+                <span className="text-sm font-medium">AI</span>
+              </div>
+              <span className="text-sm font-bold text-purple-600">{aiWinRate}%</span>
+            </div>
+            
+            <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-purple-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${aiWinRate}%` }}
+                transition={{ duration: 1, delay: 0.4 }}
+              />
+            </div>
+          </div>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+            <div className="bg-slate-50 rounded-lg p-3">
+              <div className="text-xs text-slate-500 mb-1">Total Predictions</div>
+              <div className="text-lg font-bold text-slate-800">{stats.totalPredictions.toLocaleString()}</div>
+            </div>
+            
+            <div className="bg-slate-50 rounded-lg p-3">
+              <div className="text-xs text-slate-500 mb-1">Win Ratio (H:AI)</div>
+              <div className="flex items-center space-x-2">
+                <span className="text-lg font-bold text-blue-600">{stats.humanWins.toLocaleString()}</span>
+                <span className="text-lg font-bold text-slate-400">:</span>
+                <span className="text-lg font-bold text-purple-600">{stats.aiWins.toLocaleString()}</span>
               </div>
             </div>
             
             {stats.totalDuels > 0 && (
-              <div className="flex items-center justify-between mt-2">
-                <span className="text-xs text-gray-500">Duels</span>
-                <div className="flex items-center space-x-1">
-                  <span className="text-xs font-medium text-blue-600">{stats.humansWon?.toLocaleString() || 0}</span>
-                  <span className="text-xs">:</span>
-                  <span className="text-xs font-medium text-purple-600">{stats.aiWon?.toLocaleString() || 0}</span>
+              <>
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <div className="text-xs text-slate-500 mb-1">Total Duels</div>
+                  <div className="text-lg font-bold text-slate-800">{stats.totalDuels.toLocaleString()}</div>
                 </div>
-              </div>
+                
+                <div className="bg-slate-50 rounded-lg p-3">
+                  <div className="text-xs text-slate-500 mb-1">Duel Victories</div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-lg font-bold text-blue-600">{stats.humansWon?.toLocaleString() || 0}</span>
+                    <span className="text-lg font-bold text-slate-400">:</span>
+                    <span className="text-lg font-bold text-purple-600">{stats.aiWon?.toLocaleString() || 0}</span>
+                  </div>
+                </div>
+              </>
             )}
           </div>
+          
+          {/* Current Champion */}
+          {stats.currentChampion && (
+            <div className="flex items-center justify-between mt-2 bg-gradient-to-r from-amber-50 to-amber-100 p-2 rounded-lg">
+              <div className="flex items-center">
+                <Trophy className="w-4 h-4 mr-2 text-amber-500" />
+                <span className="text-xs text-amber-800">Current Champion</span>
+              </div>
+              <span className="text-xs font-bold text-amber-800">{stats.currentChampion}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

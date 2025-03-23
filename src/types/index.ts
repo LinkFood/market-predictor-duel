@@ -110,4 +110,5 @@ export interface GlobalStats {
   recentHumanAdvantage?: number;
   topHumanScore: number;
   topAiScore?: number;
+  currentChampion?: string;
 }
