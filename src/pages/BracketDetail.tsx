@@ -31,6 +31,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import BracketVisualizer from "@/components/duel/BracketVisualizer";
 import AIOpponentProfile from "@/components/duel/AIOpponentProfile";
+import BracketLoadingSkeleton from "@/components/duel/BracketLoadingSkeleton";
+import BracketNavigation from "@/components/duel/BracketNavigation";
 import { Bracket, BracketEntry } from "@/lib/duel/types";
 import { getBracketById, completeBracket } from "@/lib/duel/bracket-service";
 import { motion, AnimatePresence } from "framer-motion";
@@ -78,9 +80,20 @@ const BracketDetail: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-10 w-10 animate-spin text-primary" />
-        <p className="mt-4 text-lg">Loading bracket...</p>
+      <div className="container mx-auto p-4 max-w-7xl">
+        {/* Back Navigation */}
+        <div className="mb-4">
+          <Button 
+            variant="ghost" 
+            className="flex items-center text-muted-foreground" 
+            onClick={() => navigate('/app/brackets')}
+          >
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to Brackets
+          </Button>
+        </div>
+        
+        <BracketLoadingSkeleton />
       </div>
     );
   }
@@ -261,17 +274,8 @@ const BracketDetail: React.FC = () => {
         <title>{bracket.name} | Stock Bracket Tournament</title>
       </Helmet>
       
-      {/* Back Navigation */}
-      <div className="mb-4">
-        <Button 
-          variant="ghost" 
-          className="flex items-center text-muted-foreground" 
-          onClick={() => navigate('/app/brackets')}
-        >
-          <ArrowLeft className="h-4 w-4 mr-1" />
-          Back to Brackets
-        </Button>
-      </div>
+      {/* Bracket Navigation */}
+      <BracketNavigation currentBracketId={bracket.id || ""} />
       
       {/* Header Section with Summary */}
       <div className="mb-8">

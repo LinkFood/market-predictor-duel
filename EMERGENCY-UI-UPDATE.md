@@ -44,7 +44,7 @@
 - [x] Add "Quick Duel" option for instant creation
 - [x] Improve stats card design with clearer metrics
 - [x] Add visual cues for actions with hover effects
-- [ ] Ensure consistent padding and spacing (2rem standard)
+- [x] Ensure consistent padding and spacing (2rem standard)
 
 ### 5. Bracket Experience Optimization
 - [x] Simplify bracket creation process
@@ -56,8 +56,8 @@
 - [x] Add real-time performance tracking
 - [x] Match progress visualization
 - [x] Stock performance graphs
-- [ ] Add clearer navigation between brackets
-- [ ] Improve loading states for bracket data
+- [x] Add clearer navigation between brackets
+- [x] Improve loading states for bracket data
 
 ## Implementation Order & Assignments
 

@@ -183,14 +183,14 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto pb-12">
+    <div className="max-w-7xl mx-auto pb-12 px-4 sm:px-6 lg:px-8">
       <DashboardHeader user={mockUser} />
       
       {/* New Duel Button */}
-      <div className="flex justify-center my-6">
+      <div className="flex justify-center my-8">
         <Link 
           to="/app/brackets/create" 
-          className="btn-primary btn-lg flex items-center gap-2 animated-pulse-shadow"
+          className="btn-primary btn-lg flex items-center gap-2 animated-pulse-shadow py-3 px-6 text-lg shadow-xl"
         >
           <Trophy className="h-5 w-5" />
           Start New Duel
@@ -198,22 +198,22 @@ const Dashboard: React.FC = () => {
       </div>
       
       {/* Brackets Section - Moved to top */}
-      <div className="mb-6">
+      <div className="mb-8">
         <ActiveBrackets brackets={mockBrackets} />
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-        <div className="md:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+        <div className="md:col-span-2 space-y-8">
           <RecentPredictionsSection predictions={recentPredictions as Prediction[]} />
           <UserStatsSection userRank={{rank: userRank, total: 100, percentile: 50}} />
         </div>
-        <div className="space-y-6">
+        <div className="space-y-8">
           <GlobalBattleStats stats={mockGlobalStats} />
           <MarketPulse marketData={marketData} stockData={marketData} />
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         <HotOpportunities opportunities={mockOpportunities} />
       </div>
     </div>
