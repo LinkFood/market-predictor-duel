@@ -1,3 +1,4 @@
+
 export const mockStockData = [
   {
     name: "S&P 500",
@@ -193,8 +194,8 @@ export const mockPredictions = [
       reasoning: "Economic reopening and increased infrastructure spending are providing strong tailwinds for the industrial and value-oriented companies that make up much of the Dow Jones index."
     },
     timeframe: "1w",
-    startingValue: 34,123.45,
-    endValue: 35,213.12,
+    startingValue: 34123.45,  // Removed comma
+    endValue: 35213.12,       // Removed comma
     percentChange: 3.19,
     createdAt: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(),
     resolvesAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
