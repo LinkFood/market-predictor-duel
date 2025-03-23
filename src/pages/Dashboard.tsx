@@ -9,6 +9,8 @@ import GlobalBattleStats from "@/components/dashboard/GlobalBattleStats";
 import MarketPulse from "@/components/dashboard/MarketPulse";
 import HotOpportunities from "@/components/dashboard/HotOpportunities";
 import ActiveBrackets from "@/components/dashboard/ActiveBrackets";
+import TopPerformers from "@/components/dashboard/TopPerformers";
+import CommunityStats from "@/components/dashboard/CommunityStats";
 import { GlobalStats, Prediction, MarketData, User } from "@/types";
 import { mockPredictions, mockStockData, mockGlobalStats, mockLeaderboard } from "@/data/mockData";
 import { Bracket, Direction } from "@/lib/duel/types";
@@ -202,8 +204,22 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-        <HotOpportunities opportunities={mockOpportunities} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+        <div className="md:col-span-2">
+          <HotOpportunities opportunities={mockOpportunities} />
+        </div>
+        <div>
+          <TopPerformers />
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+        <div className="md:col-span-2">
+          {/* Additional content can go here in the future */}
+        </div>
+        <div>
+          <CommunityStats />
+        </div>
       </div>
     </div>
   );
