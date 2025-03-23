@@ -19,6 +19,7 @@ import Privacy from "@/pages/Privacy";
 import Brackets from "@/pages/Brackets";
 import CreateBracket from "@/pages/CreateBracket";
 import BracketDetail from "@/pages/BracketDetail";
+import TestDatabaseConnection from "@/pages/TestDatabaseConnection";
 import { useAuth } from "@/lib/auth-context";
 import LoadingScreen from "@/components/LoadingScreen";
 import { Suspense, useEffect } from "react";
@@ -128,6 +129,9 @@ const AppRoutes = () => {
           <Route path="brackets" element={<Brackets />} />
           <Route path="brackets/create" element={<CreateBracket />} />
           <Route path="brackets/:id" element={<BracketDetail />} />
+          
+          {/* Development & Testing routes */}
+          <Route path="test-db" element={<TestDatabaseConnection />} />
         </Route>
         
         {/* Catch-all route */}
