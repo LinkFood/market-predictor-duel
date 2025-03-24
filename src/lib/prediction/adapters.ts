@@ -9,7 +9,7 @@ export function adaptPrediction(dbPrediction: any): Prediction {
   return {
     id: dbPrediction.id,
     userId: dbPrediction.user_id,
-    targetSymbol: dbPrediction.ticker,
+    ticker: dbPrediction.ticker,
     targetName: dbPrediction.target_name,
     targetType: dbPrediction.target_type || 'stock',
     predictionType: dbPrediction.prediction_type,
@@ -19,7 +19,7 @@ export function adaptPrediction(dbPrediction: any): Prediction {
     timeframe: dbPrediction.timeframe,
     startingValue: dbPrediction.starting_value,
     finalValue: dbPrediction.final_value,
-    percentageChange: dbPrediction.percent_change, // Fixed property name to match type definition
+    percentChange: dbPrediction.percent_change,
     actualResult: dbPrediction.actual_result,
     outcome: dbPrediction.outcome,
     points: dbPrediction.points,
@@ -38,7 +38,7 @@ export function adaptPredictionForDB(prediction: Prediction): any {
   return {
     id: prediction.id,
     user_id: prediction.userId,
-    ticker: prediction.targetSymbol,
+    ticker: prediction.ticker,
     target_name: prediction.targetName,
     target_type: prediction.targetType,
     prediction_type: prediction.predictionType,
@@ -48,7 +48,7 @@ export function adaptPredictionForDB(prediction: Prediction): any {
     timeframe: prediction.timeframe,
     starting_value: prediction.startingValue,
     final_value: prediction.finalValue,
-    percent_change: prediction.percentageChange, // Fixed property name to match type definition
+    percent_change: prediction.percentChange,
     actual_result: prediction.actualResult,
     outcome: prediction.outcome,
     points: prediction.points,
@@ -59,3 +59,9 @@ export function adaptPredictionForDB(prediction: Prediction): any {
     ai_analysis: prediction.aiAnalysis
   };
 }
+
+// Add aliases for backwards compatibility with existing code
+export const dbToPrediction = adaptPrediction;
+export const dbToLeaderboardEntry = (entry: any) => entry;
+export const dbToUserStats = (stats: any) => stats;
+

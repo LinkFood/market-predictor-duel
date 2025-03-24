@@ -3,7 +3,7 @@ import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PolygonApiKeyForm } from "@/components/settings/PolygonApiKeyForm";
-import { ApiConnectionTest } from "@/components/prediction/ApiConnectionTest";
+import ApiConnectionTest from "@/components/prediction/ApiConnectionTest";
 import { FEATURES } from "@/lib/config";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import { BackButton } from "@/components/ui/back-button";
