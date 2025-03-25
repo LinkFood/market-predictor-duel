@@ -37,11 +37,11 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         const { data, error } = await supabase
           .from("profiles")
-          .select("role")
+          .select("is_admin")
           .eq("id", user.id)
           .single();
           
-        if (data && data.role === 'admin') {
+        if (data && data.is_admin === true) {
           setIsAdminUser(true);
           fetchApiKey();
         }
@@ -109,7 +109,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         toast({
           title: "API Key saved successfully",
           description: "The Polygon API key has been saved and validated.",
-          variant: "success",
+          variant: "default",
         });
         setConnectionStatus("success");
       } else {
