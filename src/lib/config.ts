@@ -7,7 +7,7 @@
 // Feature flags to control app functionality
 export const FEATURES = {
   // Data source controls
-  enableRealMarketData: true, // Changed from false to true
+  enableRealMarketData: true,
   enableMockData: true,
 
   // Authentication controls
@@ -41,7 +41,7 @@ export const API_CONFIG = {
 // Market configuration
 export const MARKET_CONFIG = {
   polygon: {
-    enabled: false,
+    enabled: true, // Changed from false to true
     baseUrl: "https://api.polygon.io",
     apiKey: import.meta.env.VITE_POLYGON_API_KEY || "demo"
   },
@@ -67,7 +67,7 @@ export const API_ERRORS = {
 // General application config
 export const config = {
   polygon: {
-    enabled: false,
+    enabled: true, // Changed from false to true
     baseUrl: "https://api.polygon.io"
   },
   supabase: {
