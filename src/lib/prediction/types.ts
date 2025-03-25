@@ -1,3 +1,4 @@
+
 /**
  * Prediction types
  */
@@ -106,6 +107,6 @@ export interface LeaderboardEntry {
   totalPredictions: number;
   accuracy: number;
   points: number;
-  winsAgainstAI: number;
+  winsAgainstAI: number; // This property name should match what's used in the leaderboard.ts file
   joinDate: string | null;
 }

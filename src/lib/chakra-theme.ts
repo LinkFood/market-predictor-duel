@@ -1,11 +1,9 @@
 
-import { theme as chakraTheme } from "@chakra-ui/react";
+import { Theme, extendTheme } from "@chakra-ui/react";
 
-// Extend the Chakra UI theme with custom colors and other properties
-export const extendedTheme = {
-  ...chakraTheme,
+// Create a custom theme by extending the default Chakra theme
+export const extendedTheme: Theme = extendTheme({
   colors: {
-    ...chakraTheme.colors,
     brand: {
       50: "#f0f9ff",
       100: "#e0f2fe",
@@ -74,4 +72,4 @@ export const extendedTheme = {
       },
     },
   },
-};
+});

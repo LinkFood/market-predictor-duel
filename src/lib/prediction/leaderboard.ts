@@ -20,7 +20,7 @@ const dbToLeaderboardEntry = (entry: any, index: number): LeaderboardEntry => {
     accuracy: entry.total_predictions > 0 
       ? (entry.correct_predictions / entry.total_predictions) * 100 
       : 0,
-    aiVictories: entry.wins_against_ai || 0,
+    winsAgainstAI: entry.wins_against_ai || 0, // Changed from aiVictories to winsAgainstAI to match type
     points: entry.total_points || 0,
     joinDate: new Date(entry.created_at || Date.now()).toLocaleDateString(),
   };

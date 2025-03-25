@@ -14,7 +14,7 @@ import AppRoutes from "@/routes/AppRoutes";
 
 function App() {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={extendedTheme}>
       <BrowserRouter>
         <ThemeProvider>
           <Toaster />
