@@ -42,7 +42,8 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
           .eq("id", user.id)
           .single();
           
-        if (data && data.is_admin === true) {
+        // Check if user has admin status - using optional chaining and checking if data exists first
+        if (data && data.role === 'admin') {
           setIsAdminUser(true);
           fetchApiKey();
         }
