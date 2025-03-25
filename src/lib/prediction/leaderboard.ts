@@ -5,8 +5,48 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { LeaderboardEntry, UserStats } from './types';
-import { dbToLeaderboardEntry, dbToUserStats } from './adapters';
 import { toast } from '@/hooks/use-toast';
+
+/**
+ * Convert database entry to LeaderboardEntry format
+ */
+const dbToLeaderboardEntry = (entry: any, index: number): LeaderboardEntry => {
+  return {
+    userId: entry.user_id,
+    username: entry.profiles?.username || `User ${index + 1}`,
+    avatarUrl: entry.profiles?.avatar_url || null,
+    position: index + 1,
+    totalPredictions: entry.total_predictions || 0,
+    accuracy: entry.total_predictions > 0 
+      ? (entry.correct_predictions / entry.total_predictions) * 100 
+      : 0,
+    aiVictories: entry.wins_against_ai || 0,
+    points: entry.total_points || 0,
+    joinDate: new Date(entry.created_at || Date.now()).toLocaleDateString(),
+  };
+};
+
+/**
+ * Convert database entry to UserStats format
+ */
+const dbToUserStats = (data: any): UserStats => {
+  const totalPredictions = data.total_predictions || 0;
+  const correctPredictions = data.correct_predictions || 0;
+  const winRate = totalPredictions > 0 ? (correctPredictions / totalPredictions) * 100 : 0;
+
+  return {
+    totalPredictions,
+    completedPredictions: totalPredictions,
+    pendingPredictions: 0, // This will be set later
+    totalPoints: data.total_points || 0,
+    winRate,
+    winStreak: data.current_streak || 0,
+    bestWinStreak: data.best_streak || 0,
+    aiVictories: data.wins_against_ai || 0,
+    userVictories: data.losses_against_ai || 0, // This is from AI's perspective, so losses are user victories
+    ties: data.ties || 0
+  };
+};
 
 /**
  * Get leaderboard data with detailed user information

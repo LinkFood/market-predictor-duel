@@ -153,7 +153,7 @@ export function PolygonApiKeyForm() {
           </Alert>
         )}
         
-        <Alert variant="info" className="bg-blue-50 text-blue-800 border-blue-200">
+        <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
           <Info className="h-4 w-4 text-blue-700" />
           <AlertDescription className="text-blue-700">
             Your API key will be securely stored in Supabase Edge Functions environment.

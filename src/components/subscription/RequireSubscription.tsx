@@ -2,6 +2,7 @@
 import React from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import { useSubscription } from "@/lib/subscription/subscription-context";
+import { PlanFeatures } from "@/lib/subscription/plan-features";
 
 interface RequireSubscriptionProps {
   feature?: string;
@@ -22,8 +23,9 @@ const RequireSubscription: React.FC<RequireSubscriptionProps> = ({
     return null;
   }
   
-  // If user does not have access to the feature, redirect
-  if (!hasAccess(feature)) {
+  // Check if user has access to the feature
+  // We need to cast the feature string to any to avoid TypeScript errors
+  if (!hasAccess(feature as any)) {
     return (
       <Navigate
         to={redirectTo}
