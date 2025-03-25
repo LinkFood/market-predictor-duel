@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PolygonApiKeyForm } from "@/components/settings/PolygonApiKeyForm";
+import PolygonApiKeyForm from "@/components/settings/PolygonApiKeyForm";
 import ApiConnectionTest from "@/components/prediction/ApiConnectionTest";
 import { FEATURES } from "@/lib/config";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
@@ -45,7 +45,7 @@ const ApiSettings: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <PolygonApiKeyForm />
+              <PolygonApiKeyForm isAdmin={true} />
             </CardContent>
           </Card>
         </TabsContent>
