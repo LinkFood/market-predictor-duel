@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 import AppLayout from '@/layouts/AppLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 import AppErrorBoundary from '@/components/AppErrorBoundary';
@@ -30,44 +31,46 @@ import PredictionsHistory from '@/pages/PredictionsHistory';
 const App: React.FC = () => {
   return (
     <AppErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/" element={<Home />} />
-            
-            {/* Auth Routes */}
-            <Route element={<AuthLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-            </Route>
-            
-            {/* App Routes */}
-            <Route path="/app" element={<AppLayout />}>
-              <Route index element={<Dashboard />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="api-settings" element={<ApiSettings />} />
-              <Route path="make-prediction" element={<MakePrediction />} />
-              <Route path="prediction/:id" element={<PredictionDetail />} />
-              <Route path="profile" element={<Profile />} />
-              <Route path="brackets" element={<Brackets />} />
-              <Route path="brackets/:id" element={<BracketDetail />} />
-              <Route path="create-bracket" element={<CreateBracket />} />
-              <Route path="account" element={<Account />} />
-              <Route path="leaderboard" element={<Leaderboard />} />
-              <Route path="markets" element={<Markets />} />
-              <Route path="history" element={<PredictionsHistory />} />
-            </Route>
-            
-            {/* Dashboard Routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            
-            {/* 404 Route */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
-        <Toaster />
-      </AuthProvider>
+      <HelmetProvider>
+        <AuthProvider>
+          <Router>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/" element={<Home />} />
+              
+              {/* Auth Routes */}
+              <Route element={<AuthLayout />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+              </Route>
+              
+              {/* App Routes */}
+              <Route path="/app" element={<AppLayout />}>
+                <Route index element={<Dashboard />} />
+                <Route path="settings" element={<Settings />} />
+                <Route path="api-settings" element={<ApiSettings />} />
+                <Route path="make-prediction" element={<MakePrediction />} />
+                <Route path="prediction/:id" element={<PredictionDetail />} />
+                <Route path="profile" element={<Profile />} />
+                <Route path="brackets" element={<Brackets />} />
+                <Route path="brackets/:id" element={<BracketDetail />} />
+                <Route path="create-bracket" element={<CreateBracket />} />
+                <Route path="account" element={<Account />} />
+                <Route path="leaderboard" element={<Leaderboard />} />
+                <Route path="markets" element={<Markets />} />
+                <Route path="history" element={<PredictionsHistory />} />
+              </Route>
+              
+              {/* Dashboard Routes */}
+              <Route path="/dashboard" element={<Dashboard />} />
+              
+              {/* 404 Route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          <Toaster />
+        </AuthProvider>
+      </HelmetProvider>
     </AppErrorBoundary>
   );
 };

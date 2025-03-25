@@ -35,9 +35,10 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         setCurrentUser(user);
         
+        // Query the profiles table for admin status
         const { data, error } = await supabase
           .from("profiles")
-          .select("is_admin")
+          .select("*")
           .eq("id", user.id)
           .single();
           
