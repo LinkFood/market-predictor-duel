@@ -48,6 +48,7 @@ const App: React.FC = () => {
               <Route path="/app" element={<AppLayout />}>
                 <Route index element={<Dashboard />} />
                 <Route path="settings" element={<Settings />} />
+                <Route path="settings/api" element={<ApiSettings />} />
                 <Route path="api-settings" element={<ApiSettings />} />
                 <Route path="make-prediction" element={<MakePrediction />} />
                 <Route path="prediction/:id" element={<PredictionDetail />} />
