@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -35,15 +34,19 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         setCurrentUser(user);
         
-        // Query the profiles table for admin status
+        // Query the profiles table for admin status using an additional metadata field
+        // Since 'role' doesn't exist in the profiles table type
         const { data, error } = await supabase
           .from("profiles")
-          .select("*")
+          .select("username")
           .eq("id", user.id)
           .single();
           
-        // Check if user has admin status - using optional chaining and checking if data exists first
-        if (data && data.role === 'admin') {
+        // For now, since we don't have a role column, we'll rely on the passed isAdmin prop
+        // or check for specific usernames that are admins
+        // This is a temporary solution until we create a proper role system
+        const adminUsernames = ['admin', 'superadmin']; // Example admin usernames
+        if (isAdmin || (data && adminUsernames.includes(data.username || ''))) {
           setIsAdminUser(true);
           fetchApiKey();
         }
@@ -53,7 +56,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
     };
     
     checkAdmin();
-  }, []);
+  }, [isAdmin]);
 
   const fetchApiKey = async () => {
     setIsLoading(true);
