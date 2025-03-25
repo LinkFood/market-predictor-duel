@@ -1,187 +1,229 @@
-
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Key, AlertCircle, Save, Server, CheckCircle, ExternalLink, Info } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { testPolygonApiConnection } from "@/lib/market/api-test";
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Button,
+  FormControl,
+  FormLabel,
+  Input,
+  Stack,
+  useToast,
+  Text,
+  Link,
+  Flex,
+  IconButton,
+  InputGroup,
+  InputRightElement,
+} from "@chakra-ui/react";
+import { ViewIcon, ViewOffIcon } from "@chakra-ui/icons";
+import { useUser } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { LayoutContainer } from "@/components/layout/LayoutContainer";
+import { SectionHeader } from "@/components/ui/SectionHeader";
 
-export function PolygonApiKeyForm() {
-  const { toast } = useToast();
-  const [apiKey, setApiKey] = useState("");
-  const [isTesting, setIsTesting] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [testResult, setTestResult] = useState<{success: boolean; message: string} | null>(null);
+const PolygonApiKeyForm: React.FC = () => {
+  const { user, session } = useUser();
+  const [apiKey, setApiKey] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showApiKey, setShowApiKey] = useState<boolean>(false);
+  const toast = useToast();
 
-  const testApiKey = async () => {
-    if (!apiKey.trim()) {
+  useEffect(() => {
+    const fetchApiKey = async () => {
+      if (user) {
+        setIsLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from("user_api_keys")
+            .select("polygon_api_key")
+            .eq("user_id", user.id)
+            .single();
+
+          if (error) {
+            console.error("Error fetching API key:", error);
+            toast({
+              title: "Error fetching API Key",
+              description:
+                "Failed to retrieve your Polygon API key. Please try again.",
+              status: "error",
+              duration: 5000,
+              isClosable: true,
+            });
+          } else if (data && data.polygon_api_key) {
+            setApiKey(data.polygon_api_key);
+          }
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchApiKey();
+  }, [user, toast]);
+
+  const handleApiKeyChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setApiKey(event.target.value);
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsLoading(true);
+
+    if (!apiKey) {
       toast({
         title: "API Key Required",
-        description: "Please enter a Polygon.io API key to test",
-        variant: "destructive"
+        description: "Please enter your Polygon API key.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
       });
+      setIsLoading(false);
       return;
     }
 
-    setIsTesting(true);
-    setTestResult(null);
-    
     try {
-      const result = await testPolygonApiConnection(apiKey);
-      setTestResult(result);
-      
-      if (result.success) {
+      const { error } = await supabase
+        .from("user_api_keys")
+        .upsert(
+          [
+            {
+              user_id: user?.id,
+              polygon_api_key: apiKey,
+            },
+          ],
+          { onConflict: "user_id" }
+        );
+
+      if (error) {
+        console.error("Error saving API key:", error);
         toast({
-          title: "Connection Successful",
-          description: "Successfully connected to Polygon API"
+          title: "Error saving API Key",
+          description:
+            "Failed to save your Polygon API key. Please try again.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
         });
       } else {
         toast({
-          title: "Connection Failed",
-          description: result.message,
-          variant: "destructive"
+          title: "API Key saved successfully",
+          description: "Your Polygon API key has been saved to your account.",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
         });
       }
-    } catch (error) {
-      console.error("Error testing API connection:", error);
-      setTestResult({
-        success: false,
-        message: error instanceof Error ? error.message : "Unknown error occurred"
-      });
-      
-      toast({
-        title: "Test Failed",
-        description: "Could not complete API test. See details below.",
-        variant: "destructive"
-      });
     } finally {
-      setIsTesting(false);
+      setIsLoading(false);
     }
   };
 
-  const saveApiKey = async () => {
-    if (!apiKey.trim()) {
-      toast({
-        title: "API Key Required",
-        description: "Please enter a Polygon.io API key to save",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsSaving(true);
-    
+  const handleDeleteApiKey = async () => {
+    setIsLoading(true);
     try {
-      // Save API key to Supabase Secrets
-      const { error } = await supabase.functions.invoke("set-polygon-api-key", {
-        body: { apiKey }
-      });
-      
+      const { error } = await supabase
+        .from("user_api_keys")
+        .update({ polygon_api_key: null })
+        .eq("user_id", user?.id);
+
       if (error) {
-        throw new Error(`Failed to save API key: ${error.message}`);
+        console.error("Error deleting API key:", error);
+        toast({
+          title: "Error deleting API Key",
+          description:
+            "Failed to delete your Polygon API key. Please try again.",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      } else {
+        setApiKey("");
+        toast({
+          title: "API Key deleted successfully",
+          description: "Your Polygon API key has been removed from your account.",
+          variant: "default", // Changed from "info" to "default"
+        });
       }
-      
-      toast({
-        title: "API Key Saved",
-        description: "Your Polygon.io API key has been securely saved"
-      });
-      
-      // Reset form
-      setApiKey("");
-      setTestResult(null);
-    } catch (error) {
-      console.error("Error saving API key:", error);
-      toast({
-        title: "Error Saving API Key",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
-        variant: "destructive"
-      });
     } finally {
-      setIsSaving(false);
+      setIsLoading(false);
     }
+  };
+
+  const toggleShowApiKey = () => {
+    setShowApiKey(!showApiKey);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Key className="h-5 w-5 text-blue-500" />
-          Polygon.io API Key
-        </CardTitle>
-        <CardDescription>
-          Connect to real-time market data by adding your Polygon.io API key.
-          <a 
-            href="https://polygon.io/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-blue-500 hover:text-blue-700 inline-flex items-center gap-1 ml-1"
+    <LayoutContainer>
+      <SectionHeader title="Polygon API Key" />
+      <Box
+        borderWidth="1px"
+        borderRadius="lg"
+        p={6}
+        bg="white"
+        boxShadow="md"
+        maxWidth="xl"
+        mx="auto"
+      >
+        <Text mb={4}>
+          To fetch real-time stock data, you need a Polygon.io API key.{" "}
+          <Link
+            href="https://polygon.io/"
+            isExternal
+            color="blue.500"
+            fontWeight="medium"
           >
-            Get an API key <ExternalLink className="h-3 w-3" />
-          </a>
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="apiKey">API Key</Label>
-          <Input
-            id="apiKey"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            type="password"
-            placeholder="Enter your Polygon.io API key"
-          />
-        </div>
-        
-        {testResult && (
-          <Alert variant={testResult.success ? "default" : "destructive"}>
-            {testResult.success ? (
-              <CheckCircle className="h-4 w-4" />
-            ) : (
-              <AlertCircle className="h-4 w-4" />
-            )}
-            <AlertTitle>
-              {testResult.success ? "Connection Successful" : "Connection Failed"}
-            </AlertTitle>
-            <AlertDescription>
-              {testResult.message}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <Alert variant="default" className="bg-blue-50 text-blue-800 border-blue-200">
-          <Info className="h-4 w-4 text-blue-700" />
-          <AlertDescription className="text-blue-700">
-            Your API key will be securely stored in Supabase Edge Functions environment.
-            The key is never exposed to browser clients.
-          </AlertDescription>
-        </Alert>
-      </CardContent>
-      
-      <CardFooter className="flex justify-between">
-        <Button 
-          variant="outline" 
-          onClick={testApiKey} 
-          disabled={isTesting || isSaving}
-          className="flex items-center gap-2"
-        >
-          <Server className="h-4 w-4" />
-          {isTesting ? "Testing..." : "Test Connection"}
-        </Button>
-        
-        <Button 
-          onClick={saveApiKey} 
-          disabled={isTesting || isSaving}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSaving ? "Saving..." : "Save API Key"}
-        </Button>
-      </CardFooter>
-    </Card>
+            Get your API key here
+          </Link>
+          .
+        </Text>
+        <form onSubmit={handleSubmit}>
+          <Stack spacing={4}>
+            <FormControl id="api-key">
+              <FormLabel>Polygon.io API Key</FormLabel>
+              <InputGroup size="md">
+                <Input
+                  type={showApiKey ? "text" : "password"}
+                  value={apiKey}
+                  onChange={handleApiKeyChange}
+                  placeholder="Enter your API key"
+                />
+                <InputRightElement width="4.5rem">
+                  <IconButton
+                    h="1.75rem"
+                    size="sm"
+                    onClick={toggleShowApiKey}
+                    aria-label={
+                      showApiKey ? "Hide API Key" : "Show API Key"
+                    }
+                    icon={showApiKey ? <ViewOffIcon /> : <ViewIcon />}
+                  />
+                </InputRightElement>
+              </InputGroup>
+            </FormControl>
+            <Flex justify="space-between">
+              <Button
+                colorScheme="blue"
+                isLoading={isLoading}
+                type="submit"
+                width="48%"
+              >
+                Save API Key
+              </Button>
+              <Button
+                colorScheme="red"
+                isLoading={isLoading}
+                onClick={handleDeleteApiKey}
+                width="48%"
+                isDisabled={!apiKey}
+              >
+                Delete API Key
+              </Button>
+            </Flex>
+          </Stack>
+        </form>
+      </Box>
+    </LayoutContainer>
   );
-}
+};
+
+export default PolygonApiKeyForm;
