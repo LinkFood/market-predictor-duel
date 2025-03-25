@@ -14,6 +14,8 @@ interface PolygonApiKeyFormProps {
   isAdmin?: boolean;
 }
 
+const ADMIN_EMAIL = "admin@example.com"; // Replace with your actual email
+
 const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }) => {
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -34,19 +36,8 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         setCurrentUser(user);
         
-        // Query the profiles table for admin status using an additional metadata field
-        // Since 'role' doesn't exist in the profiles table type
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("id", user.id)
-          .single();
-          
-        // For now, since we don't have a role column, we'll rely on the passed isAdmin prop
-        // or check for specific usernames that are admins
-        // This is a temporary solution until we create a proper role system
-        const adminUsernames = ['admin', 'superadmin']; // Example admin usernames
-        if (isAdmin || (data && adminUsernames.includes(data.username || ''))) {
+        // Simple admin check: either the isAdmin prop is true or the user's email matches ADMIN_EMAIL
+        if (isAdmin || user.email === ADMIN_EMAIL) {
           setIsAdminUser(true);
           fetchApiKey();
         }
