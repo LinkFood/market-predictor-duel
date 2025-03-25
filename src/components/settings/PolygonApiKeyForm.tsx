@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -13,8 +14,6 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } fr
 interface PolygonApiKeyFormProps {
   isAdmin?: boolean;
 }
-
-const ADMIN_EMAIL = "admin@example.com"; // Replace with your actual email
 
 const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }) => {
   const [apiKey, setApiKey] = useState<string>("");
@@ -36,8 +35,26 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         setCurrentUser(user);
         
-        // Simple admin check: either the isAdmin prop is true or the user's email matches ADMIN_EMAIL
-        if (isAdmin || user.email === ADMIN_EMAIL) {
+        // Use the new role system to check if user is admin
+        // If isAdmin prop is true, we'll also consider the user an admin
+        if (isAdmin) {
+          setIsAdminUser(true);
+          fetchApiKey();
+          return;
+        }
+
+        // Check if user has admin role using our new function
+        const { data, error } = await supabase.rpc('user_has_role', {
+          check_user_id: user.id,
+          check_role: 'admin'
+        });
+        
+        if (error) {
+          console.error("Error checking admin role:", error);
+          return;
+        }
+        
+        if (data === true) {
           setIsAdminUser(true);
           fetchApiKey();
         }
