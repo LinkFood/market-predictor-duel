@@ -15,7 +15,7 @@ interface UserRoleManagerProps {
 }
 
 const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
-  const [userId, setUserId] = useState<string>("");
+  const [userId, setUserId] = useState<string>("ddcdf86f-3701-4c2f-ab2d-5e77777fb63c");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [operationResult, setOperationResult] = useState<null | "success" | "error">(null);
   const [resultMessage, setResultMessage] = useState<string>("");
@@ -116,6 +116,9 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
                 onChange={handleUserIdChange}
                 placeholder="Enter user ID to assign admin role"
               />
+              <p className="text-sm text-gray-500">
+                We've pre-filled your user ID. Click the button below to assign yourself admin privileges.
+              </p>
             </div>
             <Button
               type="submit"

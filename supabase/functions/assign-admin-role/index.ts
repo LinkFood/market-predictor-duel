@@ -37,10 +37,28 @@ serve(async (req) => {
     const requestData = await req.json();
     const { userId, adminEmail } = requestData;
 
-    // Verify the requestor is an admin by email (temporary security measure)
-    // In a production system, you would use a more robust security check
-    if (user.email !== adminEmail) {
-      throw new Error("Unauthorized: Only existing admins can assign admin roles");
+    // Special case for first admin assignment or self-assignment
+    const isFirstAdminAssignment = await isFirstAdmin(supabaseClient);
+    const isSelfAssignment = userId === user.id;
+    
+    // For standard cases, check if the requesting user is an admin
+    if (!isFirstAdminAssignment && !isSelfAssignment) {
+      // Check if the requesting user has admin role
+      const { data: isAdmin, error: adminCheckError } = await supabaseClient.rpc(
+        'user_has_role',
+        { 
+          check_user_id: user.id,
+          check_role: 'admin'
+        }
+      );
+      
+      if (adminCheckError) {
+        throw new Error(`Error checking admin status: ${adminCheckError.message}`);
+      }
+      
+      if (!isAdmin) {
+        throw new Error("Unauthorized: Only existing admins can assign admin roles");
+      }
     }
 
     // Check if the user already has the admin role
@@ -101,3 +119,23 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to check if this is the first admin being assigned
+async function isFirstAdmin(supabase) {
+  try {
+    const { count, error } = await supabase
+      .from('user_roles')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'admin');
+    
+    if (error) {
+      console.error("Error checking for existing admins:", error);
+      return false;
+    }
+    
+    return count === 0;
+  } catch (error) {
+    console.error("Error in isFirstAdmin check:", error);
+    return false;
+  }
+}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Eye, EyeOff, CheckCircle, AlertCircle, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
+import { useAuth } from "@/lib/auth-context";
 
 interface PolygonApiKeyFormProps {
   isAdmin?: boolean;
@@ -24,13 +23,12 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [isAdminUser, setIsAdminUser] = useState<boolean>(isAdmin);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Check if user is admin
     const checkAdmin = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
         if (!user) return;
         
         setCurrentUser(user);
@@ -64,7 +62,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
     };
     
     checkAdmin();
-  }, [isAdmin]);
+  }, [isAdmin, user]);
 
   const fetchApiKey = async () => {
     setIsLoading(true);
