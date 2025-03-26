@@ -121,6 +121,8 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
             value={userId}
             onChange={handleUserIdChange}
             placeholder="Enter user ID to assign admin role"
+            className="bg-white"
+            aria-label="User ID"
           />
           <p className="text-sm text-gray-500">
             We've pre-filled your user ID. Click the button below to assign yourself admin privileges.
@@ -128,8 +130,7 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
         </div>
         <Button
           type="submit"
-          disabled={isLoading || !userId}
-          className="flex items-center gap-2 w-full md:w-auto"
+          className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white cursor-pointer"
         >
           <UserPlus className="h-4 w-4" />
           {isLoading ? "Assigning..." : "Assign Admin Role"}
