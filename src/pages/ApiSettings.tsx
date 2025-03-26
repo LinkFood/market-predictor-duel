@@ -37,7 +37,7 @@ const ApiSettings: React.FC = () => {
       </Alert>
 
       <div className="grid gap-6">
-        <Card>
+        <Card className="overflow-visible">
           <CardHeader>
             <CardTitle>Admin Role Management</CardTitle>
             <CardDescription>

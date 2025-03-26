@@ -47,6 +47,7 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
     try {
       console.log("Invoking assign-admin-role function with:", { userId, adminEmail });
       
+      // Make sure we're passing the correct body format and using await properly
       const { data, error } = await supabase.functions.invoke("assign-admin-role", {
         body: { userId, adminEmail }
       });
@@ -127,8 +128,8 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
         </div>
         <Button
           type="submit"
-          disabled={isLoading}
-          className="flex items-center gap-2"
+          disabled={isLoading || !userId}
+          className="flex items-center gap-2 w-full md:w-auto"
         >
           <UserPlus className="h-4 w-4" />
           {isLoading ? "Assigning..." : "Assign Admin Role"}
