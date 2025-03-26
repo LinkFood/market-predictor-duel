@@ -18,13 +18,13 @@ const Settings: React.FC = () => {
   const settingsNavItems = [
     {
       title: "Account",
-      href: "/app/settings/account",
+      href: "/app/account",
       icon: <User className="mr-2 h-4 w-4" />,
       description: "Manage your account settings and preferences"
     },
     {
       title: "API Connections",
-      href: "/app/settings/api",
+      href: "/app/api-settings",
       icon: <Box className="mr-2 h-4 w-4" />,
       description: "Configure market data and AI service connections",
       highlight: true
@@ -69,7 +69,7 @@ const Settings: React.FC = () => {
               <h3 className="font-medium text-green-800">Need to configure API connections?</h3>
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
-            <Link to="/app/settings/api">
+            <Link to="/app/api-settings">
               <Button className="bg-green-600 hover:bg-green-700">
                 <Box className="mr-2 h-4 w-4" />
                 API Settings

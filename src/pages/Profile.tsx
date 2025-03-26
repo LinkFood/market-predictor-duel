@@ -78,12 +78,19 @@ const Profile: React.FC = () => {
     <div className="container max-w-7xl mx-auto px-4 py-8">
       <div className="mb-8 flex justify-between items-center">
         <h1 className="text-3xl font-bold">Profile</h1>
-        <Link to="/app/settings">
-          <Button variant="outline" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Settings
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/app/settings">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Settings
+            </Button>
+          </Link>
+          <Link to="/app/api-settings">
+            <Button variant="default" className="bg-green-600 hover:bg-green-700">
+              API Settings
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <ProfileHeader

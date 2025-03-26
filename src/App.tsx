@@ -49,7 +49,7 @@ const App: React.FC = () => {
               <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="settings" element={<Settings />} />
-                <Route path="settings/api" element={<ApiSettings />} />
+                <Route path="account" element={<Account />} />
                 <Route path="api-settings" element={<ApiSettings />} />
                 <Route path="make-prediction" element={<MakePrediction />} />
                 <Route path="predict" element={<Navigate to="/app/make-prediction" replace />} />
@@ -58,7 +58,6 @@ const App: React.FC = () => {
                 <Route path="brackets" element={<Brackets />} />
                 <Route path="brackets/:id" element={<BracketDetail />} />
                 <Route path="create-bracket" element={<CreateBracket />} />
-                <Route path="account" element={<Account />} />
                 <Route path="leaderboard" element={<Leaderboard />} />
                 <Route path="markets" element={<Markets />} />
                 <Route path="history" element={<PredictionsHistory />} />
