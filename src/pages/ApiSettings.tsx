@@ -1,95 +1,59 @@
 
 import React from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PolygonApiKeyForm from "@/components/settings/PolygonApiKeyForm";
-import ApiConnectionTest from "@/components/prediction/ApiConnectionTest";
-import { FEATURES } from "@/lib/config";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
-import { BackButton } from "@/components/ui/back-button";
-import { Box, Cloud, Server } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import UserRoleManager from "@/components/settings/UserRoleManager";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const ApiSettings: React.FC = () => {
+  const { user } = useAuth();
+  
   return (
     <LayoutContainer>
-      <div className="mb-6">
-        <BackButton href="/app/settings" />
-        <h1 className="text-3xl font-bold mt-4 mb-2">API Connections</h1>
-        <p className="text-muted-foreground">
-          Configure external API connections to enable real-time data for predictions.
-        </p>
+      <div className="flex items-center gap-4 mb-6">
+        <Link to="/app/settings">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Settings
+          </Button>
+        </Link>
+        <div>
+          <h1 className="title-lg">API Connections</h1>
+          <p className="subtitle">Configure market data and AI service connections</p>
+        </div>
       </div>
 
-      <Tabs defaultValue="market-data" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="market-data" className="flex items-center gap-2">
-            <Box className="h-4 w-4" />
-            Market Data
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center gap-2">
-            <Cloud className="h-4 w-4" />
-            AI Services
-          </TabsTrigger>
-          <TabsTrigger value="status" className="flex items-center gap-2">
-            <Server className="h-4 w-4" />
-            API Status
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="market-data" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Market Data API Configuration</CardTitle>
-              <CardDescription>
-                Connect to real market data from Polygon.io to power your predictions.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <PolygonApiKeyForm isAdmin={true} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="ai" className="space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>AI Services Configuration</CardTitle>
-              <CardDescription>
-                Configure connections to AI prediction services.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground mb-4">
-                AI services are configured and managed by the application administrators.
-                Contact support if you're experiencing issues with AI-powered predictions.
-              </p>
-              {FEATURES.enableAIAnalysis ? (
-                <div className="bg-green-50 text-green-800 rounded-md p-3 text-sm">
-                  AI analysis features are currently enabled.
-                </div>
-              ) : (
-                <div className="bg-yellow-50 text-yellow-800 rounded-md p-3 text-sm">
-                  AI analysis features are currently disabled.
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="status" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>API Connection Status</CardTitle>
-              <CardDescription>
-                Test and verify connections to external services.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ApiConnectionTest />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <div className="grid gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Role Management</CardTitle>
+            <CardDescription>
+              Assign admin role to your account to manage API settings
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <UserRoleManager adminEmail={user?.email || ""} />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Polygon.io API Configuration</CardTitle>
+            <CardDescription>
+              Connect to Polygon.io for real-time and historical market data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4">
+              To configure the Polygon.io API, first assign yourself an admin role using the 
+              User Role Manager above.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     </LayoutContainer>
   );
 };

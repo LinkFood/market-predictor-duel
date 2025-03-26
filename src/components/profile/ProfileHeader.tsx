@@ -51,6 +51,11 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         return 'Free';
     }
   };
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await onLogout();
+  };
   
   return (
     <div className="flex justify-between items-center p-6 bg-card rounded-lg shadow-sm">
@@ -82,7 +87,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             Home
           </Button>
         </Link>
-        <Button variant="outline" size="sm" onClick={onLogout}>
+        <Button variant="outline" size="sm" onClick={handleLogout}>
           <LogOut className="h-4 w-4 mr-2" />
           Logout
         </Button>

@@ -1,12 +1,13 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import AppLayout from '@/layouts/AppLayout';
 import AuthLayout from '@/layouts/AuthLayout';
 import AppErrorBoundary from '@/components/AppErrorBoundary';
 import { AuthProvider } from '@/lib/auth-context';
 import { Toaster } from '@/components/ui/toaster';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import './App.css';
 
 // Pages
@@ -44,13 +45,15 @@ const App: React.FC = () => {
                 <Route path="/register" element={<Register />} />
               </Route>
               
-              {/* App Routes */}
-              <Route path="/app" element={<AppLayout />}>
+              {/* App Routes - Protected by ProtectedRoute */}
+              <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
                 <Route index element={<Dashboard />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="settings/api" element={<ApiSettings />} />
                 <Route path="api-settings" element={<ApiSettings />} />
                 <Route path="make-prediction" element={<MakePrediction />} />
+                {/* Adding redirect from predict to make-prediction */}
+                <Route path="predict" element={<Navigate to="/app/make-prediction" replace />} />
                 <Route path="prediction/:id" element={<PredictionDetail />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="brackets" element={<Brackets />} />
@@ -62,8 +65,8 @@ const App: React.FC = () => {
                 <Route path="history" element={<PredictionsHistory />} />
               </Route>
               
-              {/* Dashboard Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
+              {/* Dashboard Routes - Redirect to protected route */}
+              <Route path="/dashboard" element={<Navigate to="/app" replace />} />
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />
