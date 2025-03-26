@@ -21,9 +21,13 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
   const [resultMessage, setResultMessage] = useState<string>("");
   const { toast } = useToast();
 
+  // Ensure user ID is set when user is available
   useEffect(() => {
     if (user?.id) {
+      console.log("Setting user ID from user object:", user.id);
       setUserId(user.id);
+    } else {
+      console.log("No user ID available in user object");
     }
   }, [user]);
 
@@ -121,16 +125,28 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
             value={userId}
             onChange={handleUserIdChange}
             placeholder="Enter user ID to assign admin role"
-            className="bg-white"
+            className="bg-white border-gray-300 hover:border-gray-400 focus:border-primary"
             aria-label="User ID"
           />
           <p className="text-sm text-gray-500">
-            We've pre-filled your user ID. Click the button below to assign yourself admin privileges.
+            {userId ? "We've pre-filled your user ID. Click the button below to assign yourself admin privileges." : "Enter your user ID to assign admin privileges."}
           </p>
         </div>
         <Button
           type="submit"
-          className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white cursor-pointer"
+          className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white !cursor-pointer"
+          disabled={isLoading || !userId}
+          onClick={(e) => {
+            console.log("Button clicked");
+            if (!userId) {
+              e.preventDefault();
+              toast({
+                title: "User ID Required",
+                description: "Please enter a user ID.",
+                variant: "destructive",
+              });
+            }
+          }}
         >
           <UserPlus className="h-4 w-4" />
           {isLoading ? "Assigning..." : "Assign Admin Role"}

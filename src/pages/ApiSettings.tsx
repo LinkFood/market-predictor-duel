@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import UserRoleManager from "@/components/settings/UserRoleManager";
@@ -12,7 +12,19 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
 
 const ApiSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refreshSession } = useAuth();
+  const [refreshKey, setRefreshKey] = useState(0);
+  
+  // Force refresh when component mounts to ensure we have the latest user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      console.log("ApiSettings mounted, refreshing session");
+      await refreshSession();
+      setRefreshKey(prev => prev + 1);
+    };
+    
+    loadUserData();
+  }, [refreshSession]);
   
   return (
     <LayoutContainer>
@@ -37,7 +49,7 @@ const ApiSettings: React.FC = () => {
       </Alert>
 
       <div className="grid gap-6">
-        <Card className="overflow-visible shadow-sm border">
+        <Card className="overflow-visible shadow-sm border border-gray-200 hover:border-gray-300 transition-all">
           <CardHeader>
             <CardTitle>Admin Role Management</CardTitle>
             <CardDescription>
@@ -45,7 +57,10 @@ const ApiSettings: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <UserRoleManager adminEmail={user?.email || ""} />
+            <UserRoleManager 
+              key={refreshKey} 
+              adminEmail={user?.email || ""} 
+            />
           </CardContent>
         </Card>
         
