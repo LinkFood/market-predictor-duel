@@ -52,7 +52,6 @@ const App: React.FC = () => {
                 <Route path="settings/api" element={<ApiSettings />} />
                 <Route path="api-settings" element={<ApiSettings />} />
                 <Route path="make-prediction" element={<MakePrediction />} />
-                {/* Adding redirect from predict to make-prediction */}
                 <Route path="predict" element={<Navigate to="/app/make-prediction" replace />} />
                 <Route path="prediction/:id" element={<PredictionDetail />} />
                 <Route path="profile" element={<Profile />} />

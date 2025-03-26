@@ -3,10 +3,13 @@ import React from "react";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import UserRoleManager from "@/components/settings/UserRoleManager";
+import PolygonApiKeyForm from "@/components/settings/PolygonApiKeyForm";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { InfoIcon } from "lucide-react";
 
 const ApiSettings: React.FC = () => {
   const { user } = useAuth();
@@ -26,6 +29,13 @@ const ApiSettings: React.FC = () => {
         </div>
       </div>
 
+      <Alert className="mb-6 bg-blue-50 border-blue-200 text-blue-800">
+        <InfoIcon className="h-4 w-4" />
+        <AlertDescription>
+          To configure API connections, first assign yourself an admin role using the form below, then refresh the page.
+        </AlertDescription>
+      </Alert>
+
       <div className="grid gap-6">
         <Card>
           <CardHeader>
@@ -39,20 +49,7 @@ const ApiSettings: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader>
-            <CardTitle>Polygon.io API Configuration</CardTitle>
-            <CardDescription>
-              Connect to Polygon.io for real-time and historical market data
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">
-              To configure the Polygon.io API, first assign yourself an admin role using the 
-              User Role Manager above.
-            </p>
-          </CardContent>
-        </Card>
+        <PolygonApiKeyForm />
       </div>
     </LayoutContainer>
   );

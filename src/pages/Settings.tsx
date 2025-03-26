@@ -11,6 +11,8 @@ import {
   Database,
   Box
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 const Settings: React.FC = () => {
   const settingsNavItems = [
@@ -24,7 +26,8 @@ const Settings: React.FC = () => {
       title: "API Connections",
       href: "/app/settings/api",
       icon: <Box className="mr-2 h-4 w-4" />,
-      description: "Configure market data and AI service connections"
+      description: "Configure market data and AI service connections",
+      highlight: true
     },
     {
       title: "Notifications",
@@ -59,12 +62,31 @@ const Settings: React.FC = () => {
         <p className="subtitle">Manage your account settings and preferences</p>
       </div>
 
+      <Card className="mb-6 border-green-200 bg-green-50">
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="font-medium text-green-800">Need to configure API connections?</h3>
+              <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
+            </div>
+            <Link to="/app/settings/api">
+              <Button className="bg-green-600 hover:bg-green-700">
+                <Box className="mr-2 h-4 w-4" />
+                API Settings
+              </Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {settingsNavItems.map((item) => (
           <Link
             key={item.title}
             to={item.href}
-            className="glass-card-subtle p-5 flex flex-col items-start justify-between touch-scale"
+            className={`glass-card-subtle p-5 flex flex-col items-start justify-between touch-scale ${
+              item.highlight ? 'border-green-200 bg-green-50' : ''
+            }`}
           >
             <div>
               <div className="flex items-center mb-3">
