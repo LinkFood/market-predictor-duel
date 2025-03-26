@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth-context";
 import ProfileHeader from "@/components/profile/ProfileHeader";
@@ -9,10 +9,27 @@ import SettingsTab from "@/components/profile/SettingsTab";
 import BadgesTab from "@/components/profile/BadgesTab";
 import SubscriptionTab from "@/components/profile/SubscriptionTab";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { Settings, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/profile/BadgesTab";
+import { ProfileFormData } from "@/components/profile/SettingsTab";
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [badges, setBadges] = useState<Badge[]>([]);
+
+  useEffect(() => {
+    // Simulate loading user data
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -21,6 +38,41 @@ const Profile: React.FC = () => {
       day: 'numeric'
     });
   };
+
+  const handleLogout = async (): Promise<void> => {
+    await signOut();
+  };
+
+  const handleUpdateProfile = async (data: ProfileFormData): Promise<void> => {
+    try {
+      setIsUpdating(true);
+      
+      // This would normally call supabase to update the profile
+      // Simulating an API call with a timeout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been successfully updated.",
+      });
+    } catch (error) {
+      toast({
+        title: "Update failed",
+        description: "There was an error updating your profile.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container max-w-7xl mx-auto px-4 py-8 flex justify-center items-center min-h-[500px]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="container max-w-7xl mx-auto px-4 py-8">
@@ -39,7 +91,7 @@ const Profile: React.FC = () => {
         joinDate={formatDate(user?.created_at || new Date().toISOString())}
         avatarUrl={user?.user_metadata?.avatar_url}
         subscriptionTier="free"
-        onLogout={() => {}}
+        onLogout={handleLogout}
       />
 
       <div className="mt-8">
@@ -52,19 +104,26 @@ const Profile: React.FC = () => {
           </TabsList>
 
           <TabsContent value="predictions">
-            <PredictionsTab />
+            <PredictionsTab isLoading={isLoading} />
           </TabsContent>
 
           <TabsContent value="badges">
-            <BadgesTab />
+            <BadgesTab badges={badges} isLoading={isLoading} />
           </TabsContent>
 
           <TabsContent value="settings">
-            <SettingsTab />
+            <SettingsTab 
+              defaultUsername={user?.email?.split('@')[0] || 'User'}
+              defaultEmail={user?.email || ''}
+              defaultAvatarUrl={user?.user_metadata?.avatar_url}
+              isLoading={isLoading}
+              isUpdating={isUpdating}
+              onUpdateProfile={handleUpdateProfile}
+            />
           </TabsContent>
 
           <TabsContent value="subscription">
-            <SubscriptionTab />
+            <SubscriptionTab isLoading={isLoading} />
           </TabsContent>
         </Tabs>
       </div>
