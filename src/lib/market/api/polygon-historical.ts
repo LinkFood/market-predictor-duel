@@ -5,7 +5,6 @@
  */
 
 import { HistoricalData } from "../types";
-import { logError } from "../../error-handling";
 import { callPolygonApi, getDateXDaysAgo } from "./polygon-base";
 
 /**
@@ -21,12 +20,12 @@ export async function getPolygonHistoricalData(
     const data = await callPolygonApi(
       `/v2/aggs/ticker/${symbol}/range/1/${timespan}/${fromDate}/${toDate}`
     );
-
+    
     // Check if API returned results
     if (!data.results || data.results.length === 0) {
       throw new Error(`No historical data found for symbol ${symbol}`);
     }
-
+    
     // Process the data
     return {
       symbol,
@@ -34,7 +33,7 @@ export async function getPolygonHistoricalData(
         // Convert timestamp to date string (YYYY-MM-DD)
         const date = new Date(result.t);
         const dateStr = date.toISOString().split('T')[0];
-
+        
         return {
           date: dateStr,
           open: result.o,
@@ -46,8 +45,7 @@ export async function getPolygonHistoricalData(
       })
     };
   } catch (error) {
-    logError(error, `getPolygonHistoricalData:${symbol}`);
     console.error(`Error fetching Polygon historical data for ${symbol}:`, error);
-    throw error; // Rethrow to prevent silent fallback
+    throw error;
   }
 }

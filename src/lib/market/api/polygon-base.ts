@@ -1,67 +1,43 @@
 
 /**
  * Polygon.io Base API Service
- * Handles core API interactions with retry logic 
+ * Handles core API functionality and common utilities
  */
 
-import { supabase } from "@/integrations/supabase/client";
-import { recordApiSuccess, recordApiFailure } from "../../api-health-monitor";
-import { MARKET_CONFIG, API_ERRORS } from "../../config";
+import { config } from "../../config";
+
+// API configuration
+const POLYGON_API_KEY = config.polygon.apiKey || ""; 
+const POLYGON_BASE_URL = "https://api.polygon.io";
 
 /**
- * Call the Polygon API through our Supabase edge function with retries
+ * Make a request to the Polygon.io API with proper error handling
  */
-export async function callPolygonApi(endpoint: string, params = {}, maxRetries = 3) {
-  let attempts = 0;
-  let lastError = null;
+export async function callPolygonApi(endpoint: string, params = {}) {
+  try {
+    // Build the URL with parameters
+    let url = `${POLYGON_BASE_URL}${endpoint}`;
+    
+    // Add API key to all requests
+    const queryParams = new URLSearchParams(params);
+    queryParams.append('apiKey', POLYGON_API_KEY);
+    
+    // Append query parameters to URL
+    url = `${url}?${queryParams.toString()}`;
+    
+    console.log(`Calling Polygon API: ${url.replace(POLYGON_API_KEY, '[REDACTED]')}`);
+    
+    const response = await fetch(url);
 
-  while (attempts < maxRetries) {
-    try {
-      console.log(`Calling Polygon API endpoint ${endpoint} via edge function (attempt ${attempts + 1}/${maxRetries})`);
-      
-      const { data, error } = await supabase.functions.invoke('polygon-market-data', {
-        body: { 
-          endpoint,
-          params
-        }
-      });
-
-      if (error) {
-        console.error('Error calling polygon-market-data function:', error);
-        recordApiFailure('polygon', error);
-        throw error;
-      }
-      
-      // Check if the response contains an error message from the edge function
-      if (data && data.error) {
-        console.error('Polygon API returned an error:', data.error, data.message);
-        recordApiFailure('polygon', new Error(data.error));
-        
-        throw new Error(`Polygon API error: ${data.error} - ${data.message || ''}`);
-      }
-      
-      // Record successful API call
-      recordApiSuccess('polygon');
-      
-      console.log(`Successfully received data for ${endpoint}`);
-      return data;
-    } catch (error) {
-      lastError = error;
-      attempts++;
-      
-      if (attempts >= maxRetries) {
-        console.error(`Final attempt ${attempts} failed for ${endpoint}:`, error);
-        throw error;
-      }
-      
-      // Exponential backoff with a fixed delay
-      const delayMs = 1000 * Math.pow(2, attempts - 1);
-      console.log(`Retrying in ${delayMs}ms... (attempt ${attempts + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+    if (!response.ok) {
+      throw new Error(`Polygon API request failed with status ${response.status}`);
     }
-  }
 
-  throw lastError || new Error('All retry attempts failed');
+    return await response.json();
+  } catch (error) {
+    console.error(`Error in Polygon API request:`, error);
+    throw error;
+  }
 }
 
 /**

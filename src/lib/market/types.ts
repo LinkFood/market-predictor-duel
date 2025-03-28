@@ -1,35 +1,47 @@
 
 /**
  * Market Data Types
+ * Shared type definitions for market data
  */
 
+// Stock data representation
 export interface StockData {
   symbol: string;
   name: string;
   price: number;
   change: number;
   changePercent: number;
-  marketCap?: number;
+  high52Week?: number | null;
+  low52Week?: number | null;
   volume?: number;
-  pe?: number;
-  high52Week?: number;
-  low52Week?: number;
-  avgVolume?: number;
-  yield?: number;
-  beta?: number;
   datetime: string;
-  sector?: string;
-  usingMockData?: boolean; // Added for compatibility with SearchResults
 }
 
+// Historical data point structure
+export interface HistoricalDataPoint {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+}
+
+// Complete historical data response
 export interface HistoricalData {
   symbol: string;
-  data: {
-    date: string;
-    open: number;
-    high: number;
-    low: number;
-    close: number;
-    volume: number;
-  }[];
+  data: HistoricalDataPoint[];
+}
+
+// Market data search response
+export interface StockSearchResponse {
+  results: StockData[];
+  status: string;
+  count: number;
+}
+
+// Market movers response
+export interface MarketMoversResponse {
+  gainers: StockData[];
+  losers: StockData[];
 }
