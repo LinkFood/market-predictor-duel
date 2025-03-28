@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Eye, EyeOff, CheckCircle, AlertCircle, ExternalLink, Loader2, Key, Server } from "lucide-react";
+import { 
+  Eye, 
+  EyeOff, 
+  CheckCircle, 
+  AlertCircle, 
+  ExternalLink, 
+  Loader2, 
+  Key, 
+  Server as ServerIcon
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
@@ -28,13 +38,19 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log("PolygonApiKeyForm mounted");
     const checkAdmin = async () => {
       try {
-        if (!user) return;
+        if (!user) {
+          console.log("No user found");
+          return;
+        }
         
+        console.log("Current user:", user);
         setCurrentUser(user);
         
         if (isAdmin) {
+          console.log("Admin prop is true");
           setIsAdminUser(true);
           fetchApiKey();
           return;
@@ -47,6 +63,11 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         
         if (error) {
           console.error("Error checking admin role:", error);
+          toast({
+            title: "Error",
+            description: "Failed to check admin status. Please try again.",
+            variant: "destructive",
+          });
           return;
         }
         
@@ -58,11 +79,16 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         }
       } catch (error) {
         console.error("Error checking admin status:", error);
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred while checking admin status.",
+          variant: "destructive",
+        });
       }
     };
     
     checkAdmin();
-  }, [isAdmin, user]);
+  }, [isAdmin, user, toast]);
 
   const fetchApiKey = async () => {
     setIsLoading(true);
@@ -77,17 +103,36 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
       if (error) {
         console.error("Error testing API connection:", error);
         setConnectionStatus("error");
+        toast({
+          title: "Connection Error",
+          description: "Failed to test the Polygon API connection.",
+          variant: "destructive",
+        });
       } else if (data && data.success) {
         setConnectionStatus("success");
         setApiKey("••••••••••••••••••••••");
         setTestResponse(data);
+        toast({
+          title: "Connection Active",
+          description: "Successfully connected to Polygon API.",
+        });
       } else {
         setConnectionStatus("error");
         setTestResponse(data);
+        toast({
+          title: "Connection Error",
+          description: data?.message || "Failed to connect to Polygon API.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error fetching API key status:", error);
       setConnectionStatus("error");
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while testing the connection.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -326,7 +371,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
                   </>
                 ) : (
                   <>
-                    <Server className="mr-2 h-4 w-4" />
+                    <ServerIcon className="mr-2 h-4 w-4" />
                     Test Connection
                   </>
                 )}

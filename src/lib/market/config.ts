@@ -11,6 +11,7 @@ export const API_KEY = import.meta.env.VITE_ALPHAVANTAGE_API_KEY || "demo"; // R
 export const MARKET_CONFIG = {
   polygon: {
     apiKey: import.meta.env.VITE_POLYGON_API_KEY || "",
-    baseUrl: "https://api.polygon.io"
+    baseUrl: "https://api.polygon.io",
+    enabled: true
   }
 };

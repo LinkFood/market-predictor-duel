@@ -7,34 +7,52 @@ import PolygonApiKeyForm from "@/components/settings/PolygonApiKeyForm";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const ApiSettings: React.FC = () => {
   const { user, refreshSession } = useAuth();
   const [refreshKey, setRefreshKey] = useState(0);
+  const navigate = useNavigate();
+  const { toast } = useToast();
   
   // Force refresh when component mounts to ensure we have the latest user data
   useEffect(() => {
     const loadUserData = async () => {
       console.log("ApiSettings mounted, refreshing session");
-      await refreshSession();
-      setRefreshKey(prev => prev + 1);
+      try {
+        await refreshSession();
+        setRefreshKey(prev => prev + 1);
+        toast({
+          title: "Session refreshed",
+          description: "User data has been updated.",
+        });
+      } catch (error) {
+        console.error("Error refreshing session:", error);
+        toast({
+          title: "Error",
+          description: "Failed to refresh user session. Please try again.",
+          variant: "destructive",
+        });
+      }
     };
     
     loadUserData();
-  }, [refreshSession]);
+  }, [refreshSession, toast]);
+
+  const handleBackClick = () => {
+    navigate("/app/settings");
+  };
   
   return (
     <LayoutContainer>
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/app/settings">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Settings
-          </Button>
-        </Link>
+        <Button variant="outline" size="sm" onClick={handleBackClick}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Settings
+        </Button>
         <div>
           <h1 className="title-lg">API Connections</h1>
           <p className="subtitle">Configure market data and AI service connections</p>
