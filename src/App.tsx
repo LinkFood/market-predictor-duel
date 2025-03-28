@@ -46,13 +46,16 @@ const App: React.FC = () => {
               </Route>
               
               {/* App Routes - Protected by ProtectedRoute */}
-              <Route path="/app" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+              <Route path="/app" element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }>
                 <Route index element={<Dashboard />} />
                 <Route path="settings" element={<Settings />} />
                 <Route path="account" element={<Account />} />
                 <Route path="api-settings" element={<ApiSettings />} />
-                <Route path="make-prediction" element={<MakePrediction />} />
-                <Route path="predict" element={<Navigate to="/app/make-prediction" replace />} />
+                <Route path="predict" element={<MakePrediction />} />
                 <Route path="prediction/:id" element={<PredictionDetail />} />
                 <Route path="profile" element={<Profile />} />
                 <Route path="brackets" element={<Brackets />} />
@@ -63,8 +66,9 @@ const App: React.FC = () => {
                 <Route path="history" element={<PredictionsHistory />} />
               </Route>
               
-              {/* Dashboard Routes - Redirect to protected route */}
+              {/* Redirects */}
               <Route path="/dashboard" element={<Navigate to="/app" replace />} />
+              <Route path="/app/make-prediction" element={<Navigate to="/app/predict" replace />} />
               
               {/* 404 Route */}
               <Route path="*" element={<NotFound />} />

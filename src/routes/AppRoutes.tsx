@@ -14,6 +14,8 @@ import Profile from '@/pages/Profile';
 import Brackets from '@/pages/Brackets';
 import CreateBracket from '@/pages/CreateBracket';
 import BracketDetail from '@/pages/BracketDetail';
+import Settings from '@/pages/Settings';
+import ApiSettings from '@/pages/ApiSettings';
 import NotFound from '@/pages/NotFound';
 
 // Auth pages
@@ -42,21 +44,22 @@ const AppRoutes: React.FC = () => {
 
       {/* Protected app routes */}
       <Route path="/app" element={<ProtectedRoute />}>
-        <Route index element={<Navigate to="/app/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route index element={<Dashboard />} />
         <Route path="markets" element={<Markets />} />
         <Route path="predict" element={<MakePrediction />} />
-        <Route path="predictions/:id" element={<PredictionDetail />} />
-        <Route path="predictions/history" element={<PredictionsHistory />} />
+        <Route path="prediction/:id" element={<PredictionDetail />} />
+        <Route path="history" element={<PredictionsHistory />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="api-settings" element={<ApiSettings />} />
         <Route path="brackets" element={<Brackets />} />
         <Route path="brackets/create" element={<CreateBracket />} />
         <Route path="brackets/:id" element={<BracketDetail />} />
       </Route>
 
       {/* Redirect root to app */}
-      <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/" element={<Navigate to="/app" replace />} />
 
       {/* 404 for everything else */}
       <Route path="*" element={<NotFound />} />
