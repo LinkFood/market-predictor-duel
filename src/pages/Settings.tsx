@@ -70,7 +70,7 @@ const Settings: React.FC = () => {
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
             <Link to="/app/api-settings">
-              <Button className="bg-green-600 hover:bg-green-700">
+              <Button className="bg-green-600 hover:bg-green-700 w-full sm:w-auto">
                 <Box className="mr-2 h-4 w-4" />
                 API Settings
               </Button>
