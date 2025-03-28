@@ -15,6 +15,13 @@ export interface StockData {
   low52Week?: number | null;
   volume?: number;
   datetime: string;
+  // Additional fields that are used in the application
+  sector?: string;
+  marketCap?: number;
+  pe?: number;
+  avgVolume?: number;
+  yield?: number;
+  beta?: number;
 }
 
 // Historical data point structure

@@ -12,8 +12,10 @@ import { logError } from "../error-handling";
 
 /**
  * Search for stocks by keyword
+ * @param query The search query string
+ * @param limit Optional limit on the number of results
  */
-export async function searchStocks(query: string): Promise<{ results: StockData[]; usingMockData: boolean }> {
+export async function searchStocks(query: string, limit?: number): Promise<{ results: StockData[]; usingMockData: boolean }> {
   let usingMockData = false;
   
   try {
@@ -27,7 +29,7 @@ export async function searchStocks(query: string): Promise<{ results: StockData[
       console.log(`🌐 Searching for stocks matching "${query}" via Polygon.io`);
       try {
         const results = await searchPolygonStocks(query);
-        return { results, usingMockData: false };
+        return { results: results.slice(0, limit), usingMockData: false };
       } catch (error) {
         logError(error, `searchStocks:${query}`);
         console.error("Error searching stocks via Polygon API:", error);
@@ -36,7 +38,8 @@ export async function searchStocks(query: string): Promise<{ results: StockData[
     } else {
       console.log(`🧪 Searching mock stocks for "${query}"`);
       usingMockData = true;
-      return { results: searchMockStocks(query), usingMockData };
+      const results = searchMockStocks(query);
+      return { results: results.slice(0, limit || results.length), usingMockData };
     }
   } catch (error) {
     logError(error, `searchStocks:${query}`);
@@ -49,6 +52,7 @@ export async function searchStocks(query: string): Promise<{ results: StockData[
     
     console.log("Using mock data as real data was not requested");
     usingMockData = true;
-    return { results: searchMockStocks(query), usingMockData };
+    const results = searchMockStocks(query);
+    return { results: results.slice(0, limit || results.length), usingMockData };
   }
 }

@@ -4,10 +4,10 @@
  * Handles core API functionality and common utilities
  */
 
-import { config } from "../../config";
+import { config, MARKET_CONFIG } from "../../config";
 
 // API configuration
-const POLYGON_API_KEY = config.polygon.apiKey || ""; 
+const POLYGON_API_KEY = MARKET_CONFIG.polygon.apiKey || ""; 
 const POLYGON_BASE_URL = "https://api.polygon.io";
 
 /**
