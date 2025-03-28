@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Eye, EyeOff, CheckCircle, AlertCircle, ExternalLink, Loader2, Key } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, AlertCircle, ExternalLink, Loader2, Key, Server } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
