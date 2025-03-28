@@ -11,8 +11,8 @@ interface NextStepsSectionProps {
 
 const NextStepsSection: React.FC<NextStepsSectionProps> = ({ prediction }) => {
   return (
-    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4">
-      <h3 className="font-semibold mb-3 flex items-center">
+    <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-100 dark:border-indigo-800">
+      <h3 className="font-semibold mb-3 flex items-center text-indigo-800 dark:text-indigo-200">
         <Clock className="mr-2 h-5 w-5 text-indigo-600 dark:text-indigo-400" />
         What Happens Next
       </h3>
@@ -21,7 +21,7 @@ const NextStepsSection: React.FC<NextStepsSectionProps> = ({ prediction }) => {
         We'll notify you of the results and award points if you beat the AI!
       </p>
       <div className="flex items-center">
-        <Badge variant="outline" className="bg-white dark:bg-slate-800">
+        <Badge variant="outline" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700">
           <Timer className="mr-1 h-3.5 w-3.5" />
           Resolves: {new Date(prediction?.resolvesAt || "").toLocaleDateString()} 
         </Badge>

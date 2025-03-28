@@ -26,10 +26,10 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
     : 0;
     
   return (
-    <Card className="shadow-lg border-0 overflow-hidden bg-gradient-to-br from-white to-slate-50">
-      <CardHeader className="pb-2 border-b border-slate-100">
+    <Card className="shadow-lg border-0 overflow-hidden bg-gradient-to-br from-[hsl(var(--card))] to-[hsl(var(--background))]">
+      <CardHeader className="pb-2 border-b border-[hsl(var(--border))]">
         <CardTitle className="text-base sm:text-lg font-semibold flex items-center">
-          <Shield className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-indigo-600" />
+          <Shield className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-indigo-600 dark:text-indigo-400" />
           Global Battle Stats
         </CardTitle>
       </CardHeader>
@@ -40,12 +40,12 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center">
                 <Users className="w-4 h-4 mr-2 text-blue-500" />
-                <span className="text-sm font-medium">Traders</span>
+                <span className="text-sm font-medium text-[hsl(var(--foreground))]">Traders</span>
               </div>
-              <span className="text-sm font-bold text-blue-600">{humanWinRate}%</span>
+              <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{humanWinRate}%</span>
             </div>
             
-            <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-blue-500 rounded-full"
                 initial={{ width: 0 }}
@@ -56,13 +56,13 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
             
             <div className="flex items-center justify-between mb-1">
               <div className="flex items-center">
-                <Zap className="w-4 h-4 mr-2 text-purple-600" />
-                <span className="text-sm font-medium">AI</span>
+                <Zap className="w-4 h-4 mr-2 text-purple-600 dark:text-purple-400" />
+                <span className="text-sm font-medium text-[hsl(var(--foreground))]">AI</span>
               </div>
-              <span className="text-sm font-bold text-purple-600">{aiWinRate}%</span>
+              <span className="text-sm font-bold text-purple-600 dark:text-purple-400">{aiWinRate}%</span>
             </div>
             
-            <div className="h-2.5 bg-slate-200 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-[hsl(var(--muted))] rounded-full overflow-hidden">
               <motion.div 
                 className="h-full bg-purple-500 rounded-full"
                 initial={{ width: 0 }}
@@ -73,34 +73,34 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
           </div>
           
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-            <div className="bg-slate-50 rounded-lg p-3">
-              <div className="text-xs text-slate-500 mb-1">Total Predictions</div>
-              <div className="text-lg font-bold text-slate-800">{stats.totalPredictions.toLocaleString()}</div>
+          <div className="grid grid-cols-2 gap-3 pt-2 border-t border-[hsl(var(--border))]">
+            <div className="bg-[hsl(var(--card))] rounded-lg p-3">
+              <div className="text-xs text-[hsl(var(--muted-foreground))] mb-1">Total Predictions</div>
+              <div className="text-lg font-bold text-[hsl(var(--foreground))]">{stats.totalPredictions.toLocaleString()}</div>
             </div>
             
-            <div className="bg-slate-50 rounded-lg p-3">
-              <div className="text-xs text-slate-500 mb-1">Win Ratio (H:AI)</div>
+            <div className="bg-[hsl(var(--card))] rounded-lg p-3">
+              <div className="text-xs text-[hsl(var(--muted-foreground))] mb-1">Win Ratio (H:AI)</div>
               <div className="flex items-center space-x-2">
-                <span className="text-lg font-bold text-blue-600">{stats.humanWins.toLocaleString()}</span>
-                <span className="text-lg font-bold text-slate-400">:</span>
-                <span className="text-lg font-bold text-purple-600">{stats.aiWins.toLocaleString()}</span>
+                <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.humanWins.toLocaleString()}</span>
+                <span className="text-lg font-bold text-[hsl(var(--muted-foreground))]">:</span>
+                <span className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.aiWins.toLocaleString()}</span>
               </div>
             </div>
             
             {stats.totalDuels > 0 && (
               <>
-                <div className="bg-slate-50 rounded-lg p-3">
-                  <div className="text-xs text-slate-500 mb-1">Total Duels</div>
-                  <div className="text-lg font-bold text-slate-800">{stats.totalDuels.toLocaleString()}</div>
+                <div className="bg-[hsl(var(--card))] rounded-lg p-3">
+                  <div className="text-xs text-[hsl(var(--muted-foreground))] mb-1">Total Duels</div>
+                  <div className="text-lg font-bold text-[hsl(var(--foreground))]">{stats.totalDuels.toLocaleString()}</div>
                 </div>
                 
-                <div className="bg-slate-50 rounded-lg p-3">
-                  <div className="text-xs text-slate-500 mb-1">Duel Victories</div>
+                <div className="bg-[hsl(var(--card))] rounded-lg p-3">
+                  <div className="text-xs text-[hsl(var(--muted-foreground))] mb-1">Duel Victories</div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-blue-600">{stats.humansWon?.toLocaleString() || 0}</span>
-                    <span className="text-lg font-bold text-slate-400">:</span>
-                    <span className="text-lg font-bold text-purple-600">{stats.aiWon?.toLocaleString() || 0}</span>
+                    <span className="text-lg font-bold text-blue-600 dark:text-blue-400">{stats.humansWon?.toLocaleString() || 0}</span>
+                    <span className="text-lg font-bold text-[hsl(var(--muted-foreground))]">:</span>
+                    <span className="text-lg font-bold text-purple-600 dark:text-purple-400">{stats.aiWon?.toLocaleString() || 0}</span>
                   </div>
                 </div>
               </>
@@ -109,12 +109,12 @@ const GlobalBattleStats: React.FC<GlobalBattleStatsProps> = ({ stats }) => {
           
           {/* Current Champion */}
           {stats.currentChampion && (
-            <div className="flex items-center justify-between mt-2 bg-gradient-to-r from-amber-50 to-amber-100 p-2 rounded-lg">
+            <div className="flex items-center justify-between mt-2 bg-gradient-to-r from-amber-100 to-amber-50 dark:from-amber-900/30 dark:to-amber-800/20 p-2 rounded-lg">
               <div className="flex items-center">
                 <Trophy className="w-4 h-4 mr-2 text-amber-500" />
-                <span className="text-xs text-amber-800">Current Champion</span>
+                <span className="text-xs text-amber-800 dark:text-amber-300">Current Champion</span>
               </div>
-              <span className="text-xs font-bold text-amber-800">{stats.currentChampion}</span>
+              <span className="text-xs font-bold text-amber-800 dark:text-amber-300">{stats.currentChampion}</span>
             </div>
           )}
         </div>

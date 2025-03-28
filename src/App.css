@@ -1,3 +1,4 @@
+
 #root {
   width: 100%;
   margin: 0 auto;
@@ -108,6 +109,130 @@
   background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
                     linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+
+/* Glass card styles with improved visibility */
+.glass-card {
+  @apply rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-md;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card-raised {
+  @apply rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-lg;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-panel {
+  @apply rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-md;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-md bg-[hsl(var(--primary))] px-4 py-2 text-sm font-medium text-[hsl(var(--primary-foreground))] shadow hover:bg-[hsl(var(--primary))]/90 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--primary))]/50 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center rounded-md bg-[hsl(var(--secondary))] px-4 py-2 text-sm font-medium text-[hsl(var(--secondary-foreground))] shadow hover:bg-[hsl(var(--secondary))]/90 focus:outline-none focus:ring-2 focus:ring-[hsl(var(--secondary))]/50 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center rounded-md border border-[hsl(var(--border))] bg-transparent px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] shadow-sm hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]/50 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-[hsl(var(--foreground))] hover:bg-[hsl(var(--accent))] hover:text-[hsl(var(--accent-foreground))] focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))]/50 focus:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 cursor-pointer;
+}
+
+.btn-sm {
+  @apply h-8 px-3 text-xs;
+}
+
+.btn-lg {
+  @apply h-10 px-8 text-base;
+}
+
+/* Badges */
+.badge {
+  @apply inline-flex items-center rounded-full border border-[hsl(var(--border))] px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-[hsl(var(--ring))] focus:ring-offset-2;
+}
+
+.badge-primary {
+  @apply bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))] hover:bg-[hsl(var(--primary))]/80;
+}
+
+.badge-secondary {
+  @apply bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))] hover:bg-[hsl(var(--secondary))]/80;
+}
+
+.badge-success {
+  @apply bg-green-500 text-white hover:bg-green-600 border-green-600;
+}
+
+.badge-warning {
+  @apply bg-yellow-500 text-white hover:bg-yellow-600 border-yellow-600;
+}
+
+.badge-danger {
+  @apply bg-red-500 text-white hover:bg-red-600 border-red-600;
+}
+
+.badge-sm {
+  @apply px-2 py-0.5 text-[10px];
+}
+
+/* Progress bar */
+.progress-bar {
+  @apply h-2 w-full overflow-hidden rounded-full bg-[hsl(var(--muted))];
+}
+
+.progress-bar-fill {
+  @apply h-full rounded-full transition-all duration-300;
+}
+
+/* Gradient utilities */
+.gradient-blue {
+  @apply bg-gradient-to-r from-blue-600 to-indigo-600;
+}
+
+.gradient-green {
+  @apply bg-gradient-to-r from-green-500 to-emerald-500;
+}
+
+/* Typography utility classes */
+.title-lg {
+  @apply text-2xl font-bold tracking-tight;
+}
+
+.title-md {
+  @apply text-xl font-semibold tracking-tight;
+}
+
+.title-sm {
+  @apply text-lg font-semibold tracking-tight;
+}
+
+.subtitle {
+  @apply text-sm text-[hsl(var(--muted-foreground))];
+}
+
+.caption {
+  @apply text-xs text-[hsl(var(--muted-foreground))];
+}
+
+.numeric-lg {
+  @apply text-3xl font-semibold tracking-tight tabular-nums;
+}
+
+.numeric-md {
+  @apply text-2xl font-semibold tracking-tight tabular-nums;
+}
+
+.numeric-sm {
+  @apply text-lg font-medium tracking-tight tabular-nums;
 }
 
 /* Legacy Vite Styles - Can be removed if not needed */

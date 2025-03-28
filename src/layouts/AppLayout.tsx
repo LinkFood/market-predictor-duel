@@ -8,8 +8,9 @@ const AppLayout: React.FC = () => {
     <>
       <Helmet>
         <title>StockDuel - Dashboard</title>
+        <meta name="theme-color" content="#111827" />
       </Helmet>
-      <main className="min-h-screen bg-background">
+      <main className="min-h-screen bg-[hsl(var(--background))] text-[hsl(var(--foreground))]">
         <Outlet />
       </main>
     </>

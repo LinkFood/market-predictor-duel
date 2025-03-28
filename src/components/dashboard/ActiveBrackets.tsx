@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, GitFork, Trophy, Clock, ArrowUpRight, Swords, TrendingUp, TrendingDown } from "lucide-react";
@@ -42,7 +43,7 @@ const ActiveBrackets: React.FC<ActiveBracketsProps> = ({ brackets }) => {
   const displayBrackets = activeBrackets.slice(0, 3);
 
   return (
-    <motion.section className="glass-panel p-5">
+    <motion.section className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-md">
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-xl font-semibold flex items-center gap-2">
           <Swords className="h-5 w-5 text-[hsl(var(--primary))]" />
@@ -54,7 +55,7 @@ const ActiveBrackets: React.FC<ActiveBracketsProps> = ({ brackets }) => {
       </div>
       
       {displayBrackets.length === 0 ? (
-        <div className="glass-card p-6 flex flex-col items-center justify-center text-center">
+        <div className="rounded-lg bg-[hsl(var(--background))] p-6 flex flex-col items-center justify-center text-center">
           <GitFork className="h-10 w-10 text-[hsl(var(--muted-foreground))] mb-3" />
           <p className="font-medium text-lg mb-1">No active duels</p>
           <p className="text-[hsl(var(--muted-foreground))] mb-5">Create a bracket to start competing against AI</p>
@@ -69,7 +70,7 @@ const ActiveBrackets: React.FC<ActiveBracketsProps> = ({ brackets }) => {
             <Link
               key={bracket.id}
               to={`/app/brackets/${bracket.id}`}
-              className="glass-card p-5 flex flex-col touch-scale hover:shadow-lg transition-all duration-300"
+              className="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 flex flex-col touch-scale hover:shadow-lg transition-all duration-300"
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -97,14 +98,14 @@ const ActiveBrackets: React.FC<ActiveBracketsProps> = ({ brackets }) => {
               </div>
               
               {/* Visual Bracket Preview */}
-              <div className="relative bg-slate-50 dark:bg-slate-900 rounded-lg p-3 mb-4">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 bg-white dark:bg-slate-800 rounded-full px-3 py-1 shadow-sm">
+              <div className="relative bg-[hsl(var(--background))] rounded-lg p-3 mb-4">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-3 bg-[hsl(var(--card))] rounded-full px-3 py-1 shadow-sm">
                   <p className="text-xs font-semibold">Stock Matchups</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="bg-blue-50 dark:bg-blue-950 p-2 rounded-lg">
-                    <p className="text-xs uppercase text-center mb-1 font-medium">Your Picks</p>
+                  <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg">
+                    <p className="text-xs uppercase text-center mb-1 font-medium text-blue-800 dark:text-blue-300">Your Picks</p>
                     <div className="space-y-1.5">
                       {bracket.userEntries.slice(0, 3).map((entry, i) => (
                         <div key={`user-${i}`} className="bg-white dark:bg-slate-800 rounded-md px-2 py-1 flex items-center justify-between">
@@ -121,8 +122,8 @@ const ActiveBrackets: React.FC<ActiveBracketsProps> = ({ brackets }) => {
                       )}
                     </div>
                   </div>
-                  <div className="bg-red-50 dark:bg-red-950 p-2 rounded-lg">
-                    <p className="text-xs uppercase text-center mb-1 font-medium">AI Picks</p>
+                  <div className="bg-red-100 dark:bg-red-900/30 p-2 rounded-lg">
+                    <p className="text-xs uppercase text-center mb-1 font-medium text-red-800 dark:text-red-300">AI Picks</p>
                     <div className="space-y-1.5">
                       {bracket.aiEntries.slice(0, 3).map((entry, i) => (
                         <div key={`ai-${i}`} className="bg-white dark:bg-slate-800 rounded-md px-2 py-1 flex items-center justify-between">

@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -9,8 +10,8 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-border/40 bg-card text-card-foreground shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden",
-      "after:absolute after:inset-0 after:bg-gradient-to-b after:from-background/10 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity",
+      "rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] text-[hsl(var(--card-foreground))] shadow-md hover:shadow-lg transition-all duration-200 relative overflow-hidden",
+      "after:absolute after:inset-0 after:bg-gradient-to-b after:from-[hsl(var(--background))]/10 after:to-transparent after:opacity-0 hover:after:opacity-100 after:transition-opacity",
       className
     )}
     {...props}
@@ -37,7 +38,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-2xl font-semibold leading-none tracking-tight text-[hsl(var(--foreground))]",
       className
     )}
     {...props}
@@ -51,7 +52,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-[hsl(var(--muted-foreground))]", className)}
     {...props}
   />
 ))
