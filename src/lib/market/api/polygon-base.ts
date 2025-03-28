@@ -4,7 +4,7 @@
  * Handles core API functionality and common utilities
  */
 
-import { config, MARKET_CONFIG } from "../../config";
+import { MARKET_CONFIG } from "../../config";
 
 // API configuration
 const POLYGON_API_KEY = MARKET_CONFIG.polygon.apiKey || ""; 

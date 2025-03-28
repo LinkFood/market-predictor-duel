@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
-const POLYGON_API_KEY = Deno.env.get('POLYGON_API_KEY');
 const POLYGON_BASE_URL = "https://api.polygon.io";
 
 // CORS headers
@@ -37,17 +36,17 @@ serve(async (req) => {
     console.log(`Request params:`, params);
     
     // Get the API key
-    let POLYGON_API_KEY;
+    let apiKey;
     
     // If a key is provided in the request (for testing), use it
     if (requestData.apiKey) {
-      POLYGON_API_KEY = requestData.apiKey;
+      apiKey = requestData.apiKey;
     } else {
       // Otherwise, get it from environment or storage
-      POLYGON_API_KEY = await getPolygonApiKey();
+      apiKey = await getPolygonApiKey();
     }
     
-    if (!POLYGON_API_KEY) {
+    if (!apiKey) {
       console.error("Polygon API key is not configured");
       return new Response(
         JSON.stringify({ 
@@ -65,19 +64,19 @@ serve(async (req) => {
       );
     }
     
-    console.log(`Polygon API key found. Length: ${POLYGON_API_KEY.length}`);
+    console.log(`Polygon API key found. Length: ${apiKey.length}`);
     
     // Build the URL with parameters
     let url = `${POLYGON_BASE_URL}${endpoint}`;
     
     // Add API key to all requests
     const queryParams = new URLSearchParams(params || {});
-    queryParams.append('apiKey', POLYGON_API_KEY);
+    queryParams.append('apiKey', apiKey);
     
     // Append query parameters to URL
     url = `${url}?${queryParams.toString()}`;
     
-    console.log(`Calling Polygon API: ${url.replace(POLYGON_API_KEY, '[REDACTED]')}`);
+    console.log(`Calling Polygon API: ${url.replace(apiKey, '[REDACTED]')}`);
     
     // Call Polygon API with timeout
     const controller = new AbortController();
@@ -218,7 +217,14 @@ serve(async (req) => {
 
 // Helper function to get the Polygon API key
 async function getPolygonApiKey(): Promise<string> {
-  // Try to get from Deno KV first
+  // Try to get from environment variable first (Supabase secret)
+  const envKey = Deno.env.get('POLYGON_API_KEY');
+  if (envKey) {
+    console.log("Using API key from environment variable");
+    return envKey;
+  }
+  
+  // Try to get from Deno KV
   try {
     const kv = await Deno.openKv();
     const keyEntry = await kv.get(["polygon_api_key"]);
@@ -228,13 +234,6 @@ async function getPolygonApiKey(): Promise<string> {
     }
   } catch (error) {
     console.error("Error accessing Deno KV:", error);
-  }
-  
-  // Fall back to environment variable
-  const envKey = Deno.env.get('POLYGON_API_KEY');
-  if (envKey) {
-    console.log("Using API key from environment variable");
-    return envKey;
   }
   
   // No key found
