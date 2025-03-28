@@ -136,17 +136,6 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
           type="submit"
           className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white !cursor-pointer"
           disabled={isLoading || !userId}
-          onClick={(e) => {
-            console.log("Button clicked");
-            if (!userId) {
-              e.preventDefault();
-              toast({
-                title: "User ID Required",
-                description: "Please enter a user ID.",
-                variant: "destructive",
-              });
-            }
-          }}
         >
           <UserPlus className="h-4 w-4" />
           {isLoading ? "Assigning..." : "Assign Admin Role"}

@@ -37,9 +37,13 @@ serve(async (req) => {
     const requestData = await req.json();
     const { userId, adminEmail } = requestData;
 
+    console.log("Processing admin role assignment:", { userId, adminEmail, requestingUser: user.id });
+
     // Special case for first admin assignment or self-assignment
     const isFirstAdminAssignment = await isFirstAdmin(supabaseClient);
     const isSelfAssignment = userId === user.id;
+    
+    console.log("Context:", { isFirstAdminAssignment, isSelfAssignment });
     
     // For standard cases, check if the requesting user is an admin
     if (!isFirstAdminAssignment && !isSelfAssignment) {
@@ -76,6 +80,7 @@ serve(async (req) => {
     // If the user doesn't have the admin role, assign it
     let result;
     if (!existingRole) {
+      console.log("Assigning new admin role to user:", userId);
       const { data, error } = await supabaseClient
         .from('user_roles')
         .insert([
@@ -89,8 +94,11 @@ serve(async (req) => {
       
       result = { success: true, message: "Admin role assigned successfully", data };
     } else {
+      console.log("User already has admin role:", userId);
       result = { success: true, message: "User already has admin role", data: existingRole };
     }
+
+    console.log("Operation result:", result);
 
     return new Response(
       JSON.stringify(result),
@@ -133,6 +141,7 @@ async function isFirstAdmin(supabase) {
       return false;
     }
     
+    console.log("Current admin count:", count);
     return count === 0;
   } catch (error) {
     console.error("Error in isFirstAdmin check:", error);

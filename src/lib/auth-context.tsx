@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -143,7 +142,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshSession = async () => {
     try {
+      console.log("Refreshing session...");
       const { data: { session: refreshedSession } } = await supabase.auth.getSession();
+      console.log("Refreshed session:", refreshedSession);
       setSession(refreshedSession);
       
       if (refreshedSession?.user) {
@@ -159,8 +160,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         
         setUser(extendedUser);
+        console.log("User data updated after refresh:", extendedUser);
       } else {
         setUser(null);
+        console.log("No user found after session refresh");
       }
     } catch (error) {
       console.error('Error refreshing session:', error);
@@ -183,3 +186,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     </AuthContext.Provider>
   );
 };
+
+export { AuthContext, AuthProvider };
