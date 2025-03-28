@@ -14,26 +14,21 @@ import {
   ExternalLink, 
   Loader2, 
   Key, 
-  Server as ServerIcon
+  Server
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth-context";
 import { Link } from "react-router-dom";
 
-interface PolygonApiKeyFormProps {
-  isAdmin?: boolean;
-}
-
-const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }) => {
+const PolygonApiKeyForm: React.FC = () => {
   const [apiKey, setApiKey] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isTestingConnection, setIsTestingConnection] = useState<boolean>(false);
   const [connectionStatus, setConnectionStatus] = useState<null | "success" | "error">(null);
   const [testResponse, setTestResponse] = useState<any>(null);
   const [showApiKey, setShowApiKey] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isAdminUser, setIsAdminUser] = useState<boolean>(isAdmin);
+  const [isAdminUser, setIsAdminUser] = useState<boolean>(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -47,15 +42,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         }
         
         console.log("Current user:", user);
-        setCurrentUser(user);
         
-        if (isAdmin) {
-          console.log("Admin prop is true");
-          setIsAdminUser(true);
-          fetchApiKey();
-          return;
-        }
-
         const { data, error } = await supabase.rpc('user_has_role', {
           check_user_id: user.id,
           check_role: 'admin'
@@ -88,7 +75,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
     };
     
     checkAdmin();
-  }, [isAdmin, user, toast]);
+  }, [user, toast]);
 
   const fetchApiKey = async () => {
     setIsLoading(true);
@@ -259,7 +246,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
         <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           Market data API configuration is managed by administrators.
-          Use the Admin Role Manager tool to grant yourself admin access.
+          Use the Admin Role Manager tool above to grant yourself admin access.
         </AlertDescription>
       </Alert>
     );
@@ -276,7 +263,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
               href="https://polygon.io/" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 font-medium hover:underline inline-flex items-center"
+              className="text-blue-600 font-medium hover:underline inline-flex items-center cursor-pointer"
             >
               Get an API key from Polygon.io
               <ExternalLink className="ml-1 h-3 w-3" />
@@ -322,13 +309,13 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
                   value={apiKey}
                   onChange={handleApiKeyChange}
                   placeholder="Enter your API key"
-                  className="pr-10"
+                  className="pr-10 cursor-text"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3"
+                  className="absolute right-0 top-0 h-full px-3 cursor-pointer"
                   onClick={toggleShowApiKey}
                 >
                   {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -343,7 +330,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
               <Button
                 type="submit"
                 disabled={isLoading || !apiKey || apiKey === "••••••••••••••••••••••"}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 {isLoading ? (
                   <>
@@ -362,7 +349,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
                 variant="outline"
                 disabled={isTestingConnection}
                 onClick={testConnection}
-                className="flex-1"
+                className="flex-1 cursor-pointer"
               >
                 {isTestingConnection ? (
                   <>
@@ -371,7 +358,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
                   </>
                 ) : (
                   <>
-                    <ServerIcon className="mr-2 h-4 w-4" />
+                    <Server className="mr-2 h-4 w-4" />
                     Test Connection
                   </>
                 )}
@@ -392,7 +379,7 @@ const PolygonApiKeyForm: React.FC<PolygonApiKeyFormProps> = ({ isAdmin = false }
           <p className="text-sm text-muted-foreground mb-2">
             For more detailed diagnostics and testing, visit the API Testing page.
           </p>
-          <Button variant="outline" size="sm" asChild>
+          <Button variant="outline" size="sm" asChild className="cursor-pointer">
             <Link to="/app/test-api">
               Go to API Testing Page
             </Link>

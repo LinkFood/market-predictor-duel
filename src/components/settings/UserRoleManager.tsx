@@ -9,31 +9,25 @@ import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, AlertCircle, UserPlus } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
-interface UserRoleManagerProps {
-  adminEmail: string;
-}
-
-const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
+const UserRoleManager: React.FC = () => {
   const { user, refreshSession } = useAuth();
   const [userId, setUserId] = useState<string>("");
+  const [adminEmail, setAdminEmail] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [operationResult, setOperationResult] = useState<null | "success" | "error">(null);
   const [resultMessage, setResultMessage] = useState<string>("");
   const { toast } = useToast();
 
-  // Ensure user ID is set when user is available
+  // Ensure user ID and email are set when user is available
   useEffect(() => {
     if (user?.id) {
       console.log("Setting user ID from user object:", user.id);
       setUserId(user.id);
-    } else {
-      console.log("No user ID available in user object");
+    }
+    if (user?.email) {
+      setAdminEmail(user.email);
     }
   }, [user]);
-
-  const handleUserIdChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setUserId(event.target.value);
-  };
 
   const assignAdminRole = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -51,7 +45,6 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
     try {
       console.log("Invoking assign-admin-role function with:", { userId, adminEmail });
       
-      // Make sure we're passing the correct body format and using await properly
       const { data, error } = await supabase.functions.invoke("assign-admin-role", {
         body: { userId, adminEmail }
       });
@@ -72,7 +65,7 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
         setResultMessage(data.message || "Admin role assigned successfully.");
         toast({
           title: "Success",
-          description: data.message || "Admin role assigned successfully.",
+          description: data.message || "Admin role assigned successfully. Please refresh the page.",
           variant: "default",
         });
         
@@ -123,9 +116,9 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
           <Input
             id="user-id"
             value={userId}
-            onChange={handleUserIdChange}
+            onChange={(e) => setUserId(e.target.value)}
             placeholder="Enter user ID to assign admin role"
-            className="bg-white border-gray-300 hover:border-gray-400 focus:border-primary"
+            className="bg-white border-gray-300 hover:border-gray-400 focus:border-primary cursor-text"
             aria-label="User ID"
           />
           <p className="text-sm text-gray-500">
@@ -134,7 +127,7 @@ const UserRoleManager: React.FC<UserRoleManagerProps> = ({ adminEmail }) => {
         </div>
         <Button
           type="submit"
-          className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white !cursor-pointer"
+          className="flex items-center gap-2 w-full md:w-auto bg-primary hover:bg-primary/90 text-white cursor-pointer"
           disabled={isLoading || !userId}
         >
           <UserPlus className="h-4 w-4" />

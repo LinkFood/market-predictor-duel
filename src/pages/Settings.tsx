@@ -1,6 +1,6 @@
 
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import {
   Settings as SettingsIcon,
@@ -57,10 +57,6 @@ const Settings: React.FC = () => {
     }
   ];
 
-  const handleApiSettingsClick = () => {
-    navigate("/app/api-settings");
-  };
-
   return (
     <LayoutContainer>
       <div className="mb-8">
@@ -75,22 +71,23 @@ const Settings: React.FC = () => {
               <h3 className="font-medium text-green-800">Need to configure API connections?</h3>
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
-            <Button 
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-              onClick={handleApiSettingsClick}
-            >
-              <Box className="mr-2 h-4 w-4" />
-              API Settings
-            </Button>
+            <Link to="/app/api-settings">
+              <Button 
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto cursor-pointer"
+              >
+                <Box className="mr-2 h-4 w-4" />
+                API Settings
+              </Button>
+            </Link>
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {settingsNavItems.map((item) => (
-          <button
-            key={item.title}
-            onClick={() => navigate(item.href)}
+          <Link 
+            key={item.title} 
+            to={item.href}
             className={`glass-card-subtle p-5 flex flex-col items-start justify-between touch-scale ${
               item.highlight ? 'border-green-200 bg-green-50' : ''
             } w-full text-left cursor-pointer`}
@@ -103,7 +100,7 @@ const Settings: React.FC = () => {
               <p className="subtitle">{item.description}</p>
             </div>
             <SettingsIcon className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-          </button>
+          </Link>
         ))}
       </div>
     </LayoutContainer>

@@ -1,46 +1,17 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import UserRoleManager from "@/components/settings/UserRoleManager";
 import PolygonApiKeyForm from "@/components/settings/PolygonApiKeyForm";
-import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { InfoIcon } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 const ApiSettings: React.FC = () => {
-  const { user, refreshSession } = useAuth();
-  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  
-  // Force refresh when component mounts to ensure we have the latest user data
-  useEffect(() => {
-    const loadUserData = async () => {
-      console.log("ApiSettings mounted, refreshing session");
-      try {
-        await refreshSession();
-        setRefreshKey(prev => prev + 1);
-        toast({
-          title: "Session refreshed",
-          description: "User data has been updated.",
-        });
-      } catch (error) {
-        console.error("Error refreshing session:", error);
-        toast({
-          title: "Error",
-          description: "Failed to refresh user session. Please try again.",
-          variant: "destructive",
-        });
-      }
-    };
-    
-    loadUserData();
-  }, [refreshSession, toast]);
 
   const handleBackClick = () => {
     navigate("/app/settings");
@@ -49,7 +20,7 @@ const ApiSettings: React.FC = () => {
   return (
     <LayoutContainer>
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="sm" onClick={handleBackClick}>
+        <Button variant="outline" size="sm" onClick={handleBackClick} className="cursor-pointer">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Settings
         </Button>
@@ -75,10 +46,7 @@ const ApiSettings: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <UserRoleManager 
-              key={refreshKey} 
-              adminEmail={user?.email || ""} 
-            />
+            <UserRoleManager />
           </CardContent>
         </Card>
         
