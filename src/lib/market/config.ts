@@ -22,5 +22,6 @@ export const MARKET_CONFIG = {
     apiKey: import.meta.env.VITE_POLYGON_API_KEY || "",
     baseUrl: "https://api.polygon.io",
     enabled: true
-  }
+  },
+  refreshInterval: 60000 // 1 minute refresh interval
 };

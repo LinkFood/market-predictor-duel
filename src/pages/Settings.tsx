@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { LayoutContainer } from "@/components/layout/LayoutContainer";
 import {
   Settings as SettingsIcon,
@@ -12,46 +12,54 @@ import {
   Box
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 const Settings: React.FC = () => {
   const navigate = useNavigate();
   
+  const navigateToApiSettings = () => {
+    navigate("/app/api-settings");
+  };
+  
+  const handleNavigation = (path: string) => {
+    navigate(path);
+  };
+  
   const settingsNavItems = [
     {
       title: "Account",
-      href: "/app/account",
+      path: "/app/account",
       icon: <User className="mr-2 h-4 w-4" />,
       description: "Manage your account settings and preferences"
     },
     {
       title: "API Connections",
-      href: "/app/api-settings",
+      path: "/app/api-settings",
       icon: <Box className="mr-2 h-4 w-4" />,
       description: "Configure market data and AI service connections",
       highlight: true
     },
     {
       title: "Notifications",
-      href: "/app/settings/notifications",
+      path: "/app/settings/notifications",
       icon: <Bell className="mr-2 h-4 w-4" />,
       description: "Configure how you receive notifications"
     },
     {
       title: "Security",
-      href: "/app/settings/security",
+      path: "/app/settings/security",
       icon: <Shield className="mr-2 h-4 w-4" />,
       description: "Manage your account security settings"
     },
     {
       title: "Billing",
-      href: "/app/settings/billing",
+      path: "/app/settings/billing",
       icon: <CreditCard className="mr-2 h-4 w-4" />,
       description: "Manage your subscription and billing details"
     },
     {
       title: "Data & Privacy",
-      href: "/app/settings/data-privacy",
+      path: "/app/settings/data-privacy",
       icon: <Database className="mr-2 h-4 w-4" />,
       description: "Manage your data and privacy settings"
     }
@@ -71,23 +79,22 @@ const Settings: React.FC = () => {
               <h3 className="font-medium text-green-800">Need to configure API connections?</h3>
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
-            <Link to="/app/api-settings">
-              <Button 
-                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto cursor-pointer"
-              >
-                <Box className="mr-2 h-4 w-4" />
-                API Settings
-              </Button>
-            </Link>
+            <Button 
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto cursor-pointer"
+              onClick={navigateToApiSettings}
+            >
+              <Box className="mr-2 h-4 w-4" />
+              API Settings
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {settingsNavItems.map((item) => (
-          <Link 
+          <div 
             key={item.title} 
-            to={item.href}
+            onClick={() => handleNavigation(item.path)}
             className={`glass-card-subtle p-5 flex flex-col items-start justify-between touch-scale ${
               item.highlight ? 'border-green-200 bg-green-50' : ''
             } w-full text-left cursor-pointer`}
@@ -100,7 +107,7 @@ const Settings: React.FC = () => {
               <p className="subtitle">{item.description}</p>
             </div>
             <SettingsIcon className="h-5 w-5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-          </Link>
+          </div>
         ))}
       </div>
     </LayoutContainer>

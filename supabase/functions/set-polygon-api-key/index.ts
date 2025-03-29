@@ -24,29 +24,30 @@ serve(async (req) => {
 
     console.log("Storing Polygon API key (length:", apiKey.length, ")");
     
-    // Store API key as a Deno KV value
+    // Store API key
     try {
       const kv = await Deno.openKv();
       await kv.set(["polygon_api_key"], apiKey);
       console.log("Successfully stored API key in Deno KV");
+      
+      // Also set as environment variable
+      Deno.env.set("POLYGON_API_KEY", apiKey);
     } catch (kvError) {
       console.error("Failed to store in Deno KV:", kvError);
-      console.log("Falling back to environment variable...");
-      // Note: In production, this won't set an env var across requests
-      // This is mostly for logging/debugging purposes
+      // Fallback to just env var
       Deno.env.set("POLYGON_API_KEY", apiKey);
     }
     
     // Validate the API key with a simple call to Polygon API
     const testUrl = `https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${apiKey}`;
-    console.log(`Testing Polygon API connection with key: ${apiKey.slice(0, 3)}...${apiKey.slice(-3)}`);
+    console.log(`Testing Polygon API connection`);
     
     const response = await fetch(testUrl);
     
     if (!response.ok) {
       const errorData = await response.text();
       console.error(`API key validation failed (${response.status}):`, errorData);
-      throw new Error(`API key validation failed with status ${response.status}: ${errorData}`);
+      throw new Error(`API key validation failed: ${response.status}`);
     }
     
     const data = await response.json();
@@ -55,10 +56,7 @@ serve(async (req) => {
       throw new Error("API key validation failed: Invalid response format");
     }
     
-    console.log("API key validation successful:", {
-      status: response.status,
-      hasResults: data.results.length > 0
-    });
+    console.log("API key validation successful");
     
     return new Response(
       JSON.stringify({ 
