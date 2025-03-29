@@ -80,8 +80,8 @@ const Settings: React.FC = () => {
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
             <Button 
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
-              onClick={navigateToApiSettings}
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto cursor-pointer"
+              onClick={() => navigate("/app/api-settings")}
             >
               <Box className="mr-2 h-4 w-4" />
               API Settings
@@ -94,10 +94,10 @@ const Settings: React.FC = () => {
         {settingsNavItems.map((item) => (
           <div 
             key={item.title} 
-            onClick={() => handleNavigation(item.path)}
             className={`glass-card-subtle p-5 flex flex-col items-start justify-between ${
               item.highlight ? 'border-green-200 bg-green-50' : ''
             } w-full text-left cursor-pointer`}
+            onClick={() => navigate(item.path)}
           >
             <div>
               <div className="flex items-center mb-3">

@@ -56,7 +56,6 @@ const AppRoutes: React.FC = () => {
         <Route path="brackets" element={<Brackets />} />
         <Route path="brackets/create" element={<CreateBracket />} />
         <Route path="brackets/:id" element={<BracketDetail />} />
-        <Route path="test-api" element={<ApiSettings />} />
       </Route>
 
       {/* Redirect root to app */}
