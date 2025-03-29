@@ -24,19 +24,9 @@ serve(async (req) => {
 
     console.log("Storing Polygon API key (length:", apiKey.length, ")");
     
-    // Store API key
-    try {
-      const kv = await Deno.openKv();
-      await kv.set(["polygon_api_key"], apiKey);
-      console.log("Successfully stored API key in Deno KV");
-      
-      // Also set as environment variable
-      Deno.env.set("POLYGON_API_KEY", apiKey);
-    } catch (kvError) {
-      console.error("Failed to store in Deno KV:", kvError);
-      // Fallback to just env var
-      Deno.env.set("POLYGON_API_KEY", apiKey);
-    }
+    // Store the API key as an env variable
+    Deno.env.set("POLYGON_API_KEY", apiKey);
+    console.log("Set POLYGON_API_KEY environment variable");
     
     // Validate the API key with a simple call to Polygon API
     const testUrl = `https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${apiKey}`;

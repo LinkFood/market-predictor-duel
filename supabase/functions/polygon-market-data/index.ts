@@ -14,41 +14,35 @@ serve(async (req) => {
   }
 
   try {
-    // Try to get polygon API key
-    let apiKey = Deno.env.get("POLYGON_API_KEY");
+    // Get polygon API key from environment variable
+    const apiKey = Deno.env.get("POLYGON_API_KEY");
+    console.log("Polygon API key found:", apiKey ? "Yes (length: " + apiKey.length + ")" : "No");
     
-    // Try from KV store if not in env
     if (!apiKey) {
-      try {
-        const kv = await Deno.openKv();
-        const keyResult = await kv.get(["polygon_api_key"]);
-        apiKey = keyResult.value as string;
-      } catch (kvError) {
-        console.error("Error accessing KV store:", kvError);
-      }
+      return new Response(
+        JSON.stringify({
+          success: false,
+          message: "Polygon API key not configured"
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
     }
     
-    // Check if this is a test request
-    const { test } = await req.json();
+    // Parse request body
+    const body = await req.json();
     
-    if (test) {
-      if (!apiKey) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: "Polygon API key not configured"
-          }),
-          {
-            headers: {
-              ...corsHeaders,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-      }
-      
+    // Check if this is a test request
+    if (body.test) {
       // Try a simple API call to validate the key
       const testUrl = `https://api.polygon.io/v2/aggs/ticker/AAPL/prev?apiKey=${apiKey}`;
+      console.log(`Testing Polygon API connection`);
+      
       const response = await fetch(testUrl);
       
       if (!response.ok) {
@@ -60,6 +54,7 @@ serve(async (req) => {
             details: errorText
           }),
           {
+            status: response.status,
             headers: {
               ...corsHeaders,
               'Content-Type': 'application/json'
@@ -85,14 +80,43 @@ serve(async (req) => {
       );
     }
     
-    // This would be where actual market data functions would go
-    // For now, just return a message that this function is under development
+    // Handle specific endpoint requests
+    if (body.endpoint === 'snapshot') {
+      const tickers = body.tickers || 'SPY,DIA,QQQ,IWM';
+      console.log("Request params:", { tickers });
+      
+      const url = `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers?tickers=${tickers}&apiKey=${apiKey}`;
+      console.log(`Calling Polygon API: ${url.replace(apiKey, '[REDACTED]')}`);
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        throw new Error(`Polygon API request failed with status ${response.status}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Received tickers snapshot data with ${data.tickers?.length || 0} results`);
+      
+      return new Response(
+        JSON.stringify({
+          success: true,
+          data
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+    }
     
     return new Response(
       JSON.stringify({
         success: true,
         message: "Polygon market data function is available",
-        implemented: false
+        implemented: true,
+        availableEndpoints: ["snapshot"]
       }),
       {
         headers: {

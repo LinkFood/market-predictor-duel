@@ -80,7 +80,7 @@ const Settings: React.FC = () => {
               <p className="text-sm text-green-700">Set up market data APIs and assign admin roles</p>
             </div>
             <Button 
-              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto cursor-pointer"
+              className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
               onClick={navigateToApiSettings}
             >
               <Box className="mr-2 h-4 w-4" />
@@ -95,7 +95,7 @@ const Settings: React.FC = () => {
           <div 
             key={item.title} 
             onClick={() => handleNavigation(item.path)}
-            className={`glass-card-subtle p-5 flex flex-col items-start justify-between touch-scale ${
+            className={`glass-card-subtle p-5 flex flex-col items-start justify-between ${
               item.highlight ? 'border-green-200 bg-green-50' : ''
             } w-full text-left cursor-pointer`}
           >

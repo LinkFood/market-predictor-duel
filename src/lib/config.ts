@@ -7,8 +7,8 @@
 // Feature flags to control app functionality
 export const FEATURES = {
   // Data source controls
-  enableRealMarketData: true,
-  enableMockData: true,
+  enableRealMarketData: true,  // Set to true to enable real market data
+  enableMockData: true,        // Still keeping mock data as fallback
 
   // Authentication controls
   enableAuth: true,
@@ -41,9 +41,9 @@ export const API_CONFIG = {
 // Market configuration
 export const MARKET_CONFIG = {
   polygon: {
-    enabled: true, // Changed from false to true
+    enabled: true,  // Polygon API enabled by default
     baseUrl: "https://api.polygon.io",
-    apiKey: import.meta.env.VITE_POLYGON_API_KEY || "demo"
+    apiKey: import.meta.env.VITE_POLYGON_API_KEY || ""
   },
   refreshInterval: 60000, // 1 minute refresh interval
   retryAttempts: 3,
@@ -67,7 +67,7 @@ export const API_ERRORS = {
 // General application config
 export const config = {
   polygon: {
-    enabled: true, // Changed from false to true
+    enabled: true,  // Polygon API enabled by default
     baseUrl: "https://api.polygon.io"
   },
   supabase: {

@@ -1,14 +1,13 @@
 
-import React from "react";
-import { LayoutContainer } from "@/components/layout/LayoutContainer";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { InfoIcon } from "lucide-react";
+import { LayoutContainer } from "@/components/layout/LayoutContainer";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArrowLeft, Key, AlertCircle, CheckCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,23 +16,29 @@ const ApiSettings: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = React.useState(false);
-  const [userId, setUserId] = React.useState("");
-  const [apiKey, setApiKey] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isRoleSaving, setIsRoleSaving] = React.useState(false);
+  const [apiKey, setApiKey] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [statusMessage, setStatusMessage] = useState<{type: 'success' | 'error' | 'info' | null, message: string}>({
+    type: null,
+    message: ""
+  });
 
-  React.useEffect(() => {
-    // Set user ID when available
+  useEffect(() => {
     if (user?.id) {
       setUserId(user.id);
-      // Check if user is admin
       checkAdminStatus(user.id);
     }
   }, [user]);
 
+  const handleBackClick = () => {
+    navigate("/app/settings");
+  };
+
   const checkAdminStatus = async (uid: string) => {
     try {
+      console.log("Checking admin status for user:", uid);
       const { data, error } = await supabase.rpc('user_has_role', {
         check_user_id: uid,
         check_role: 'admin'
@@ -44,6 +49,7 @@ const ApiSettings: React.FC = () => {
         return;
       }
       
+      console.log("Admin role check result:", data);
       setIsAdmin(!!data);
       
       if (data) {
@@ -56,20 +62,32 @@ const ApiSettings: React.FC = () => {
 
   const fetchApiKey = async () => {
     try {
+      console.log("Testing API connection status");
       const { data, error } = await supabase.functions.invoke("polygon-market-data", {
         body: { test: true }
       });
 
+      console.log("Connection test result:", data, error);
+      
       if (!error && data?.success) {
         setApiKey("••••••••••••••••••••••");
+        setStatusMessage({
+          type: 'success',
+          message: "Polygon API connection is active"
+        });
+      } else {
+        setStatusMessage({
+          type: 'info',
+          message: "Polygon API key needs to be configured"
+        });
       }
     } catch (error) {
       console.error("Error fetching API key:", error);
+      setStatusMessage({
+        type: 'error',
+        message: "Error checking API connection status"
+      });
     }
-  };
-
-  const handleBackClick = () => {
-    navigate("/app/settings");
   };
 
   const assignAdminRole = async () => {
@@ -82,40 +100,51 @@ const ApiSettings: React.FC = () => {
       return;
     }
     
-    setIsRoleSaving(true);
+    setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("assign-admin-role", {
-        body: { userId, adminEmail: user?.email || "" }
+      const { data, error } = await supabase.rpc('user_has_role', {
+        check_user_id: userId,
+        check_role: 'admin'
       });
-
+      
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message || "Failed to assign admin role.",
-          variant: "destructive",
-        });
-      } else if (data?.success) {
+        throw new Error("Error checking user role");
+      }
+      
+      if (data) {
+        // User already has admin role
+        setIsAdmin(true);
         toast({
           title: "Success",
-          description: "Admin role assigned successfully. Please refresh the page.",
+          description: "You already have admin privileges",
+          variant: "default",
+        });
+      } else {
+        // Assign admin role using an insert
+        const { error } = await supabase
+          .from('user_roles')
+          .insert({ user_id: userId, role: 'admin' });
+        
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        toast({
+          title: "Success",
+          description: "Admin role assigned successfully",
           variant: "default",
         });
         setIsAdmin(true);
-      } else {
-        toast({
-          title: "Error",
-          description: data?.error || "Failed to assign admin role.",
-          variant: "destructive",
-        });
       }
     } catch (error: any) {
+      console.error("Error assigning admin role:", error);
       toast({
         title: "Error",
-        description: error.message || "An unexpected error occurred.",
+        description: error.message || "Failed to assign admin role",
         variant: "destructive",
       });
     } finally {
-      setIsRoleSaving(false);
+      setIsLoading(false);
     }
   };
 
@@ -131,45 +160,48 @@ const ApiSettings: React.FC = () => {
 
     setIsLoading(true);
     try {
+      console.log("Saving Polygon API key...");
       const { data, error } = await supabase.functions.invoke("set-polygon-api-key", {
         body: { apiKey }
       });
 
+      console.log("API key response:", data, error);
+
       if (error) {
-        toast({
-          title: "Error saving API Key",
-          description: "Failed to save the Polygon API key. Please try again.",
-          variant: "destructive",
-        });
+        throw new Error(error.message);
       } else if (data?.success) {
+        setStatusMessage({
+          type: 'success',
+          message: "API key saved and validated successfully"
+        });
         toast({
-          title: "API Key saved successfully",
-          description: "The Polygon API key has been saved and validated.",
+          title: "API Key Saved",
+          description: "The Polygon API key has been saved and validated",
           variant: "default",
         });
       } else {
-        toast({
-          title: "Error saving API Key",
-          description: data?.error || "Failed to save the API key. Please try again.",
-          variant: "destructive",
-        });
+        throw new Error(data?.error || "Failed to save API key");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving API key:", error);
+      setStatusMessage({
+        type: 'error',
+        message: error.message || "Failed to save API key"
+      });
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: error.message || "Failed to save API key",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <LayoutContainer>
       <div className="flex items-center gap-4 mb-6">
-        <Button variant="outline" size="sm" onClick={handleBackClick} className="cursor-pointer">
+        <Button variant="outline" size="sm" onClick={handleBackClick}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Settings
         </Button>
@@ -179,18 +211,24 @@ const ApiSettings: React.FC = () => {
         </div>
       </div>
 
-      {!isAdmin && (
-        <Alert className="mb-6 bg-blue-50 border-blue-200 text-blue-800">
-          <InfoIcon className="h-4 w-4" />
+      {statusMessage.type && (
+        <Alert className={`mb-6 ${
+          statusMessage.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
+          statusMessage.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
+          'bg-blue-50 border-blue-200 text-blue-800'
+        }`}>
+          {statusMessage.type === 'success' ? <CheckCircle className="h-4 w-4" /> :
+           statusMessage.type === 'error' ? <AlertCircle className="h-4 w-4" /> :
+           <AlertCircle className="h-4 w-4" />}
           <AlertDescription>
-            To configure API connections, first assign yourself an admin role using the form below, then refresh the page.
+            {statusMessage.message}
           </AlertDescription>
         </Alert>
       )}
 
       <div className="grid gap-6">
         {!isAdmin && (
-          <Card className="overflow-visible shadow-sm border border-gray-200 hover:border-gray-300 transition-all">
+          <Card>
             <CardHeader>
               <CardTitle>Admin Role Management</CardTitle>
               <CardDescription>
@@ -204,21 +242,18 @@ const ApiSettings: React.FC = () => {
                   <Input
                     id="user-id"
                     value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                    placeholder="Enter user ID to assign admin role"
-                    className="bg-white border-gray-300 hover:border-gray-400 focus:border-primary cursor-text"
-                    aria-label="User ID"
+                    readOnly
+                    className="bg-gray-100"
                   />
                   <p className="text-sm text-gray-500">
-                    {userId ? "We've pre-filled your user ID. Click the button below to assign yourself admin privileges." : "Enter your user ID to assign admin privileges."}
+                    This is your user ID. Click the button below to assign yourself admin privileges.
                   </p>
                 </div>
                 <Button
                   onClick={assignAdminRole}
-                  className="bg-primary hover:bg-primary/90 text-white cursor-pointer"
-                  disabled={isRoleSaving || !userId}
+                  disabled={isLoading}
                 >
-                  {isRoleSaving ? "Assigning..." : "Assign Admin Role"}
+                  {isLoading ? "Assigning..." : "Assign Admin Role"}
                 </Button>
               </div>
             </CardContent>
@@ -226,7 +261,7 @@ const ApiSettings: React.FC = () => {
         )}
         
         {isAdmin && (
-          <Card className="overflow-visible shadow-sm border border-gray-200 hover:border-gray-300 transition-all">
+          <Card>
             <CardHeader>
               <CardTitle>Polygon API Configuration</CardTitle>
               <CardDescription>
@@ -235,7 +270,7 @@ const ApiSettings: React.FC = () => {
                   href="https://polygon.io/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="text-blue-600 font-medium hover:underline inline-flex items-center cursor-pointer"
+                  className="text-blue-600 font-medium hover:underline inline-flex items-center"
                 >
                   Get an API key from Polygon.io
                 </a>
@@ -251,7 +286,6 @@ const ApiSettings: React.FC = () => {
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="Enter your API key"
-                    className="cursor-text"
                   />
                   <p className="text-sm text-muted-foreground">
                     Your API key will be stored securely in the edge function and only available to authenticated administrators.
@@ -260,7 +294,6 @@ const ApiSettings: React.FC = () => {
                 <Button
                   onClick={saveApiKey}
                   disabled={isLoading || !apiKey || apiKey === "••••••••••••••••••••••"}
-                  className="cursor-pointer"
                 >
                   {isLoading ? "Saving..." : "Save API Key"}
                 </Button>
